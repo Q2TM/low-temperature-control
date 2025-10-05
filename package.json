@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "turbo run build",
+    "build": "turbo run build --continue=dependencies-successful",
     "dev": "turbo run dev",
-    "lint": "turbo run lint && prettier --check *.js",
-    "format": "turbo run format && prettier --write *.js",
+    "lint": "turbo run lint --continue && prettier --check *.js",
+    "format": "turbo run format --continue && prettier --write *.js",
     "check-types": "turbo run check-types",
     "codegen": "turbo run codegen"
   },
