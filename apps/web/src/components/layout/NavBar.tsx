@@ -10,7 +10,7 @@ export function NavBar() {
           Almond Dashboard
         </Link>
 
-        <div>
+        <div className="flex flex-row justify-end gap-4">
           <ThemeToggle />
         </div>
       </div>
