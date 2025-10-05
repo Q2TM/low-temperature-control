@@ -1,6 +1,3 @@
-const config = {
-  plugins: {
-    "@tailwindcss/postcss": {},
-  },
-};
-export default config;
+// @ts-check
+
+export { default } from "@repo/ui/postcss.config.js";

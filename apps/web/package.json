@@ -14,6 +14,7 @@
   "dependencies": {
     "@repo/ui": "workspace:*",
     "@tailwindcss/postcss": "^4.1.14",
+    "geist": "^1.5.1",
     "next": "^15.5.4",
     "postcss": "^8.5.6",
     "react": "^19.2.0",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
+    "@repo/ui": "workspace:*",
     "@types/node": "^22.18.8",
     "@types/react": "19.2.0",
     "@types/react-dom": "19.2.0",

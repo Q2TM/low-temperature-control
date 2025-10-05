@@ -1,16 +1,8 @@
-import "./globals.css";
+import "@repo/ui/globals.css";
 
+import { GeistMono } from "geist/font/mono";
+import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -24,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${GeistSans.variable} ${GeistMono.variable}`}>
         {children}
       </body>
     </html>
