@@ -1,0 +1,27 @@
+{
+  "name": "rice-shower",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Data Collector for lgg-api, part of Low Temperature Capstone Project",
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "preview": "dotenv -- node dist/index.js",
+    "lint": "eslint .",
+    "format": "eslint . --fix",
+    "check-types": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "devDependencies": {
+    "@leomotors/config": "^1.0.1",
+    "@repo/api-client": "workspace:*",
+    "@repo/config": "workspace:*",
+    "@repo/tsdb": "workspace:*",
+    "@types/node": "^22.18.1",
+    "dotenv-cli": "^10.0.0",
+    "eslint": "^9.35.0",
+    "tsup": "^8.5.0",
+    "zod": "^4.1.5"
+  }
+}

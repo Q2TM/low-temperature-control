@@ -1,0 +1,61 @@
+services:
+  tsdb:
+    image: timescale/timescaledb:latest-pg17
+    container_name: rice-tsdb
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=lt-capstone
+    ports:
+      - "5432:5432"
+    volumes:
+      - tsdb-data:/var/lib/postgresql/data
+
+  dashboard:
+    image: grafana/grafana:latest
+    container_name: rice-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+      # todo find better way for this
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+  lgg-api:
+    image: ghcr.io/q2tm/lgg-api:0.1.0
+    container_name: lgg-api
+    # privileged: true
+    # devices:
+    #   - /dev/tty.SLAB_USBtoUART
+    ports:
+      - "8000:8000"
+    environment:
+      - USE_MOCK=1
+
+  collector:
+    # Use image: ghcr.io/q2tm/rice-shower:{version} for production
+    build: .
+    container_name: rice-collector
+    depends_on:
+      - tsdb
+      - lgg-api
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@rice-tsdb:5432/lt-capstone
+      - LGG_URL=http://lgg-api:8000
+
+volumes:
+  tsdb-data:
+    driver: local
+    name: rice-tsdb-data
+  grafana_data:
+    driver: local
+    name: rice-grafana-data
+
+networks:
+  default:
+    name: rice-shower
+    driver: bridge
