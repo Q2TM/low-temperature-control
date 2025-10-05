@@ -11,7 +11,7 @@
       "./src/hooks/*.ts",
       "./src/hooks/*.tsx"
     ],
-    "./components/*": "./src/components/*.tsx"
+    "./base/*": "./src/components/ui/*.tsx"
   },
   "scripts": {
     "lint": "eslint .",
@@ -29,6 +29,7 @@
     "typescript": "5.9.3"
   },
   "dependencies": {
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-slot": "^1.2.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
