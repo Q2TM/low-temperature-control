@@ -2,15 +2,15 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from routers import router_v1
-from services.lakeshore import LakeshoreService as ls
 from exceptions.lakeshore import LakeshoreError
+from routers import router_v1
+from services.lifespan import lifespan
 
 app = FastAPI(
     title="Lakeshore Management API",
     description="API for Lakeshore Model240 temperature controller",
     version="0.1.0",
-    lifespan=ls.lifespan,
+    lifespan=lifespan,
 )
 
 app.add_middleware(

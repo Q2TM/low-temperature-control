@@ -272,7 +272,7 @@ wheels = [
 
 [[package]]
 name = "lingangu-api"
-version = "0.2.0"
+version = "0.1.0"
 source = { virtual = "apps/ls-api" }
 dependencies = [
     { name = "fastapi", extra = ["standard"] },
@@ -285,6 +285,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "autopep8" },
+    { name = "pyyaml" },
 ]
 
 [package.metadata]
@@ -297,7 +298,10 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "autopep8", specifier = ">=2.3.2" }]
+dev = [
+    { name = "autopep8", specifier = ">=2.3.2" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
+]
 
 [[package]]
 name = "markdown-it-py"
