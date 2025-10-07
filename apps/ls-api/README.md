@@ -1,4 +1,4 @@
-# lgg-api
+# lingangu-api
 
 API server that manages Lakeshore devices and exports metrics via REST API.
 
@@ -9,10 +9,6 @@ For local development, run:
 ```bash
 uv run main.py
 ```
-
-## Docker Image & Deployment
-
-TODO
 
 ---
 

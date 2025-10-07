@@ -1,2 +1,2 @@
 [tool.uv.workspace]
-members = ["apps/lgg-api"]
+members = ["apps/ls-api"]

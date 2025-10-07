@@ -24,13 +24,11 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
-  apps/lgg-api: {}
-
-  apps/rice-shower:
+  apps/collector:
     devDependencies:
       '@leomotors/config':
         specifier: ^1.0.1
-        version: 1.0.1(@typescript-eslint/eslint-plugin@8.46.0(@typescript-eslint/parser@8.40.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(jiti@2.6.1)(typescript@5.9.3)
+        version: 1.0.1(@typescript-eslint/eslint-plugin@8.46.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(jiti@2.6.1)(typescript@5.9.3)
       '@repo/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
@@ -55,6 +53,8 @@ importers:
       zod:
         specifier: ^4.1.12
         version: 4.1.12
+
+  apps/ls-api: {}
 
   apps/web:
     dependencies:
@@ -133,7 +133,7 @@ importers:
     dependencies:
       '@leomotors/config':
         specifier: ^1.0.1
-        version: 1.0.1(@typescript-eslint/eslint-plugin@8.46.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(jiti@2.6.1)(typescript@5.9.3)
+        version: 1.0.1(@typescript-eslint/eslint-plugin@8.46.0(@typescript-eslint/parser@8.40.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(jiti@2.6.1)(typescript@5.9.3)
     devDependencies:
       '@eslint/js':
         specifier: ^9.37.0
@@ -8766,7 +8766,7 @@ snapshots:
       cac: 6.7.14
       chokidar: 4.0.3
       consola: 3.4.2
-      debug: 4.4.1
+      debug: 4.4.3
       esbuild: 0.25.10
       fix-dts-default-cjs-exports: 1.0.1
       joycon: 3.1.1
