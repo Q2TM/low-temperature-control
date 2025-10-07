@@ -22,7 +22,7 @@
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@types/node": "^22.18.8",
-    "@types/react": "19.2.0",
+    "@types/react": "19.2.1",
     "@types/react-dom": "19.2.0",
     "eslint": "^9.37.0",
     "shadcn": "^3.4.0",
@@ -36,7 +36,7 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.544.0",
+    "lucide-react": "^0.545.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "recharts": "2.15.4",
