@@ -1,0 +1,8 @@
+{
+  "name": "lgg-api",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "dev": "USE_MOCK=1 uv run main.py"
+  }
+}
