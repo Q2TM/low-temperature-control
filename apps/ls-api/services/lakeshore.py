@@ -19,7 +19,12 @@ from fastapi import Request, HTTPException
 
 
 class LakeshoreService:
-    """Service layer for interacting with the Lakeshore Model240 device."""
+    """
+    Service layer for interacting with the Lakeshore Model240 device.
+
+    Is singleton.
+    """
+
     device: Model240 | None = None
 
     def __new__(cls) -> Self:
@@ -79,21 +84,6 @@ class LakeshoreService:
         if not LakeshoreService.device:
             raise DeviceNotConnectedError()
         return LakeshoreService.device
-
-    @asynccontextmanager
-    @staticmethod
-    async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-        """
-        Lifespan context manager to handle application startup and shutdown.
-
-        :param app: FastAPI application instance
-        :type app: FastAPI
-        :return: Lifespan context manager
-        :rtype: AsyncGenerator[None, None]
-        """
-        app.state.lock = Lock()
-        yield
-        LakeshoreService().disconnect()
 
     # =========== Device Methods ===========
 

@@ -1,6 +1,6 @@
 [project]
 name = "lingangu-api"
-version = "0.2.0"
+version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -13,4 +13,4 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["autopep8>=2.3.2"]
+dev = ["autopep8>=2.3.2", "pyyaml>=6.0.3"]

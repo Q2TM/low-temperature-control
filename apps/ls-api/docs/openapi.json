@@ -1,0 +1,1095 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Lakeshore Management API",
+    "description": "API for Lakeshore Model240 temperature controller",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/device/connect": {
+      "post": {
+        "tags": [
+          "device"
+        ],
+        "summary": "Connect",
+        "operationId": "connect",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/device/disconnect": {
+      "post": {
+        "tags": [
+          "device"
+        ],
+        "summary": "Disconnect",
+        "operationId": "disconnect",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/device/identification": {
+      "get": {
+        "tags": [
+          "device"
+        ],
+        "summary": "Get Identification",
+        "operationId": "getIdentification",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentificationResp"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/device/status/{channel}": {
+      "get": {
+        "tags": [
+          "device"
+        ],
+        "summary": "Get Status",
+        "operationId": "getStatus",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 8,
+              "minimum": 1,
+              "description": "Channel must be between 1 and 8",
+              "title": "Channel"
+            },
+            "description": "Channel must be between 1 and 8"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResp"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/device/module-name": {
+      "get": {
+        "tags": [
+          "device"
+        ],
+        "summary": "Get Modname",
+        "operationId": "getModuleName",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "title": "Response Getmodulename"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "device"
+        ],
+        "summary": "Set Modname",
+        "operationId": "setModuleName",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/device/brightness": {
+      "get": {
+        "tags": [
+          "device"
+        ],
+        "summary": "Get Brightness",
+        "operationId": "getBrightness",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Brightness"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "device"
+        ],
+        "summary": "Set Brightness",
+        "operationId": "setBrightness",
+        "parameters": [
+          {
+            "name": "brightness",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Brightness"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/device/factory-defaults": {
+      "delete": {
+        "tags": [
+          "device"
+        ],
+        "summary": "Set Factory Defaults",
+        "description": "Reset to factory defaults",
+        "operationId": "setFactoryDefaults",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reading/input/{channel}": {
+      "get": {
+        "tags": [
+          "reading"
+        ],
+        "summary": "Get Input Parameter",
+        "operationId": "getInputParameter",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 8,
+              "minimum": 1,
+              "description": "Channel must be between 1 and 8",
+              "title": "Channel"
+            },
+            "description": "Channel must be between 1 and 8"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InputParameter"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "reading"
+        ],
+        "summary": "Set Input Config",
+        "operationId": "setInputParameter",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 8,
+              "minimum": 1,
+              "description": "Channel must be between 1 and 8",
+              "title": "Channel"
+            },
+            "description": "Channel must be between 1 and 8"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InputParameter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reading/monitor/{channel}": {
+      "get": {
+        "tags": [
+          "reading"
+        ],
+        "summary": "Get Monitor",
+        "operationId": "getMonitor",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 8,
+              "minimum": 1,
+              "description": "Channel must be between 1 and 8",
+              "title": "Channel"
+            },
+            "description": "Channel must be between 1 and 8"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonitorResp"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curve/{channel}/header": {
+      "get": {
+        "tags": [
+          "curve"
+        ],
+        "summary": "Get Curve Header",
+        "operationId": "getCurveHeader",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 8,
+              "minimum": 1,
+              "description": "Channel must be between 1 and 8",
+              "title": "Channel"
+            },
+            "description": "Channel must be between 1 and 8"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurveHeader"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "curve"
+        ],
+        "summary": "Set Curve Header",
+        "operationId": "setCurveHeader",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 8,
+              "minimum": 1,
+              "description": "Channel must be between 1 and 8",
+              "title": "Channel"
+            },
+            "description": "Channel must be between 1 and 8"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CurveHeader"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curve/{channel}/data-point/{index}": {
+      "get": {
+        "tags": [
+          "curve"
+        ],
+        "summary": "Get Curve Data Point",
+        "operationId": "getCurveDataPoint",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 8,
+              "minimum": 1,
+              "description": "Channel must be between 1 and 8",
+              "title": "Channel"
+            },
+            "description": "Channel must be between 1 and 8"
+          },
+          {
+            "name": "index",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Index of the data point in the curve",
+              "title": "Index"
+            },
+            "description": "Index of the data point in the curve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurveDataPoint"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "curve"
+        ],
+        "summary": "Set Curve Data Point",
+        "operationId": "setCurveDataPoint",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 8,
+              "minimum": 1,
+              "description": "Channel must be between 1 and 8",
+              "title": "Channel"
+            },
+            "description": "Channel must be between 1 and 8"
+          },
+          {
+            "name": "index",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Index of the data point in the curve",
+              "title": "Index"
+            },
+            "description": "Index of the data point in the curve"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CurveDataPoint"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curve/{channel}/data-points": {
+      "get": {
+        "tags": [
+          "curve"
+        ],
+        "summary": "Get Curve Data Points",
+        "operationId": "getAllCurveDataPoints",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 8,
+              "minimum": 1,
+              "description": "Channel must be between 1 and 8",
+              "title": "Channel"
+            },
+            "description": "Channel must be between 1 and 8"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurveDataPoints"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curve/{channel}": {
+      "delete": {
+        "tags": [
+          "curve"
+        ],
+        "summary": "Delete Curve",
+        "operationId": "deleteCurve",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 8,
+              "minimum": 1,
+              "description": "Channel must be between 1 and 8",
+              "title": "Channel"
+            },
+            "description": "Channel must be between 1 and 8"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Brightness": {
+        "properties": {
+          "brightness": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Brightness",
+            "description": "Brightness level between 0 and 100"
+          }
+        },
+        "type": "object",
+        "required": [
+          "brightness"
+        ],
+        "title": "Brightness",
+        "description": "Schema for device display brightness configuration.\n\nUsed by GET/PUT /brightness endpoints for brightness control."
+      },
+      "Coefficients": {
+        "type": "integer",
+        "enum": [
+          1,
+          2
+        ],
+        "title": "Coefficients",
+        "description": "Enumerations that specify a positive or negative coefficient."
+      },
+      "CurveDataPoint": {
+        "properties": {
+          "temperature": {
+            "type": "number",
+            "title": "Temperature"
+          },
+          "sensor": {
+            "type": "number",
+            "title": "Sensor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "temperature",
+          "sensor"
+        ],
+        "title": "CurveDataPoint",
+        "description": "Schema for a single curve data point containing temperature and sensor value pair.\n\nUsed by GET /curve/{channel}/data-point/{index} endpoint."
+      },
+      "CurveDataPoints": {
+        "properties": {
+          "channel": {
+            "type": "integer",
+            "title": "Channel"
+          },
+          "temperatures": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Temperatures",
+            "description": "List of temperature values"
+          },
+          "sensors": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Sensors",
+            "description": "List of sensor values"
+          }
+        },
+        "type": "object",
+        "required": [
+          "channel",
+          "temperatures",
+          "sensors"
+        ],
+        "title": "CurveDataPoints",
+        "description": "Schema for multiple curve data points containing arrays of temperature and sensor values.\n\nUsed by GET /curve/{channel}/data-points endpoint to return all curve data."
+      },
+      "CurveFormat": {
+        "type": "integer",
+        "enum": [
+          2,
+          3,
+          4
+        ],
+        "title": "CurveFormat",
+        "description": "Enumerations that specify temperature sensor curve format units."
+      },
+      "CurveHeader": {
+        "properties": {
+          "curveName": {
+            "type": "string",
+            "title": "Curvename"
+          },
+          "serialNumber": {
+            "type": "string",
+            "title": "Serialnumber"
+          },
+          "curveDataFormat": {
+            "$ref": "#/components/schemas/CurveFormat"
+          },
+          "temperatureLimit": {
+            "type": "number",
+            "title": "Temperaturelimit"
+          },
+          "coefficient": {
+            "$ref": "#/components/schemas/Coefficients"
+          }
+        },
+        "type": "object",
+        "required": [
+          "curveName",
+          "serialNumber",
+          "curveDataFormat",
+          "temperatureLimit",
+          "coefficient"
+        ],
+        "title": "CurveHeader",
+        "description": "Schema for curve header information containing metadata about a temperature sensor curve.\n\nUsed by GET /curve/{channel}/header endpoint to return curve configuration."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "IdentificationResp": {
+        "properties": {
+          "manufacturer": {
+            "type": "string",
+            "title": "Manufacturer"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "serialNumber": {
+            "type": "string",
+            "title": "Serialnumber"
+          },
+          "firmwareVersion": {
+            "type": "string",
+            "title": "Firmwareversion"
+          }
+        },
+        "type": "object",
+        "required": [
+          "manufacturer",
+          "model",
+          "serialNumber",
+          "firmwareVersion"
+        ],
+        "title": "IdentificationResp",
+        "description": "Schema for device identification information.\n\nUsed by GET /identification endpoint to return device details."
+      },
+      "InputParameter": {
+        "properties": {
+          "sensorName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sensorname"
+          },
+          "sensorType": {
+            "$ref": "#/components/schemas/SensorTypes"
+          },
+          "temperatureUnit": {
+            "$ref": "#/components/schemas/Units"
+          },
+          "autoRangeEnable": {
+            "type": "boolean",
+            "title": "Autorangeenable"
+          },
+          "currentReversalEnable": {
+            "type": "boolean",
+            "title": "Currentreversalenable"
+          },
+          "inputEnable": {
+            "type": "boolean",
+            "title": "Inputenable"
+          },
+          "inputRange": {
+            "type": "integer",
+            "title": "Inputrange"
+          },
+          "filter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filter"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sensorType",
+          "temperatureUnit",
+          "autoRangeEnable",
+          "currentReversalEnable",
+          "inputEnable",
+          "inputRange"
+        ],
+        "title": "InputParameter",
+        "description": "Schema for input channel configuration parameters.\n\nUsed by GET /input/{channel} endpoint to return channel settings.\nAll fields reflect the current configuration of the temperature input channel."
+      },
+      "MonitorResp": {
+        "properties": {
+          "kelvin": {
+            "type": "number",
+            "title": "Kelvin"
+          },
+          "sensor": {
+            "type": "number",
+            "title": "Sensor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kelvin",
+          "sensor"
+        ],
+        "title": "MonitorResp",
+        "description": "Schema for temperature and sensor monitoring data.\n\nUsed by GET /monitor/{channel} endpoint to return current readings.\nCurrently returns kelvin temperature and raw sensor value."
+      },
+      "OperationResult": {
+        "properties": {
+          "isSuccess": {
+            "type": "boolean",
+            "title": "Issuccess"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "isSuccess"
+        ],
+        "title": "OperationResult",
+        "description": "Schema for API operation results indicating success/failure status.\n\nUsed by endpoints that perform operations (like DELETE /factory-defaults)\nto return standardized success/error information."
+      },
+      "SensorTypes": {
+        "type": "integer",
+        "enum": [
+          1,
+          2,
+          3
+        ],
+        "title": "SensorTypes",
+        "description": "Enumerations specify types of temperature sensors."
+      },
+      "StatusResp": {
+        "properties": {
+          "invalidReading": {
+            "type": "boolean",
+            "title": "Invalidreading"
+          },
+          "tempUnderRange": {
+            "type": "boolean",
+            "title": "Tempunderrange"
+          },
+          "tempOverRange": {
+            "type": "boolean",
+            "title": "Tempoverrange"
+          },
+          "sensorUnitsOverRange": {
+            "type": "boolean",
+            "title": "Sensorunitsoverrange"
+          },
+          "sensorUnitsUnderRange": {
+            "type": "boolean",
+            "title": "Sensorunitsunderrange"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invalidReading",
+          "tempUnderRange",
+          "tempOverRange",
+          "sensorUnitsOverRange",
+          "sensorUnitsUnderRange"
+        ],
+        "title": "StatusResp",
+        "description": "Schema for device channel status information.\n\nUsed by GET /status/{channel} endpoint to return channel status flags."
+      },
+      "Units": {
+        "type": "integer",
+        "enum": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "title": "Units",
+        "description": "Enumerations that specify temperature units."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
