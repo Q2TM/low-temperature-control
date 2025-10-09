@@ -29,15 +29,15 @@ export const queryController = new Elysia({
     }
   },
   {
-    query: QueryMetricsRequestQuery,
-    response: {
-      200: QueryMetricsResponse,
-      500: t.Object({ error: t.String() }),
-    },
     detail: {
       operationId: "getMetrics",
       summary: "Get Metrics",
       description: "Query metrics data from time series database",
+    },
+    query: QueryMetricsRequestQuery,
+    response: {
+      200: QueryMetricsResponse,
+      500: t.Object({ error: t.String() }),
     },
   },
 );

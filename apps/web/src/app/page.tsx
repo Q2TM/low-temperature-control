@@ -25,7 +25,7 @@ export default async function Home() {
   // const timeStart = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
   const data = (
-    await queryApi.getMetrics("sensor-1", 10, [1, 2, 3, 4], timeStart, timeEnd)
+    await queryApi.getMetrics("sensor-1", [1, 2, 3, 4], timeStart, timeEnd, 10)
   ).metrics;
 
   const lastEntry = data[data.length - 1];
@@ -55,7 +55,7 @@ export default async function Home() {
 
     for (const channel of entry.channels) {
       // @ts-expect-error temp speedrun
-      o[`Channel ${channel.channel}`] = channel.kelvin - 273.15;
+      o[`Channel ${channel.channel}`] = channel.kelvin;
     }
 
     return o;

@@ -43,8 +43,8 @@ const chartConfig = {
 
 type TemperatureChartProps = {
   data: Array<{
-    time: string;
-    [key: string]: number | string;
+    time: Date;
+    [key: string]: number | string | Date;
   }>;
 };
 
@@ -61,7 +61,9 @@ export function TemperatureChart({ data }: TemperatureChartProps) {
       : [];
 
   const mappedData = data.map((item) => {
-    const converted: Record<string, string | number> = { time: item.time };
+    const converted: Record<string, string | number | Date> = {
+      time: item.time,
+    };
     channelKeys.forEach((key) => {
       const value = item[key];
       // Convert Kelvin to Celsius if it's a number

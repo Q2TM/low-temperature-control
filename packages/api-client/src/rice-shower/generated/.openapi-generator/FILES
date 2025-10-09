@@ -1,5 +1,6 @@
 .openapi-generator-ignore
 apis/QueryApi.ts
+apis/ScrapeApi.ts
 apis/index.ts
 index.ts
 models/GetMetrics200Response.ts
@@ -8,5 +9,7 @@ models/GetMetrics200ResponseMetricsInnerChannelsInner.ts
 models/GetMetrics500Response.ts
 models/GetMetricsTimeEndParameter.ts
 models/GetMetricsTimeStartParameter.ts
+models/GetScrapeMetrics200Response.ts
+models/GetScrapeMetrics200ResponseErrorCountInner.ts
 models/index.ts
 runtime.ts

@@ -18,13 +18,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: interval
-          in: query
-          required: true
-          schema:
-            description: Interval in seconds for time bucketing
-            default: 10
-            type: number
         - name: channels
           in: query
           required: true
@@ -59,6 +52,13 @@ paths:
               - format: date
                 type: string
               - type: number
+        - name: interval
+          in: query
+          required: true
+          schema:
+            description: Interval in seconds for time bucketing
+            default: 10
+            type: number
       responses:
         "200":
           description: Response for status 200
@@ -68,6 +68,7 @@ paths:
                 type: object
                 properties:
                   dataPoints:
+                    description: Total number of data points returned
                     type: number
                   metrics:
                     type: array
@@ -75,6 +76,8 @@ paths:
                       type: object
                       properties:
                         time:
+                          description: Timestamp of the metric
+                          format: date-time
                           type: string
                         channels:
                           type: array
@@ -82,10 +85,13 @@ paths:
                             type: object
                             properties:
                               channel:
+                                description: Channel number
                                 type: number
                               kelvin:
+                                description: Temperature in Kelvin
                                 type: number
                               resistance:
+                                description: Resistance in Ohms
                                 type: number
                             required:
                               - channel
@@ -112,6 +118,10 @@ paths:
     get:
       tags:
         - Scrape
+      operationId: getScrapeMetrics
+      summary: Get Scrape Metrics
+      description: Retrieve metrics about the scraping process, including last error
+        time, error counts per channel, and total successful scrapes
       responses:
         "200":
           description: Response for status 200
@@ -124,21 +134,23 @@ paths:
                     nullable: true
                     anyOf:
                       - description: Timestamp of the last error, or null if no errors have occurred
-                        anyOf:
-                          - description: Timestamp of the last error, or null if no errors have occurred
-                            type: Date
-                          - format: date-time
-                            type: string
-                          - format: date
-                            type: string
-                          - type: number
+                        format: date-time
+                        type: string
                       - type: "null"
                   errorCount:
-                    type: object
-                    patternProperties:
-                      ^(0|[1-9][0-9]*)$:
-                        description: Number of errors for this channel
-                        type: number
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        channel:
+                          description: Channel number
+                          type: number
+                        count:
+                          description: Number of errors for this channel
+                          type: number
+                      required:
+                        - channel
+                        - count
                   successCount:
                     description: Total number of successful scrapes
                     type: number
@@ -146,6 +158,5 @@ paths:
                   - lastError
                   - errorCount
                   - successCount
-      operationId: getScrapeMetrics
 components:
   schemas: {}

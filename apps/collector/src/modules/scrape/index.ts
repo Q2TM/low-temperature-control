@@ -10,25 +10,37 @@ export const scrapeController = new Elysia({
 }).get(
   "/metrics",
   () => ({
-    lastError: Scraper.lastError,
-    errorCount: Scraper.errorCount,
+    lastError: Scraper.lastError?.toISOString() ?? null,
+    errorCount: Object.entries(Scraper.errorCount).map(([channel, count]) => ({
+      channel: Number(channel),
+      count,
+    })),
     successCount: Scraper.successCount,
   }),
   {
+    detail: {
+      operationId: "getScrapeMetrics",
+      summary: "Get Scrape Metrics",
+      description:
+        "Retrieve metrics about the scraping process, including last error time, error counts per channel, and total successful scrapes",
+    },
     response: {
       200: t.Object({
         lastError: t.Nullable(
-          t.Date({
+          t.String({
             description:
               "Timestamp of the last error, or null if no errors have occurred",
+            format: "date-time",
           }),
         ),
-        errorCount: t.Record(
-          t.Number({
-            description: "Channel number",
-          }),
-          t.Number({
-            description: "Number of errors for this channel",
+        errorCount: t.Array(
+          t.Object({
+            channel: t.Number({
+              description: "Channel number",
+            }),
+            count: t.Number({
+              description: "Number of errors for this channel",
+            }),
           }),
         ),
         successCount: t.Number({
