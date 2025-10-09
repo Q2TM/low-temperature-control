@@ -47,4 +47,4 @@ def development_mode(app: FastAPI):
     with open("docs/openapi.yaml", "w") as yaml_file:
         yaml.dump(openapi_schema, yaml_file, indent=2, sort_keys=False)
 
-    print("📖 OpenAPI schema written to docs/openapi.json and docs/openapi.yaml ✅")
+    print("📝 OpenAPI spec has been saved to docs/openapi.json and docs/openapi.yaml ✅")

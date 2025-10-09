@@ -1,0 +1,151 @@
+openapi: 3.0.3
+info:
+  title: Rice Shower (LT Capstone)
+  description: API Web Server that scrape Lakeshore Metrics and save it to
+    time-series database, then allow user to query the data.
+  version: 0.1.0
+paths:
+  /query/{instance_name}:
+    get:
+      tags:
+        - Query
+      operationId: getMetrics
+      summary: Get Metrics
+      description: Query metrics data from time series database
+      parameters:
+        - name: instance_name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: interval
+          in: query
+          required: true
+          schema:
+            description: Interval in seconds for time bucketing
+            default: 10
+            type: number
+        - name: channels
+          in: query
+          required: true
+          schema:
+            description: List of channel numbers to retrieve
+            type: array
+            items:
+              type: number
+        - name: time_start
+          in: query
+          required: true
+          schema:
+            description: Start time for the query in ISO format
+            anyOf:
+              - description: Start time for the query in ISO format
+                type: Date
+              - format: date-time
+                type: string
+              - format: date
+                type: string
+              - type: number
+        - name: time_end
+          in: query
+          required: true
+          schema:
+            description: End time for the query in ISO format
+            anyOf:
+              - description: End time for the query in ISO format
+                type: Date
+              - format: date-time
+                type: string
+              - format: date
+                type: string
+              - type: number
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dataPoints:
+                    type: number
+                  metrics:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        time:
+                          type: string
+                        channels:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              channel:
+                                type: number
+                              kelvin:
+                                type: number
+                              resistance:
+                                type: number
+                            required:
+                              - channel
+                              - kelvin
+                              - resistance
+                      required:
+                        - time
+                        - channels
+                required:
+                  - dataPoints
+                  - metrics
+        "500":
+          description: Response for status 500
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                required:
+                  - error
+  /scrape/metrics:
+    get:
+      tags:
+        - Scrape
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lastError:
+                    nullable: true
+                    anyOf:
+                      - description: Timestamp of the last error, or null if no errors have occurred
+                        anyOf:
+                          - description: Timestamp of the last error, or null if no errors have occurred
+                            type: Date
+                          - format: date-time
+                            type: string
+                          - format: date
+                            type: string
+                          - type: number
+                      - type: "null"
+                  errorCount:
+                    type: object
+                    patternProperties:
+                      ^(0|[1-9][0-9]*)$:
+                        description: Number of errors for this channel
+                        type: number
+                  successCount:
+                    description: Total number of successful scrapes
+                    type: number
+                required:
+                  - lastError
+                  - errorCount
+                  - successCount
+      operationId: getScrapeMetrics
+components:
+  schemas: {}

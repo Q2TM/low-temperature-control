@@ -1,7 +1,6 @@
-import { sql } from "drizzle-orm";
+/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import { FileWarning, Heater, TrendingDown, TrendingUp } from "lucide-react";
 
-import { sensorMetrics } from "@repo/tsdb";
 import { Badge } from "@repo/ui/base/badge";
 import { Button } from "@repo/ui/base/button";
 import {
@@ -15,31 +14,28 @@ import {
 } from "@repo/ui/base/card";
 
 import { TemperatureChart } from "@/components/charts/TemperatureChart";
-import { db } from "@/libs/db";
+import { queryApi } from "@/libs/api";
 
 export default async function Home() {
-  const data =
-    (await db.execute(sql`SELECT time_bucket(interval '10s', time)       AS "time",
-       avg(temp_kelvin) FILTER (WHERE channel = 1) AS "Channel 1",
-       avg(temp_kelvin) FILTER (WHERE channel = 2) AS "Channel 2",
-       avg(temp_kelvin) FILTER (WHERE channel = 3) AS "Channel 3",
-       avg(temp_kelvin) FILTER (WHERE channel = 4) AS "Channel 4"
-FROM ${sensorMetrics}
-WHERE time >= '2025-09-12T11:00:00Z' AND time < '2025-09-12T11:10:00Z' AND instance = 'sensor-1'
-GROUP BY 1
-ORDER BY 1 ASC;
-`)) as Array<{
-      time: string;
-      "Channel 1": number;
-      "Channel 2": number;
-      "Channel 3": number;
-      "Channel 4": number;
-    }>;
+  // temp for demo: pick
+  const timeStart = "2025-09-12T11:00:00Z";
+  const timeEnd = "2025-09-12T11:10:00Z";
+
+  // const timeEnd = new Date().toISOString();
+  // const timeStart = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+
+  const data = (
+    await queryApi.getMetrics("sensor-1", 10, [1, 2, 3, 4], timeStart, timeEnd)
+  ).metrics;
 
   const lastEntry = data[data.length - 1];
   const firstEntry = data[0];
-  const lastEntryTempC = lastEntry ? lastEntry["Channel 1"] - 273.15 : null;
-  const firstEntryTempC = firstEntry ? firstEntry["Channel 1"] - 273.15 : null;
+  const lastEntryTempC = lastEntry
+    ? lastEntry.channels.find((entry) => entry.channel === 1)?.kelvin! - 273.15
+    : null;
+  const firstEntryTempC = firstEntry
+    ? firstEntry.channels.find((entry) => entry.channel === 1)?.kelvin! - 273.15
+    : null;
   const tempChange =
     lastEntryTempC !== null && firstEntryTempC !== null
       ? (((lastEntryTempC - firstEntryTempC) / firstEntryTempC) * 100).toFixed(
@@ -47,8 +43,23 @@ ORDER BY 1 ASC;
         )
       : null;
   const avgChannel1 =
-    data.reduce((sum, entry) => sum + entry["Channel 1"], 0) / data.length;
-  const avgChannel1C = avgChannel1 - 273.15;
+    data.reduce(
+      (sum, entry) =>
+        sum + entry.channels.find((e) => e.channel === 1)?.kelvin! - 273.15,
+      0,
+    ) / data.length;
+  const avgChannel1C = avgChannel1;
+
+  const legacyData = data.map((entry) => {
+    const o = { time: entry.time };
+
+    for (const channel of entry.channels) {
+      // @ts-expect-error temp speedrun
+      o[`Channel ${channel.channel}`] = channel.kelvin - 273.15;
+    }
+
+    return o;
+  });
 
   return (
     <main className="p-4 flex flex-col gap-6 max-w-5xl mx-auto">
@@ -129,7 +140,7 @@ ORDER BY 1 ASC;
         </Card>
       </div>
 
-      <TemperatureChart data={data} />
+      <TemperatureChart data={legacyData} />
     </main>
   );
 }

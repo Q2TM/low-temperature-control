@@ -1,27 +1,44 @@
-import { Configuration, ReadingApi } from "@repo/api-client/lgg";
-import { sensorMetrics } from "@repo/tsdb";
+import { openapi } from "@elysiajs/openapi";
+import { Elysia } from "elysia";
+import { stringify } from "yaml";
 
-import { db } from "./db";
-import { environment } from "./environment";
+import { queryController } from "./modules/query";
+import { scrapeController } from "./modules/scrape";
+import { Scraper } from "./modules/scrape/service";
 
-const readingApi = new ReadingApi(
-  new Configuration({ basePath: environment.LGG_URL }),
+const app = new Elysia()
+  .use(
+    openapi({
+      documentation: {
+        info: {
+          title: "Rice Shower (LT Capstone)",
+          description:
+            "API Web Server that scrape Lakeshore Metrics and save it to time-series database, then allow user to query the data.",
+          version: "0.1.0",
+        },
+      },
+    }),
+  )
+  .use(queryController)
+  .use(scrapeController)
+  .listen(8001);
+
+const appUrl = `http://${app.server?.hostname}:${app.server?.port}`;
+
+console.log(
+  `🦊 Elysia is running at ${appUrl} as ${app.server?.development ? "dev" : "non-dev"}`,
 );
 
-async function scrapeMetrics(channel: number) {
-  const data = await readingApi.getMonitor(channel);
+if (app.server?.development) {
+  const openapiSpec = await fetch(appUrl + "/openapi/json").then((r) =>
+    r.json(),
+  );
 
-  await db.insert(sensorMetrics).values({
-    time: new Date(),
-    instance: "sensor-1",
-    channel: channel,
-    tempKelvin: data.kelvin ?? null,
-    resistanceOhms: data.sensor ?? null,
-  });
+  await Bun.write("docs/openapi.json", JSON.stringify(openapiSpec, null, 2));
+  await Bun.write("docs/openapi.yaml", stringify(openapiSpec));
+  console.log(
+    "📝 OpenAPI spec has been saved to docs/openapi.json and docs/openapi.yaml ✅",
+  );
 }
 
-setInterval(async () => {
-  for (let i = 1; i <= 4; i++) {
-    await scrapeMetrics(i);
-  }
-}, 1000);
+Scraper.initialize();
