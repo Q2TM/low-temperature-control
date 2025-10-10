@@ -259,6 +259,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/reading/pid/{channel}:
+    get:
+      tags:
+      - reading
+      summary: Get Pid Parameter
+      description: Get PID coefficients and setpoint for the given channel.
+      operationId: getPIDParameter
+      parameters:
+      - name: channel
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Channel
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PIDParameter'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    put:
+      tags:
+      - reading
+      summary: Update Pid Parameter
+      description: Update PID coefficients and setpoint for the given channel.
+      operationId: updatePIDParameter
+      parameters:
+      - name: channel
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Channel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PIDParameter'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PIDParameter'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/curve/{channel}/header:
     get:
       tags:
@@ -697,6 +756,33 @@ components:
         Used by endpoints that perform operations (like DELETE /factory-defaults)
 
         to return standardized success/error information.'
+    PIDParameter:
+      properties:
+        kp:
+          type: number
+          title: Kp
+        ki:
+          type: number
+          title: Ki
+        kd:
+          type: number
+          title: Kd
+        setpoint:
+          type: number
+          title: Setpoint
+      type: object
+      required:
+      - kp
+      - ki
+      - kd
+      - setpoint
+      title: PIDParameter
+      description: 'Schema for PID controller parameters.
+
+
+        Used by GET and PUT /pid/{channel} endpoints
+
+        to retrieve or update PID settings.'
     SensorTypes:
       type: integer
       enum:
