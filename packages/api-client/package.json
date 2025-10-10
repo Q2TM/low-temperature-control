@@ -3,16 +3,16 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./lgg": "./src/lgg/index.ts",
+    "./lgg": "./src/lgg/javascript/index.ts",
     "./rice-shower": "./src/rice-shower/index.ts"
   },
   "scripts": {
     "lint": "eslint .",
     "format": "eslint . --fix",
     "check-types": "tsc --noEmit",
-    "codegen:lgg": "rm -rf src/lgg/generated && openapi-generator-cli generate -i ../../apps/ls-api/docs/openapi.json -g typescript-fetch -o src/lgg/generated --additional-properties=disallowAdditionalPropertiesIfNotPresent=false,supportsES6=true,useSingleRequestParameter=false --enable-post-process-file --remove-operation-id-prefix",
-    "codegen:rice-shower": "rm -rf src/rice-shower/generated && openapi-generator-cli generate -i ../../apps/collector/docs/openapi.json -g typescript-fetch -o src/rice-shower/generated --additional-properties=disallowAdditionalPropertiesIfNotPresent=false,supportsES6=true,useSingleRequestParameter=false --enable-post-process-file --remove-operation-id-prefix",
-    "codegen": "pnpm codegen:lgg && pnpm codegen:rice-shower"
+    "clean": "rm -rf src/lgg/javascript/generated src/lgg/python src/rice-shower/generated",
+    "codegen:no-clean": "openapi-generator-cli generate",
+    "codegen": "pnpm clean && pnpm codegen:no-clean"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.23.1",

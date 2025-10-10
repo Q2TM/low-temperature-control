@@ -2,6 +2,44 @@
   "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
   "spaces": 2,
   "generator-cli": {
-    "version": "7.14.0"
+    "version": "7.16.0",
+    "generators": {
+      "lgg-javascript": {
+        "generatorName": "typescript-fetch",
+        "output": "src/lgg/javascript/generated",
+        "inputSpec": "../../apps/ls-api/docs/openapi.json",
+        "additionalProperties": {
+          "disallowAdditionalPropertiesIfNotPresent": false,
+          "supportsES6": true,
+          "useSingleRequestParameter": false
+        },
+        "enablePostProcessFile": true,
+        "removeOperationIdPrefix": true
+      },
+      "lgg-python": {
+        "generatorName": "python",
+        "output": "src/lgg/python",
+        "inputSpec": "../../apps/ls-api/docs/openapi.json",
+        "additionalProperties": {
+          "packageName": "lgg_client",
+          "projectName": "lgg-client",
+          "packageVersion": "0.0.0"
+        },
+        "enablePostProcessFile": true,
+        "removeOperationIdPrefix": true
+      },
+      "rice-shower": {
+        "generatorName": "typescript-fetch",
+        "output": "src/rice-shower/generated",
+        "inputSpec": "../../apps/collector/docs/openapi.json",
+        "additionalProperties": {
+          "disallowAdditionalPropertiesIfNotPresent": false,
+          "supportsES6": true,
+          "useSingleRequestParameter": false
+        },
+        "enablePostProcessFile": true,
+        "removeOperationIdPrefix": true
+      }
+    }
   }
 }

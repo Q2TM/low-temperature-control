@@ -76,7 +76,7 @@ export function GetMetrics200ResponseMetricsInnerToJSONTyped(value?: GetMetrics2
 
     return {
         
-        'time': ((value['time']).toISOString()),
+        'time': value['time'].toISOString(),
         'channels': ((value['channels'] as Array<any>).map(GetMetrics200ResponseMetricsInnerChannelsInnerToJSON)),
     };
 }
