@@ -84,7 +84,7 @@ export function GetScrapeMetrics200ResponseToJSONTyped(value?: GetScrapeMetrics2
 
     return {
         
-        'lastError': ((value['lastError'] as any).toISOString()),
+        'lastError': value['lastError'] == null ? value['lastError'] : value['lastError'].toISOString(),
         'errorCount': ((value['errorCount'] as Array<any>).map(GetScrapeMetrics200ResponseErrorCountInnerToJSON)),
         'successCount': value['successCount'],
     };
