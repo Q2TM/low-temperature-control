@@ -2,11 +2,12 @@ import time
 import threading
 import os
 import RPi.GPIO as GPIO
-
+import requests
 
 class PIDController:
     PWM_PIN = 18
     PWM_FREQUENCY = 10  # Hz
+    BASE_URL = "http://localhost:8000"
 
     def __init__(self, Kp, Ki, Kd, setpoint):
         self.Kp = Kp
@@ -27,7 +28,9 @@ class PIDController:
 
     def get_temperature(self):
         # TODO Call Lakeshore API to get actual temperature
-        return 15.0  # Placeholder value
+        response = requests.get(f"{self.BASE_URL}/api/v1/reading/input/1")
+        data = response.json()
+        return data["temperatureUnit"]  # Placeholder value
 
     def set_setpoint(self, setpoint):
         self.setpoint = setpoint
@@ -42,7 +45,6 @@ class PIDController:
 
 def fetch_new_config():
     # TODO Implement actual fetching logic, e.g., from a file or database
-
     # Now just be manually querying via terminal
     new_setpoint = float(input("Enter new setpoint (°C): "))
     new_Kp = float(input("Enter new Kp: "))
@@ -71,6 +73,22 @@ def update_config_terminal(pid):
             print("Invalid.")
         time.sleep(10)
 
+def update_config_from_api(pid):
+    while True:
+        try:
+            response = requests.get(f"{pid.BASE_URL}/api/v1/reading/pid/1")
+            if response.status_code == 200:
+                data = response.json()
+                pid.set_setpoint(data['setpoint'])
+                pid.set_coefficients(data['kp'], data['ki'], data['kd'])
+                print("Configuration updated from API.")
+                print(
+                    f"New setpoint: {data['setpoint']}, Kp: {data['kp']}, Ki: {data['ki']}, Kd: {data['kd']}")
+            else:
+                print("Failed to fetch config from API.")
+        except Exception as e:
+            print("Error fetching config from API:", e)
+        time.sleep(10)
 
 def update_config_from_file(pid, filename="pid_config.txt"):
     last_mtime = 0
@@ -102,7 +120,7 @@ def main():
     pwm.start(0)
 
     config_thread = threading.Thread(
-        target=update_config_terminal, args=(pid,), daemon=True)
+        target=update_config_from_api, args=(pid,), daemon=True)
     config_thread.start()
 
     try:
