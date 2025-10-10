@@ -1,0 +1,126 @@
+import time
+import threading
+import os
+import RPi.GPIO as GPIO
+
+
+class PIDController:
+    PWM_PIN = 18
+    PWM_FREQUENCY = 10  # Hz
+
+    def __init__(self, Kp, Ki, Kd, setpoint):
+        self.Kp = Kp
+        self.Ki = Ki
+        self.Kd = Kd
+        self.setpoint = setpoint
+        self.integral = 0
+        self.last_error = 0
+
+    def PID_update(self, measurement):
+        error = self.setpoint - measurement
+        self.integral += error
+        derivative = error - self.last_error
+        output = (self.Kp * error) + (self.Ki * self.integral) + \
+            (self.Kd * derivative)
+        self.last_error = error
+        return output
+
+    def get_temperature(self):
+        # TODO Call Lakeshore API to get actual temperature
+        return 15.0  # Placeholder value
+
+    def set_setpoint(self, setpoint):
+        self.setpoint = setpoint
+        self.integral = 0
+        self.last_error = 0
+
+    def set_coefficients(self, Kp, Ki, Kd):
+        self.Kp = Kp
+        self.Ki = Ki
+        self.Kd = Kd
+
+
+def fetch_new_config():
+    # TODO Implement actual fetching logic, e.g., from a file or database
+
+    # Now just be manually querying via terminal
+    new_setpoint = float(input("Enter new setpoint (°C): "))
+    new_Kp = float(input("Enter new Kp: "))
+    new_Ki = float(input("Enter new Ki: "))
+    new_Kd = float(input("Enter new Kd: "))
+    return {
+        'setpoint': new_setpoint,
+        'Kp': new_Kp,
+        'Ki': new_Ki,
+        'Kd': new_Kd
+    }
+
+
+def update_config_terminal(pid):
+    while True:
+        try:
+            new_config = fetch_new_config()
+            if new_config:
+                pid.set_setpoint(new_config['setpoint'])
+                pid.set_coefficients(
+                    new_config['Kp'], new_config['Ki'], new_config['Kd'])
+                print("Configuration updated.")
+                print(
+                    f"New setpoint: {new_config['setpoint']}, Kp: {new_config['Kp']}, Ki: {new_config['Ki']}, Kd: {new_config['Kd']}")
+        except ValueError:
+            print("Invalid.")
+        time.sleep(10)
+
+
+def update_config_from_file(pid, filename="pid_config.txt"):
+    last_mtime = 0
+    while True:
+        if os.path.exists(filename):
+            mtime = os.path.getmtime(filename)
+            if mtime != last_mtime:
+                last_mtime = mtime
+                with open(filename) as f:
+                    lines = f.readlines()
+                    try:
+                        pid.set_setpoint(float(lines[0]))
+                        pid.set_coefficients(
+                            float(lines[1]), float(lines[2]), float(lines[3]))
+                        print("Config updated from file.")
+                    except Exception as e:
+                        print("Error reading config:", e)
+        time.sleep(1)
+
+
+def main():
+    pid = PIDController(1.0, 0.1, 0.05, 0)
+    PWM_PIN = pid.PWM_PIN
+    PWM_FREQUENCY = pid.PWM_FREQUENCY
+
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(PWM_PIN, GPIO.OUT)
+    pwm = GPIO.PWM(PWM_PIN, PWM_FREQUENCY)
+    pwm.start(0)
+
+    config_thread = threading.Thread(
+        target=update_config_terminal, args=(pid,), daemon=True)
+    config_thread.start()
+
+    try:
+        while True:
+            current_temp = pid.get_temperature()
+            control_signal = pid.PID_update(current_temp)
+            duty_cycle = max(0, min(100, control_signal))
+            pwm.ChangeDutyCycle(duty_cycle)
+            print(
+                f"Current Temp: {current_temp}, Control Signal: {control_signal}, Duty Cycle: {duty_cycle}")
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("Exiting...")
+
+    finally:
+        pwm.stop()
+        GPIO.cleanup()
+
+
+if __name__ == "__main__":
+    main()
