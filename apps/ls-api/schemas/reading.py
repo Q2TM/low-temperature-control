@@ -28,3 +28,15 @@ class InputParameter(CamelModel):
     input_enable: bool
     input_range: int
     filter: str | None = None  # Optional filter setting, None if not applicable
+
+
+class PIDParameter(CamelModel):
+    """Schema for PID controller parameters.
+
+    Used by GET and PUT /pid/{channel} endpoints
+    to retrieve or update PID settings.
+    """
+    kp: float
+    ki: float
+    kd: float
+    setpoint: float
