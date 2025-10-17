@@ -39,6 +39,9 @@ if (app.server?.development) {
   console.log(
     "📝 OpenAPI spec has been saved to docs/openapi.json and docs/openapi.yaml ✅",
   );
+  console.log(
+    `📖 Swagger Page is available at \x1b[1m${appUrl}/openapi\x1b[0m`,
+  );
 }
 
 Scraper.initialize();

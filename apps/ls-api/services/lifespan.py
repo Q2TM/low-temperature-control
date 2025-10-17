@@ -48,3 +48,5 @@ def development_mode(app: FastAPI):
         yaml.dump(openapi_schema, yaml_file, indent=2, sort_keys=False)
 
     print("📝 OpenAPI spec has been saved to docs/openapi.json and docs/openapi.yaml ✅")
+    print(
+        "📖 Swagger Page is available at \x1b[1mhttp://localhost:8000/docs\x1b[0m")
