@@ -21,7 +21,7 @@ const app = new Elysia()
   )
   .use(queryController)
   .use(scrapeController)
-  .listen(8001);
+  .listen(8100);
 
 const appUrl = `http://${app.server?.hostname}:${app.server?.port}`;
 

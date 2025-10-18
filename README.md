@@ -19,6 +19,10 @@ Capstone Project for Computer Engineering, Chulalongkorn University
 - `main-db`: TODO
 - `ui`: React UI Component Library powered by Shadcn UI
 
+### .env
+
+.env are located in the folder of each apps/packages, please refer to the `.env.example` files for the required environment variables of each app.
+
 ## Setup
 
 This repository has two languages and three runtimes: TypeScript (Node.js and Bun) and Python.
@@ -56,6 +60,12 @@ You can run these containers using `docker-compose.yaml` file provided in the ro
 docker compose up -d
 ```
 
+### Database Setup
+
+Go to `packages/tsdb` make sure .env is set.
+
+Then run `pnpm db:migrate` to setup the database schema.
+
 ## Architecture Diagram
 
 ![](./docs/arch-v1.webp)
@@ -71,8 +81,8 @@ To run everything locally, follow these steps:
 ### URLs
 
 - Lingangu API Swagger will be available at `http://localhost:8000/docs`
-- Rice Shower Swagger will be available at `http://localhost:8001/openapi`
-- Almond Eye Dashboard will be available at `http://localhost:3000`
+- Rice Shower Swagger will be available at `http://localhost:8100/openapi`
+- Almond Eye Dashboard will be available at `http://localhost:3100`
 
 ## Contribution
 
