@@ -1,0 +1,253 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "temp-api",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/temp/target-temp": {
+      "get": {
+        "summary": "Get Target Temp",
+        "operationId": "get_target_temp_api_temp_target_temp_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TargetTempOut"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Post Target Temp",
+        "operationId": "post_target_temp_api_temp_target_temp_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TargetTempIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/temp/status": {
+      "get": {
+        "summary": "Get Status",
+        "operationId": "get_status_api_temp_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/temp/parameters": {
+      "get": {
+        "summary": "Get Parameters",
+        "operationId": "get_parameters_api_temp_parameters_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Parameters"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Post Parameters",
+        "operationId": "post_parameters_api_temp_parameters_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Parameters"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Parameters"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Parameters": {
+        "properties": {
+          "kp": {
+            "type": "number",
+            "title": "Kp",
+            "default": 1.0
+          },
+          "ki": {
+            "type": "number",
+            "title": "Ki",
+            "default": 0.0
+          },
+          "kd": {
+            "type": "number",
+            "title": "Kd",
+            "default": 0.0
+          }
+        },
+        "type": "object",
+        "title": "Parameters"
+      },
+      "StatusOut": {
+        "properties": {
+          "current_temp": {
+            "type": "number",
+            "title": "Current Temp"
+          },
+          "target": {
+            "type": "number",
+            "title": "Target"
+          },
+          "heating": {
+            "type": "boolean",
+            "title": "Heating"
+          }
+        },
+        "type": "object",
+        "required": [
+          "current_temp",
+          "target",
+          "heating"
+        ],
+        "title": "StatusOut"
+      },
+      "TargetTempIn": {
+        "properties": {
+          "target": {
+            "type": "number",
+            "title": "Target"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target"
+        ],
+        "title": "TargetTempIn"
+      },
+      "TargetTempOut": {
+        "properties": {
+          "target": {
+            "type": "number",
+            "title": "Target"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target"
+        ],
+        "title": "TargetTempOut"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
