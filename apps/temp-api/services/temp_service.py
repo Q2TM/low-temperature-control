@@ -15,11 +15,9 @@ class TempService:
 
     def get_status(self):
         current = self.gpio.read_temperature()
-        heating = current < self._target
         return {
             "current_temp": current,
             "target": self._target,
-            "heating": heating
         }
 
     def get_parameters(self):
