@@ -2,7 +2,14 @@
 name = "heater-api"
 version = "0.1.0"
 requires-python = ">=3.11"
-dependencies = ["fastapi-camelcase>=2.0.0", "fastapi[standard]>=0.116.1"]
+dependencies = [
+  "fastapi-camelcase>=2.0.0",
+  "fastapi[standard]>=0.116.1",
+  "lgg_client",
+]
 
 [dependency-groups]
 dev = ["autopep8>=2.3.2", "pyyaml>=6.0.3"]
+
+[tool.uv.sources]
+lgg_client = { workspace = true }

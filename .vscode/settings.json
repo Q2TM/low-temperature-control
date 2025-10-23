@@ -1,7 +1,3 @@
 {
-  "eslint.workingDirectories": [
-    {
-      "mode": "auto"
-    }
-  ]
+  "python.analysis.extraPaths": ["packages/api-client/src/lgg/python"]
 }
