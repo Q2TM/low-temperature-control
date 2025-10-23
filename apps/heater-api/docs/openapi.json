@@ -1,21 +1,22 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "temp-api",
+    "title": "Heater API",
     "version": "0.1.0"
   },
   "paths": {
     "/api/temp/target-temp": {
       "get": {
         "summary": "Get Target Temp",
-        "operationId": "get_target_temp_api_temp_target_temp_get",
+        "description": "Get the current target temperature.",
+        "operationId": "getTargetTemp",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TargetTempOut"
+                  "$ref": "#/components/schemas/TargetTemp"
                 }
               }
             }
@@ -23,13 +24,14 @@
         }
       },
       "post": {
-        "summary": "Post Target Temp",
-        "operationId": "post_target_temp_api_temp_target_temp_post",
+        "summary": "Set Target",
+        "description": "Set a new target temperature.",
+        "operationId": "setTargetTemp",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TargetTempIn"
+                "$ref": "#/components/schemas/TargetTemp"
               }
             }
           },
@@ -60,7 +62,8 @@
     "/api/temp/status": {
       "get": {
         "summary": "Get Status",
-        "operationId": "get_status_api_temp_status_get",
+        "description": "Get the current temperature status.",
+        "operationId": "getStatus",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -78,7 +81,8 @@
     "/api/temp/parameters": {
       "get": {
         "summary": "Get Parameters",
-        "operationId": "get_parameters_api_temp_parameters_get",
+        "description": "Get the current temperature PID parameters.",
+        "operationId": "getParameters",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -93,8 +97,9 @@
         }
       },
       "post": {
-        "summary": "Post Parameters",
-        "operationId": "post_parameters_api_temp_parameters_post",
+        "summary": "Set Parameters",
+        "description": "Update PID parameters.",
+        "operationId": "setParameters",
         "requestBody": {
           "content": {
             "application/json": {
@@ -164,7 +169,8 @@
           }
         },
         "type": "object",
-        "title": "Parameters"
+        "title": "Parameters",
+        "description": "Schema for temperature parameters.\n\nUsed by GET and PUT /temp/parameters endpoints\nto retrieve or update temperature parameters."
       },
       "StatusOut": {
         "properties": {
@@ -175,21 +181,17 @@
           "target": {
             "type": "number",
             "title": "Target"
-          },
-          "heating": {
-            "type": "boolean",
-            "title": "Heating"
           }
         },
         "type": "object",
         "required": [
           "current_temp",
-          "target",
-          "heating"
+          "target"
         ],
-        "title": "StatusOut"
+        "title": "StatusOut",
+        "description": "Schema for temperature status.\n\nUsed by GET /temp/status endpoints\nto retrieve or update temperature status."
       },
-      "TargetTempIn": {
+      "TargetTemp": {
         "properties": {
           "target": {
             "type": "number",
@@ -200,20 +202,8 @@
         "required": [
           "target"
         ],
-        "title": "TargetTempIn"
-      },
-      "TargetTempOut": {
-        "properties": {
-          "target": {
-            "type": "number",
-            "title": "Target"
-          }
-        },
-        "type": "object",
-        "required": [
-          "target"
-        ],
-        "title": "TargetTempOut"
+        "title": "TargetTemp",
+        "description": "Schema for target temperature.\n\nUsed by GET and PUT /temp/target-temp endpoints\nto retrieve or update target temperature."
       },
       "ValidationError": {
         "properties": {

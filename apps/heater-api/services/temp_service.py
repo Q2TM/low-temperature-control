@@ -1,5 +1,6 @@
 from mocks.gpio_mock import GPIORepositoryMock
-from schemas.temp_controll import Parameters
+from schemas.temp_control import Parameters
+
 
 class TempService:
     def __init__(self, gpio=None):
