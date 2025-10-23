@@ -1,7 +1,5 @@
 [tool.uv.workspace]
-members = ["apps/ls-api", "packages/api-client/lgg/python"]
+members = ["apps/ls-api", "apps/heater-api", "packages/api-client/lgg/python"]
 
 [dependency-groups]
-dev = [
-    "requests>=2.32.5",
-]
+dev = ["requests>=2.32.5"]
