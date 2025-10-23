@@ -7,7 +7,7 @@ import requests
 class PIDController:
     PWM_PIN = 18
     PWM_FREQUENCY = 10  # Hz
-    BASE_URL = "http://localhost:8000"
+    BASE_URL = "http://localhost:8001"
 
     def __init__(self, Kp, Ki, Kd, setpoint):
         self.Kp = Kp
@@ -28,9 +28,9 @@ class PIDController:
 
     def get_temperature(self):
         # TODO Call Lakeshore API to get actual temperature
-        response = requests.get(f"{self.BASE_URL}/api/v1/reading/input/1")
+        response = requests.get(f"{self.BASE_URL}/api/temp/status")
         data = response.json()
-        return data["temperatureUnit"]  # Placeholder value
+        return data["current_temp"]  # Placeholder value
 
     def set_setpoint(self, setpoint):
         self.setpoint = setpoint
@@ -76,7 +76,7 @@ def update_config_terminal(pid):
 def update_config_from_api(pid):
     while True:
         try:
-            response = requests.get(f"{pid.BASE_URL}/api/v1/reading/pid/1")
+            response = requests.get(f"{pid.BASE_URL}/api/temp/parameters")
             if response.status_code == 200:
                 data = response.json()
                 pid.set_setpoint(data['setpoint'])
