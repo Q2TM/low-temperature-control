@@ -16,13 +16,16 @@ import {
 import { TemperatureChart } from "@/components/charts/TemperatureChart";
 import { queryApi } from "@/libs/api";
 
+import AutoRefresh from "./AutoRefresh";
+
 export default async function Home() {
   // temp for demo: pick
-  const timeStart = "2025-09-12T11:00:00Z";
-  const timeEnd = "2025-09-12T11:10:00Z";
+  // const timeStart = "2025-09-12T11:00:00Z";
+  // const timeEnd = "2025-09-12T11:10:00Z";
 
-  // const timeEnd = new Date().toISOString();
-  // const timeStart = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  const nMinutes = 30;
+  const timeStart = new Date(Date.now() - nMinutes * 60 * 1000).toISOString();
+  const timeEnd = new Date().toISOString();
 
   const data = (
     await queryApi.getMetrics("sensor-1", [1, 2, 3, 4], timeStart, timeEnd, 10)
@@ -30,6 +33,7 @@ export default async function Home() {
 
   const lastEntry = data[data.length - 1];
   const firstEntry = data[0];
+
   const lastEntryTempC = lastEntry
     ? lastEntry.channels.find((entry) => entry.channel === 1)?.kelvin! - 273.15
     : null;
@@ -67,6 +71,7 @@ export default async function Home() {
         <h1 className="text-3xl font-bold">
           Lab 20-05 (20th Floor, Building 4)
         </h1>
+        <AutoRefresh intervalMs={10000} />
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -93,7 +98,7 @@ export default async function Home() {
           </CardHeader>
           <CardFooter className="flex-col items-start gap-1.5 text-sm">
             <div className="line-clamp-1 flex gap-2 font-medium">
-              Average Temperature Past 10 Minutes
+              Average Temperature Past {nMinutes} Minutes
             </div>
             <div className="text-muted-foreground">
               {avgChannel1C ? avgChannel1C.toFixed(2) : "--"} °C
@@ -116,7 +121,7 @@ export default async function Home() {
           </CardHeader>
           <CardFooter className="flex-col items-start gap-1.5 text-sm">
             <div className="line-clamp-1 flex gap-2 font-medium">
-              Total Power Past 10 Minutes
+              Total Power Past {nMinutes} Minutes
             </div>
             <div className="text-muted-foreground">4200 J (1.17 Wh)</div>
           </CardFooter>
@@ -140,7 +145,7 @@ export default async function Home() {
         </Card>
       </div>
 
-      <TemperatureChart data={legacyData} />
+      <TemperatureChart data={legacyData} nMinutes={nMinutes} />
     </main>
   );
 }

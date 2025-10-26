@@ -46,9 +46,10 @@ type TemperatureChartProps = {
     time: Date;
     [key: string]: number | string | Date;
   }>;
+  nMinutes: number;
 };
 
-export function TemperatureChart({ data }: TemperatureChartProps) {
+export function TemperatureChart({ data, nMinutes }: TemperatureChartProps) {
   // State for selected channels (default: only Channel 1)
   const [selectedChannels, setSelectedChannels] = useState<string[]>([
     "Channel 1",
@@ -100,7 +101,7 @@ export function TemperatureChart({ data }: TemperatureChartProps) {
     <Card>
       <CardHeader>
         <CardTitle>Temperature Chart</CardTitle>
-        <CardDescription>Past 10 Minutes</CardDescription>
+        <CardDescription>Past {nMinutes} Minutes</CardDescription>
         <CardAction>
           <ToggleGroup
             type="multiple"
@@ -170,9 +171,11 @@ export function TemperatureChart({ data }: TemperatureChartProps) {
               content={
                 <ChartTooltipContent
                   indicator="line"
-                  labelFormatter={(value) => {
+                  labelFormatter={(value, value2) => {
                     // Format the time label in tooltip
-                    const date = new Date(value as string);
+                    const date = new Date(
+                      (value || value2?.[0]?.payload?.time) as string,
+                    );
                     return date.toLocaleString("en-US", {
                       year: "numeric",
                       month: "short",
