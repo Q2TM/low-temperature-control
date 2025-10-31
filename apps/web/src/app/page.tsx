@@ -26,8 +26,11 @@ export default function Home() {
   // const timeEnd = "2025-09-12T11:10:00Z";
 
   const nMinutes = 30;
-  const [timeEnd, setTimeEnd] = useState(Date.now());
-  const timeStart = useMemo(() => timeEnd - nMinutes * 60 * 1000, [timeEnd]);
+  const [timeEnd, setTimeEnd] = useState<number>(() => Date.now());
+  const timeStart = useMemo(
+    () => timeEnd && timeEnd - nMinutes * 60 * 1000,
+    [timeEnd],
+  );
 
   const { data: rawData } = useQuery("get", "/query/{instance_name}", {
     params: {
