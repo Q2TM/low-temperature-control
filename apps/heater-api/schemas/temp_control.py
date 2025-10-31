@@ -1,6 +1,7 @@
-from pydantic import BaseModel
+from fastapi_camelcase import CamelModel
 
-class TargetTemp(BaseModel):
+
+class TargetTemp(CamelModel):
     """
     Schema for target temperature.
 
@@ -9,20 +10,22 @@ class TargetTemp(BaseModel):
     """
     target: float
 
-class StatusOut(BaseModel):
+
+class StatusOut(CamelModel):
     """
     Schema for temperature status.
 
     Used by GET /temp/status endpoints
     to retrieve or update temperature status.
     """
-    current_temp: float
     target: float
+    duty_cycle: float
 
-class Parameters(BaseModel):
+
+class Parameters(CamelModel):
     """
     Schema for temperature parameters.
-    
+
     Used by GET and PUT /temp/parameters endpoints
     to retrieve or update temperature parameters.
     """

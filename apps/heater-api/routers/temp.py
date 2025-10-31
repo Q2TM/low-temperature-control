@@ -33,7 +33,7 @@ def get_status(
     service: TempService = Depends(get_temp_service)
 ) -> StatusOut:
     """Get the current temperature status."""
-    return StatusOut(**service.get_status())
+    return service.get_status()
 
 
 @router.get("/parameters", response_model=Parameters, operation_id="getParameters")

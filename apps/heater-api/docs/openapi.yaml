@@ -1,0 +1,174 @@
+openapi: 3.1.0
+info:
+  title: Heater API
+  version: 0.1.0
+paths:
+  /api/temp/target-temp:
+    get:
+      summary: Get Target Temp
+      description: Get the current target temperature.
+      operationId: getTargetTemp
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TargetTemp'
+    post:
+      summary: Set Target
+      description: Set a new target temperature.
+      operationId: setTargetTemp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TargetTemp'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/temp/status:
+    get:
+      summary: Get Status
+      description: Get the current temperature status.
+      operationId: getStatus
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusOut'
+  /api/temp/parameters:
+    get:
+      summary: Get Parameters
+      description: Get the current temperature PID parameters.
+      operationId: getParameters
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parameters'
+    post:
+      summary: Set Parameters
+      description: Update PID parameters.
+      operationId: setParameters
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parameters'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parameters'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    Parameters:
+      properties:
+        kp:
+          type: number
+          title: Kp
+          default: 1.0
+        ki:
+          type: number
+          title: Ki
+          default: 0.0
+        kd:
+          type: number
+          title: Kd
+          default: 0.0
+      type: object
+      title: Parameters
+      description: 'Schema for temperature parameters.
+
+
+        Used by GET and PUT /temp/parameters endpoints
+
+        to retrieve or update temperature parameters.'
+    StatusOut:
+      properties:
+        target:
+          type: number
+          title: Target
+        dutyCycle:
+          type: number
+          title: Dutycycle
+      type: object
+      required:
+      - target
+      - dutyCycle
+      title: StatusOut
+      description: 'Schema for temperature status.
+
+
+        Used by GET /temp/status endpoints
+
+        to retrieve or update temperature status.'
+    TargetTemp:
+      properties:
+        target:
+          type: number
+          title: Target
+      type: object
+      required:
+      - target
+      title: TargetTemp
+      description: 'Schema for target temperature.
+
+
+        Used by GET and PUT /temp/target-temp endpoints
+
+        to retrieve or update target temperature.'
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

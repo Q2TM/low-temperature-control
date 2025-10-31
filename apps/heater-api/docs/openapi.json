@@ -174,19 +174,19 @@
       },
       "StatusOut": {
         "properties": {
-          "current_temp": {
-            "type": "number",
-            "title": "Current Temp"
-          },
           "target": {
             "type": "number",
             "title": "Target"
+          },
+          "dutyCycle": {
+            "type": "number",
+            "title": "Dutycycle"
           }
         },
         "type": "object",
         "required": [
-          "current_temp",
-          "target"
+          "target",
+          "dutyCycle"
         ],
         "title": "StatusOut",
         "description": "Schema for temperature status.\n\nUsed by GET /temp/status endpoints\nto retrieve or update temperature status."
