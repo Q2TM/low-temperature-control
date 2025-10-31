@@ -31,6 +31,25 @@ class GPIORepositoryMock(GPIORepository):
         }
         print(f"Mock: Setup PWM on pin {pin} with frequency {frequency} Hz")
 
+    def cleanup_channel(self, pin: int) -> None:
+        """Cleanup a GPIO pin
+
+        Args:
+            pin (int): GPIO pin number
+        """
+        if pin not in self._pin_configs:
+            print(f"Mock: Pin {pin} not configured; nothing to cleanup")
+            return
+
+        del self._pin_configs[pin]
+        print(f"Mock: Cleaned up pin {pin}")
+
+    def cleanup_all(self) -> None:
+        """Cleanup all GPIO pins"""
+        pin_count = len(self._pin_configs)
+        self._pin_configs.clear()
+        print(f"Mock: Cleaned up all pins ({pin_count} pins cleared)")
+
     def set_duty_cycle(self, pin: int, duty_cycle: float) -> None:
         """Set the duty cycle for a PWM pin
 

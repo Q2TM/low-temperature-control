@@ -16,6 +16,21 @@ class GPIORepository(ABC):
         pass
 
     @abstractmethod
+    def cleanup_channel(self, pin: int) -> None:
+        """Cleanup a GPIO pin
+
+        Args:
+            pin (int): GPIO pin number
+        """
+        pass
+
+    @abstractmethod
+    def cleanup_all(self) -> None:
+        """Cleanup all GPIO pins
+        """
+        pass
+
+    @abstractmethod
     def set_duty_cycle(self, pin: int, duty_cycle: float) -> None:
         """Set the duty cycle for a PWM pin
 
