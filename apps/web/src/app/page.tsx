@@ -1,5 +1,8 @@
+"use client";
+
 /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import { FileWarning, Heater, TrendingDown, TrendingUp } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@repo/ui/base/badge";
 import { Button } from "@repo/ui/base/button";
@@ -12,24 +15,51 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/ui/base/card";
+import { Spinner } from "@repo/ui/base/spinner";
 
 import { TemperatureChart } from "@/components/charts/TemperatureChart";
-import { queryApi } from "@/libs/api";
+import { useQuery } from "@/libs/api";
 
-import AutoRefresh from "./AutoRefresh";
-
-export default async function Home() {
+export default function Home() {
   // temp for demo: pick
   // const timeStart = "2025-09-12T11:00:00Z";
   // const timeEnd = "2025-09-12T11:10:00Z";
 
   const nMinutes = 30;
-  const timeStart = new Date(Date.now() - nMinutes * 60 * 1000).toISOString();
-  const timeEnd = new Date().toISOString();
+  const [timeEnd, setTimeEnd] = useState(Date.now());
+  const timeStart = useMemo(() => timeEnd - nMinutes * 60 * 1000, [timeEnd]);
 
-  const data = (
-    await queryApi.getMetrics("sensor-1", [1, 2, 3, 4], timeStart, timeEnd, 10)
-  ).metrics;
+  const { data: rawData } = useQuery("get", "/query/{instance_name}", {
+    params: {
+      path: {
+        instance_name: "sensor-1",
+      },
+      query: {
+        channels: [1, 2, 3, 4],
+        time_start: timeStart,
+        time_end: timeEnd,
+        interval: 10,
+      },
+    },
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeEnd(Date.now());
+    }, 10_000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!rawData) {
+    return <Spinner />;
+  }
+
+  const data = rawData.metrics;
+
+  // const data = (
+  //   await queryApi.getMetrics("sensor-1", [1, 2, 3, 4], timeStart, timeEnd, 10)
+  // ).metrics;
 
   const lastEntry = data[data.length - 1];
   const firstEntry = data[0];
@@ -71,7 +101,6 @@ export default async function Home() {
         <h1 className="text-3xl font-bold">
           Lab 20-05 (20th Floor, Building 4)
         </h1>
-        <AutoRefresh intervalMs={10000} />
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

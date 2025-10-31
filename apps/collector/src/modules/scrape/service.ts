@@ -1,15 +1,21 @@
-import { Configuration, ReadingApi } from "@repo/api-client/lgg";
 import { sensorMetrics } from "@repo/tsdb";
 
+import { client } from "@/core/api";
 import { db } from "@/core/db";
-import { environment } from "@/core/environment";
-
-const readingApi = new ReadingApi(
-  new Configuration({ basePath: environment.LGG_URL }),
-);
 
 async function scrapeMetrics(instance: string, channel: number) {
-  const data = await readingApi.getMonitor(channel);
+  const { data, error } = await client.GET(
+    "/api/v1/reading/monitor/{channel}",
+    {
+      params: {
+        path: { channel },
+      },
+    },
+  );
+
+  if (error) {
+    throw new Error(`Failed to fetch data for channel ${channel}: ${error}`);
+  }
 
   await db.insert(sensorMetrics).values({
     time: new Date(),

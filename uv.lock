@@ -282,7 +282,7 @@ dev = [
 requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.116.1" },
     { name = "fastapi-camelcase", specifier = ">=2.0.0" },
-    { name = "lgg-client", editable = "packages/api-client/src/lgg/python" },
+    { name = "lgg-client", editable = "packages/api-client/src/python/lgg" },
 ]
 
 [package.metadata.requires-dev]
@@ -402,7 +402,7 @@ wheels = [
 [[package]]
 name = "lgg-client"
 version = "0.0.0"
-source = { editable = "packages/api-client/src/lgg/python" }
+source = { editable = "packages/api-client/src/python/lgg" }
 dependencies = [
     { name = "pydantic" },
     { name = "python-dateutil" },

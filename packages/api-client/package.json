@@ -2,22 +2,24 @@
   "name": "@repo/api-client",
   "private": true,
   "type": "module",
-  "exports": {
-    "./lgg": "./src/lgg/javascript/index.ts",
-    "./rice-shower": "./src/rice-shower/index.ts"
-  },
+  "main": "src/typescript/index.ts",
   "scripts": {
     "lint": "eslint .",
     "format": "eslint . --fix",
     "check-types": "tsc --noEmit",
-    "clean": "rimraf src/lgg/javascript/generated src/lgg/python src/rice-shower/generated",
-    "codegen:no-clean": "openapi-generator-cli generate",
+    "clean": "rimraf src/python && rm src/typescript/*.d.ts",
+    "codegen:ogc": "openapi-generator-cli generate",
+    "codegen:ts:lgg": "pnpm openapi-typescript ../../apps/ls-api/docs/openapi.json -o ./src/typescript/lgg.d.ts",
+    "codegen:ts:rice-shower": "pnpm openapi-typescript ../../apps/collector/docs/openapi.json -o ./src/typescript/rice-shower.d.ts",
+    "codegen:ts": "pnpm codegen:ts:lgg && pnpm codegen:ts:rice-shower && pnpm format",
+    "codegen:no-clean": "pnpm codegen:ogc && pnpm codegen:ts",
     "codegen": "pnpm clean && pnpm codegen:no-clean"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.25.0",
     "@repo/config": "workspace:*",
     "eslint": "^9.38.0",
+    "openapi-typescript": "^7.10.1",
     "rimraf": "^6.1.0"
   }
 }

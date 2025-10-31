@@ -1,3 +1,4 @@
+import { cors } from "@elysiajs/cors";
 import { openapi } from "@elysiajs/openapi";
 import { opentelemetry } from "@elysiajs/opentelemetry";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
@@ -8,8 +9,12 @@ import { stringify } from "yaml";
 import { queryController } from "./modules/query";
 import { scrapeController } from "./modules/scrape";
 import { Scraper } from "./modules/scrape/service";
-
 const app = new Elysia()
+  .use(
+    cors({
+      origin: "http://localhost:3100",
+    }),
+  )
   .use(
     openapi({
       documentation: {

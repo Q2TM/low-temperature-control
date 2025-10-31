@@ -2,7 +2,7 @@
 members = [
   "apps/ls-api",
   "apps/heater-api",
-  "packages/api-client/src/lgg/python",
+  "packages/api-client/src/python/lgg",
 ]
 
 [dependency-groups]

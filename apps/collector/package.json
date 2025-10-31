@@ -15,6 +15,7 @@
     "db:migrate": "drizzle-kit migrate"
   },
   "devDependencies": {
+    "@elysiajs/cors": "^1.4.0",
     "@elysiajs/openapi": "^1.4.11",
     "@elysiajs/opentelemetry": "^1.4.6",
     "@leomotors/config": "^1.0.1",
@@ -29,6 +30,7 @@
     "drizzle-orm": "^0.44.7",
     "elysia": "^1.4.13",
     "eslint": "^9.38.0",
+    "openapi-fetch": "^0.15.0",
     "tsup": "^8.5.0",
     "yaml": "^2.8.1",
     "zod": "^4.1.12"

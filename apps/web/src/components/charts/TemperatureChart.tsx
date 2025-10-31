@@ -43,7 +43,7 @@ const chartConfig = {
 
 type TemperatureChartProps = {
   data: Array<{
-    time: Date;
+    time: string;
     [key: string]: number | string | Date;
   }>;
   nMinutes: number;

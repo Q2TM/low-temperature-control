@@ -1,7 +1,11 @@
-import { Configuration, QueryApi } from "@repo/api-client/rice-shower";
+import createFetchClient from "openapi-fetch";
+import createClient from "openapi-react-query";
 
-export const queryApi = new QueryApi(
-  new Configuration({
-    basePath: process.env.RICE_SHOWER_URL || "http://localhost:8100",
-  }),
-);
+import type { RiceShower } from "@repo/api-client";
+
+const fetchClient = createFetchClient<RiceShower.Paths>({
+  baseUrl: process.env.RICE_SHOWER_URL || "http://localhost:8100",
+});
+
+export const $api = createClient(fetchClient);
+export const useQuery = $api.useQuery;
