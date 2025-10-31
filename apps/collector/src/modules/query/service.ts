@@ -1,3 +1,4 @@
+import { record } from "@elysiajs/opentelemetry";
 import { sql } from "drizzle-orm";
 
 import { sensorMetrics } from "@repo/tsdb";
@@ -34,20 +35,29 @@ export async function getTemperatureData({
   const kelvinAndResistanceSql = [...kelvinSql, ...resistanceSql];
 
   // Fetch temperature data from the database
-  const data = (await db.execute(sql`
+  const sqlQuery = record(
+    "prepare-sql-query",
+    () => sql`
 SELECT time_bucket(interval ${intervalSql}, ${sensorMetrics.time}) AS "time",
 ${sql.join(kelvinAndResistanceSql, sql`, `)}
 FROM ${sensorMetrics}
 WHERE ${sensorMetrics.time} >= ${timeStart.toISOString()} AND ${sensorMetrics.time} < ${timeEnd.toISOString()} AND ${sensorMetrics.instance} = ${instanceName}
 GROUP BY 1
 ORDER BY 1 ASC;
-`)) as Array<{
-    time: string;
-    [key: `kelvin_${number}`]: number;
-    [key: `resistance_${number}`]: number;
-  }>;
+`,
+  );
 
-  return {
+  const data = await record(
+    "sql-query",
+    async () =>
+      (await db.execute(sqlQuery)) as Array<{
+        time: string;
+        [key: `kelvin_${number}`]: number;
+        [key: `resistance_${number}`]: number;
+      }>,
+  );
+
+  const responseData = record("map-response-data", () => ({
     dataPoints: data.length,
     metrics: data.map((entry) => ({
       time: entry.time,
@@ -57,5 +67,7 @@ ORDER BY 1 ASC;
         resistance: entry[`resistance_${channel}`]!,
       })),
     })),
-  };
+  }));
+
+  return responseData;
 }

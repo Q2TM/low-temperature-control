@@ -15,9 +15,9 @@
     "codegen": "pnpm clean && pnpm codegen:no-clean"
   },
   "devDependencies": {
-    "@openapitools/openapi-generator-cli": "^2.23.1",
+    "@openapitools/openapi-generator-cli": "^2.25.0",
     "@repo/config": "workspace:*",
-    "eslint": "^9.37.0",
-    "rimraf": "^6.0.1"
+    "eslint": "^9.38.0",
+    "rimraf": "^6.1.0"
   }
 }

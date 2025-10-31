@@ -1,6 +1,3 @@
-from contextlib import asynccontextmanager
-from threading import Lock
-from fastapi import FastAPI
 from lakeshore import Model240, Model240InputParameter, Model240CurveHeader
 import os
 
@@ -8,7 +5,6 @@ from constants.env import USE_MOCK
 from mocks.model240 import MockModel240
 
 from typing import Self
-from collections.abc import AsyncGenerator
 from schemas.curve import CurveDataPoint, CurveHeader
 from schemas.curve import CurveDataPoints
 from exceptions.lakeshore import DeviceNotConnectedError, ChannelError
@@ -38,9 +34,12 @@ class LakeshoreService:
 
         if not hasattr(cls, '_instance'):
             cls._instance = super().__new__(cls)
+
+        cls._instance.connect(True)
+
         return cls._instance
 
-    def connect(self) -> None:
+    def connect(self, auto_connect=False) -> None:
         """
         Connect to the Model240 device.
 
@@ -50,10 +49,14 @@ class LakeshoreService:
         """
         try:
             if LakeshoreService.device is None:
+                if auto_connect:
+                    print("Auto-connecting to Lakeshore Device...")
+
                 if os.getenv(USE_MOCK):
-                    print("Using MockModel240")
+                    print("Using Mock Lakeshore Connection")
                     LakeshoreService.device = MockModel240()  # type: ignore
                 else:
+                    print("Initializing Lakeshore Connection")
                     LakeshoreService.device = Model240()
         except Exception as e:
             raise HTTPException(503, f"Connection failed: {e}")

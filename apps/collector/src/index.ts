@@ -1,4 +1,7 @@
 import { openapi } from "@elysiajs/openapi";
+import { opentelemetry } from "@elysiajs/opentelemetry";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-node";
 import { Elysia } from "elysia";
 import { stringify } from "yaml";
 
@@ -17,6 +20,12 @@ const app = new Elysia()
           version: "0.1.0",
         },
       },
+    }),
+  )
+  .use(
+    opentelemetry({
+      serviceName: "rice-shower",
+      spanProcessors: [new BatchSpanProcessor(new OTLPTraceExporter())],
     }),
   )
   .use(queryController)

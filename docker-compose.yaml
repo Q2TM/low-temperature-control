@@ -22,6 +22,28 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
 
+  tempo:
+    image: grafana/tempo:latest
+    container_name: rice-tempo
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./otel/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo_data:/var/tempo
+    ports:
+      - "3200:3200"
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: rice-otel
+    command: ["--config=/etc/otel/config.yaml"]
+    volumes:
+      - ./otel/otel-config.yaml:/etc/otel/config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+    depends_on:
+      - tempo
+
 volumes:
   tsdb-data:
     driver: local
@@ -29,6 +51,9 @@ volumes:
   grafana_data:
     driver: local
     name: rice-grafana-data
+  tempo_data:
+    driver: local
+    name: rice-tempo-data
 
 networks:
   default:

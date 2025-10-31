@@ -12,9 +12,9 @@
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
-    "drizzle-kit": "^0.31.4",
-    "drizzle-orm": "^0.44.5",
-    "eslint": "^9.37.0",
+    "drizzle-kit": "^0.31.6",
+    "drizzle-orm": "^0.44.7",
+    "eslint": "^9.38.0",
     "postgres": "^3.4.7"
   }
 }

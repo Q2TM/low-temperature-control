@@ -9,6 +9,10 @@ dependencies = [
     "fastapi[standard]>=0.116.1",
     "lakeshore>=1.8.1",
     "numpy>=2.3.3",
+    "opentelemetry-api>=1.38.0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.38.0",
+    "opentelemetry-instrumentation-fastapi>=0.59b0",
+    "opentelemetry-sdk>=1.38.0",
     "uvicorn>=0.35.0",
 ]
 
