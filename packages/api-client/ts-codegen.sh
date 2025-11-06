@@ -1,3 +1,5 @@
+# Heater API
+pnpm openapi-typescript ../../apps/heater-api/docs/openapi.json -o ./src/typescript/heater.d.ts
 # Lingangu
 pnpm openapi-typescript ../../apps/ls-api/docs/openapi.json -o ./src/typescript/lgg.d.ts
 # Rice Shower

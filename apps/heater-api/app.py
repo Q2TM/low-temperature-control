@@ -1,0 +1,39 @@
+from typing import cast
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from routers import temp
+from services.lifespan import lifespan
+
+from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+
+trace.set_tracer_provider(
+    TracerProvider(resource=Resource.create({SERVICE_NAME: "heater-api"}))
+)
+
+otlp_exporter = OTLPSpanExporter(
+    endpoint="http://localhost:4317",
+    insecure=True,
+)
+
+tracer_provider = cast(TracerProvider, trace.get_tracer_provider())
+tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+
+app = FastAPI(title="Heater API")
+print("Instrumenting app")
+FastAPIInstrumentor.instrument_app(app)
+
+app.include_router(temp.router, prefix="/api")
+app.router.lifespan_context = lifespan
+
+with open("./docs/index.html", "r") as f:
+    docs_html = f.read()
+
+
+@app.get("/scalar", response_class=HTMLResponse, include_in_schema=False)
+def get_scalar_ui():
+    return docs_html

@@ -8,6 +8,20 @@
       "when": 1757431556880,
       "tag": "0000_simple_loa",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1762451394909,
+      "tag": "0001_heater-metrics",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762451410887,
+      "tag": "0002_heater-hypertable",
+      "breakpoints": true
     }
   ]
 }

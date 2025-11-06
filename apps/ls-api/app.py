@@ -53,7 +53,7 @@ FastAPIInstrumentor.instrument_app(app)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Todo: restrict according to real use case
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

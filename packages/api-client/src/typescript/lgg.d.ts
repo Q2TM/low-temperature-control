@@ -4,948 +4,948 @@
  */
 
 export interface paths {
-    "/api/v1/device/connect": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Connect */
-        post: operations["connect"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  "/api/v1/device/connect": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/device/disconnect": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Disconnect */
-        post: operations["disconnect"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Connect */
+    post: operations["connect"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/device/disconnect": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/device/identification": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Identification */
-        get: operations["getIdentification"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Disconnect */
+    post: operations["disconnect"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/device/identification": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/device/status/{channel}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Status */
-        get: operations["getStatus"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Get Identification */
+    get: operations["getIdentification"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/device/status/{channel}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/device/module-name": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Modname */
-        get: operations["getModuleName"];
-        /** Set Modname */
-        put: operations["setModuleName"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Get Status */
+    get: operations["getStatus"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/device/module-name": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/device/brightness": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Brightness */
-        get: operations["getBrightness"];
-        /** Set Brightness */
-        put: operations["setBrightness"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Get Modname */
+    get: operations["getModuleName"];
+    /** Set Modname */
+    put: operations["setModuleName"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/device/brightness": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/device/factory-defaults": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /**
-         * Set Factory Defaults
-         * @description Reset to factory defaults
-         */
-        delete: operations["setFactoryDefaults"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Get Brightness */
+    get: operations["getBrightness"];
+    /** Set Brightness */
+    put: operations["setBrightness"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/device/factory-defaults": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/reading/input/{channel}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Input Parameter */
-        get: operations["getInputParameter"];
-        /** Set Input Config */
-        put: operations["setInputParameter"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Set Factory Defaults
+     * @description Reset to factory defaults
+     */
+    delete: operations["setFactoryDefaults"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reading/input/{channel}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/reading/monitor/{channel}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Monitor */
-        get: operations["getMonitor"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Get Input Parameter */
+    get: operations["getInputParameter"];
+    /** Set Input Config */
+    put: operations["setInputParameter"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reading/monitor/{channel}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/curve/{channel}/header": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Curve Header */
-        get: operations["getCurveHeader"];
-        /** Set Curve Header */
-        put: operations["setCurveHeader"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Get Monitor */
+    get: operations["getMonitor"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/curve/{channel}/header": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/curve/{channel}/data-point/{index}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Curve Data Point */
-        get: operations["getCurveDataPoint"];
-        /** Set Curve Data Point */
-        put: operations["setCurveDataPoint"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Get Curve Header */
+    get: operations["getCurveHeader"];
+    /** Set Curve Header */
+    put: operations["setCurveHeader"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/curve/{channel}/data-point/{index}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/curve/{channel}/data-points": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Curve Data Points */
-        get: operations["getAllCurveDataPoints"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Get Curve Data Point */
+    get: operations["getCurveDataPoint"];
+    /** Set Curve Data Point */
+    put: operations["setCurveDataPoint"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/curve/{channel}/data-points": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/curve/{channel}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Delete Curve */
-        delete: operations["deleteCurve"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Get Curve Data Points */
+    get: operations["getAllCurveDataPoints"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/curve/{channel}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Delete Curve */
+    delete: operations["deleteCurve"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        /**
-         * Brightness
-         * @description Schema for device display brightness configuration.
-         *
-         *     Used by GET/PUT /brightness endpoints for brightness control.
-         */
-        Brightness: {
-            /**
-             * Brightness
-             * @description Brightness level between 0 and 100
-             */
-            brightness: number;
-        };
-        /**
-         * Coefficients
-         * @description Enumerations that specify a positive or negative coefficient.
-         * @enum {integer}
-         */
-        Coefficients: 1 | 2;
-        /**
-         * CurveDataPoint
-         * @description Schema for a single curve data point containing temperature and sensor value pair.
-         *
-         *     Used by GET /curve/{channel}/data-point/{index} endpoint.
-         */
-        CurveDataPoint: {
-            /** Temperature */
-            temperature: number;
-            /** Sensor */
-            sensor: number;
-        };
-        /**
-         * CurveDataPoints
-         * @description Schema for multiple curve data points containing arrays of temperature and sensor values.
-         *
-         *     Used by GET /curve/{channel}/data-points endpoint to return all curve data.
-         */
-        CurveDataPoints: {
-            /** Channel */
-            channel: number;
-            /**
-             * Temperatures
-             * @description List of temperature values
-             */
-            temperatures: number[];
-            /**
-             * Sensors
-             * @description List of sensor values
-             */
-            sensors: number[];
-        };
-        /**
-         * CurveFormat
-         * @description Enumerations that specify temperature sensor curve format units.
-         * @enum {integer}
-         */
-        CurveFormat: 2 | 3 | 4;
-        /**
-         * CurveHeader
-         * @description Schema for curve header information containing metadata about a temperature sensor curve.
-         *
-         *     Used by GET /curve/{channel}/header endpoint to return curve configuration.
-         */
-        CurveHeader: {
-            /** Curvename */
-            curveName: string;
-            /** Serialnumber */
-            serialNumber: string;
-            curveDataFormat: components["schemas"]["CurveFormat"];
-            /** Temperaturelimit */
-            temperatureLimit: number;
-            coefficient: components["schemas"]["Coefficients"];
-        };
-        /** HTTPValidationError */
-        HTTPValidationError: {
-            /** Detail */
-            detail?: components["schemas"]["ValidationError"][];
-        };
-        /**
-         * IdentificationResp
-         * @description Schema for device identification information.
-         *
-         *     Used by GET /identification endpoint to return device details.
-         */
-        IdentificationResp: {
-            /** Manufacturer */
-            manufacturer: string;
-            /** Model */
-            model: string;
-            /** Serialnumber */
-            serialNumber: string;
-            /** Firmwareversion */
-            firmwareVersion: string;
-        };
-        /**
-         * InputParameter
-         * @description Schema for input channel configuration parameters.
-         *
-         *     Used by GET /input/{channel} endpoint to return channel settings.
-         *     All fields reflect the current configuration of the temperature input channel.
-         */
-        InputParameter: {
-            /** Sensorname */
-            sensorName?: string | null;
-            sensorType: components["schemas"]["SensorTypes"];
-            temperatureUnit: components["schemas"]["Units"];
-            /** Autorangeenable */
-            autoRangeEnable: boolean;
-            /** Currentreversalenable */
-            currentReversalEnable: boolean;
-            /** Inputenable */
-            inputEnable: boolean;
-            /** Inputrange */
-            inputRange: number;
-            /** Filter */
-            filter?: string | null;
-        };
-        /**
-         * MonitorResp
-         * @description Schema for temperature and sensor monitoring data.
-         *
-         *     Used by GET /monitor/{channel} endpoint to return current readings.
-         *     Currently returns kelvin temperature and raw sensor value.
-         */
-        MonitorResp: {
-            /** Kelvin */
-            kelvin: number;
-            /** Sensor */
-            sensor: number;
-        };
-        /**
-         * OperationResult
-         * @description Schema for API operation results indicating success/failure status.
-         *
-         *     Used by endpoints that perform operations (like DELETE /factory-defaults)
-         *     to return standardized success/error information.
-         */
-        OperationResult: {
-            /** Issuccess */
-            isSuccess: boolean;
-            /** Message */
-            message?: string | null;
-            /** Error */
-            error?: string | null;
-        };
-        /**
-         * SensorTypes
-         * @description Enumerations specify types of temperature sensors.
-         * @enum {integer}
-         */
-        SensorTypes: 1 | 2 | 3;
-        /**
-         * StatusResp
-         * @description Schema for device channel status information.
-         *
-         *     Used by GET /status/{channel} endpoint to return channel status flags.
-         */
-        StatusResp: {
-            /** Invalidreading */
-            invalidReading: boolean;
-            /** Tempunderrange */
-            tempUnderRange: boolean;
-            /** Tempoverrange */
-            tempOverRange: boolean;
-            /** Sensorunitsoverrange */
-            sensorUnitsOverRange: boolean;
-            /** Sensorunitsunderrange */
-            sensorUnitsUnderRange: boolean;
-        };
-        /**
-         * Units
-         * @description Enumerations that specify temperature units.
-         * @enum {integer}
-         */
-        Units: 1 | 2 | 3 | 4;
-        /** ValidationError */
-        ValidationError: {
-            /** Location */
-            loc: (string | number)[];
-            /** Message */
-            msg: string;
-            /** Error Type */
-            type: string;
-        };
+  schemas: {
+    /**
+     * Brightness
+     * @description Schema for device display brightness configuration.
+     *
+     *     Used by GET/PUT /brightness endpoints for brightness control.
+     */
+    Brightness: {
+      /**
+       * Brightness
+       * @description Brightness level between 0 and 100
+       */
+      brightness: number;
     };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    /**
+     * Coefficients
+     * @description Enumerations that specify a positive or negative coefficient.
+     * @enum {integer}
+     */
+    Coefficients: 1 | 2;
+    /**
+     * CurveDataPoint
+     * @description Schema for a single curve data point containing temperature and sensor value pair.
+     *
+     *     Used by GET /curve/{channel}/data-point/{index} endpoint.
+     */
+    CurveDataPoint: {
+      /** Temperature */
+      temperature: number;
+      /** Sensor */
+      sensor: number;
+    };
+    /**
+     * CurveDataPoints
+     * @description Schema for multiple curve data points containing arrays of temperature and sensor values.
+     *
+     *     Used by GET /curve/{channel}/data-points endpoint to return all curve data.
+     */
+    CurveDataPoints: {
+      /** Channel */
+      channel: number;
+      /**
+       * Temperatures
+       * @description List of temperature values
+       */
+      temperatures: number[];
+      /**
+       * Sensors
+       * @description List of sensor values
+       */
+      sensors: number[];
+    };
+    /**
+     * CurveFormat
+     * @description Enumerations that specify temperature sensor curve format units.
+     * @enum {integer}
+     */
+    CurveFormat: 2 | 3 | 4;
+    /**
+     * CurveHeader
+     * @description Schema for curve header information containing metadata about a temperature sensor curve.
+     *
+     *     Used by GET /curve/{channel}/header endpoint to return curve configuration.
+     */
+    CurveHeader: {
+      /** Curvename */
+      curveName: string;
+      /** Serialnumber */
+      serialNumber: string;
+      curveDataFormat: components["schemas"]["CurveFormat"];
+      /** Temperaturelimit */
+      temperatureLimit: number;
+      coefficient: components["schemas"]["Coefficients"];
+    };
+    /** HTTPValidationError */
+    HTTPValidationError: {
+      /** Detail */
+      detail?: components["schemas"]["ValidationError"][];
+    };
+    /**
+     * IdentificationResp
+     * @description Schema for device identification information.
+     *
+     *     Used by GET /identification endpoint to return device details.
+     */
+    IdentificationResp: {
+      /** Manufacturer */
+      manufacturer: string;
+      /** Model */
+      model: string;
+      /** Serialnumber */
+      serialNumber: string;
+      /** Firmwareversion */
+      firmwareVersion: string;
+    };
+    /**
+     * InputParameter
+     * @description Schema for input channel configuration parameters.
+     *
+     *     Used by GET /input/{channel} endpoint to return channel settings.
+     *     All fields reflect the current configuration of the temperature input channel.
+     */
+    InputParameter: {
+      /** Sensorname */
+      sensorName?: string | null;
+      sensorType: components["schemas"]["SensorTypes"];
+      temperatureUnit: components["schemas"]["Units"];
+      /** Autorangeenable */
+      autoRangeEnable: boolean;
+      /** Currentreversalenable */
+      currentReversalEnable: boolean;
+      /** Inputenable */
+      inputEnable: boolean;
+      /** Inputrange */
+      inputRange: number;
+      /** Filter */
+      filter?: string | null;
+    };
+    /**
+     * MonitorResp
+     * @description Schema for temperature and sensor monitoring data.
+     *
+     *     Used by GET /monitor/{channel} endpoint to return current readings.
+     *     Currently returns kelvin temperature and raw sensor value.
+     */
+    MonitorResp: {
+      /** Kelvin */
+      kelvin: number;
+      /** Sensor */
+      sensor: number;
+    };
+    /**
+     * OperationResult
+     * @description Schema for API operation results indicating success/failure status.
+     *
+     *     Used by endpoints that perform operations (like DELETE /factory-defaults)
+     *     to return standardized success/error information.
+     */
+    OperationResult: {
+      /** Issuccess */
+      isSuccess: boolean;
+      /** Message */
+      message?: string | null;
+      /** Error */
+      error?: string | null;
+    };
+    /**
+     * SensorTypes
+     * @description Enumerations specify types of temperature sensors.
+     * @enum {integer}
+     */
+    SensorTypes: 1 | 2 | 3;
+    /**
+     * StatusResp
+     * @description Schema for device channel status information.
+     *
+     *     Used by GET /status/{channel} endpoint to return channel status flags.
+     */
+    StatusResp: {
+      /** Invalidreading */
+      invalidReading: boolean;
+      /** Tempunderrange */
+      tempUnderRange: boolean;
+      /** Tempoverrange */
+      tempOverRange: boolean;
+      /** Sensorunitsoverrange */
+      sensorUnitsOverRange: boolean;
+      /** Sensorunitsunderrange */
+      sensorUnitsUnderRange: boolean;
+    };
+    /**
+     * Units
+     * @description Enumerations that specify temperature units.
+     * @enum {integer}
+     */
+    Units: 1 | 2 | 3 | 4;
+    /** ValidationError */
+    ValidationError: {
+      /** Location */
+      loc: (string | number)[];
+      /** Message */
+      msg: string;
+      /** Error Type */
+      type: string;
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    connect: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OperationResult"];
-                };
-            };
-        };
+  connect: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    disconnect: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OperationResult"];
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["OperationResult"];
         };
+      };
     };
-    getIdentification: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["IdentificationResp"];
-                };
-            };
-        };
+  };
+  disconnect: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    getStatus: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Channel must be between 1 and 8 */
-                channel: number;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StatusResp"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["OperationResult"];
         };
+      };
     };
-    getModuleName: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": string;
-                };
-            };
-        };
+  };
+  getIdentification: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    setModuleName: {
-        parameters: {
-            query: {
-                name: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OperationResult"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["IdentificationResp"];
         };
+      };
     };
-    getBrightness: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Brightness"];
-                };
-            };
-        };
+  };
+  getStatus: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Channel must be between 1 and 8 */
+        channel: number;
+      };
+      cookie?: never;
     };
-    setBrightness: {
-        parameters: {
-            query: {
-                brightness: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OperationResult"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["StatusResp"];
         };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
     };
-    setFactoryDefaults: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OperationResult"];
-                };
-            };
-        };
+  };
+  getModuleName: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    getInputParameter: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Channel must be between 1 and 8 */
-                channel: number;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InputParameter"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
+        content: {
+          "application/json": string;
         };
+      };
     };
-    setInputParameter: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Channel must be between 1 and 8 */
-                channel: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["InputParameter"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OperationResult"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
+  };
+  setModuleName: {
+    parameters: {
+      query: {
+        name: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    getMonitor: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Channel must be between 1 and 8 */
-                channel: number;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MonitorResp"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["OperationResult"];
         };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
     };
-    getCurveHeader: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Channel must be between 1 and 8 */
-                channel: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CurveHeader"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
+  };
+  getBrightness: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    setCurveHeader: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Channel must be between 1 and 8 */
-                channel: number;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CurveHeader"];
-            };
+        content: {
+          "application/json": components["schemas"]["Brightness"];
         };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OperationResult"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
+      };
     };
-    getCurveDataPoint: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Channel must be between 1 and 8 */
-                channel: number;
-                /** @description Index of the data point in the curve */
-                index: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CurveDataPoint"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
+  };
+  setBrightness: {
+    parameters: {
+      query: {
+        brightness: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    setCurveDataPoint: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Channel must be between 1 and 8 */
-                channel: number;
-                /** @description Index of the data point in the curve */
-                index: number;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CurveDataPoint"];
-            };
+        content: {
+          "application/json": components["schemas"]["OperationResult"];
         };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OperationResult"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
         };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
     };
-    getAllCurveDataPoints: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Channel must be between 1 and 8 */
-                channel: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CurveDataPoints"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
+  };
+  setFactoryDefaults: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    deleteCurve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Channel must be between 1 and 8 */
-                channel: number;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OperationResult"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["OperationResult"];
         };
+      };
     };
+  };
+  getInputParameter: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Channel must be between 1 and 8 */
+        channel: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["InputParameter"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  setInputParameter: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Channel must be between 1 and 8 */
+        channel: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["InputParameter"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["OperationResult"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  getMonitor: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Channel must be between 1 and 8 */
+        channel: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MonitorResp"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  getCurveHeader: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Channel must be between 1 and 8 */
+        channel: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CurveHeader"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  setCurveHeader: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Channel must be between 1 and 8 */
+        channel: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CurveHeader"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["OperationResult"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  getCurveDataPoint: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Channel must be between 1 and 8 */
+        channel: number;
+        /** @description Index of the data point in the curve */
+        index: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CurveDataPoint"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  setCurveDataPoint: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Channel must be between 1 and 8 */
+        channel: number;
+        /** @description Index of the data point in the curve */
+        index: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CurveDataPoint"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["OperationResult"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  getAllCurveDataPoints: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Channel must be between 1 and 8 */
+        channel: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CurveDataPoints"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  deleteCurve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Channel must be between 1 and 8 */
+        channel: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["OperationResult"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
 }

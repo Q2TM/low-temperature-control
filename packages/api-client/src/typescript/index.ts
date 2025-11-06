@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 
+export namespace Heater {
+  export type Paths = import("./heater").paths;
+  export type Components = import("./heater").components;
+  export type Operations = import("./heater").operations;
+}
+
 export namespace LGG {
   export type Paths = import("./lgg").paths;
   export type Components = import("./lgg").components;

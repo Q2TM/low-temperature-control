@@ -271,6 +271,10 @@ dependencies = [
     { name = "fastapi", extra = ["standard"] },
     { name = "fastapi-camelcase" },
     { name = "lgg-client" },
+    { name = "opentelemetry-api" },
+    { name = "opentelemetry-exporter-otlp-proto-grpc" },
+    { name = "opentelemetry-instrumentation-fastapi" },
+    { name = "opentelemetry-sdk" },
 ]
 
 [package.dev-dependencies]
@@ -284,6 +288,10 @@ requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.116.1" },
     { name = "fastapi-camelcase", specifier = ">=2.0.0" },
     { name = "lgg-client", editable = "packages/api-client/src/python/lgg" },
+    { name = "opentelemetry-api", specifier = ">=1.38.0" },
+    { name = "opentelemetry-exporter-otlp-proto-grpc", specifier = ">=1.38.0" },
+    { name = "opentelemetry-instrumentation-fastapi", specifier = ">=0.59b0" },
+    { name = "opentelemetry-sdk", specifier = ">=1.38.0" },
 ]
 
 [package.metadata.requires-dev]

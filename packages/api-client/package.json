@@ -9,7 +9,7 @@
     "check-types": "tsc --noEmit",
     "clean": "rm -rf src/python && rm -f src/typescript/*.d.ts",
     "codegen:ogc": "openapi-generator-cli generate",
-    "codegen:ts": "sh ./ts-codegen.sh",
+    "codegen:ts": "sh ./ts-codegen.sh && pnpm format",
     "codegen:no-clean": "pnpm codegen:ogc && pnpm codegen:ts",
     "codegen": "pnpm clean && pnpm codegen:no-clean"
   },

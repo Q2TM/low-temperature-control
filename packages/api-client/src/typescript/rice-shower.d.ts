@@ -4,142 +4,142 @@
  */
 
 export interface paths {
-    "/query/{instance_name}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Metrics
-         * @description Query metrics data from time series database
-         */
-        get: operations["getMetrics"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  "/query/{instance_name}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/scrape/metrics": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Scrape Metrics
-         * @description Retrieve metrics about the scraping process, including last error time, error counts per channel, and total successful scrapes
-         */
-        get: operations["getScrapeMetrics"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get Metrics
+     * @description Query metrics data from time series database
+     */
+    get: operations["getMetrics"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/scrape/metrics": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    /**
+     * Get Scrape Metrics
+     * @description Retrieve metrics about the scraping process, including last error time, error counts per channel, and total successful scrapes
+     */
+    get: operations["getScrapeMetrics"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: never;
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+  schemas: never;
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    getMetrics: {
-        parameters: {
-            query: {
-                channels: number[];
-                time_start: Record<string, never> | string | number;
-                time_end: Record<string, never> | string | number;
-                interval: number;
-            };
-            header?: never;
-            path: {
-                instance_name: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Response for status 200 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @description Total number of data points returned */
-                        dataPoints: number;
-                        metrics: {
-                            /**
-                             * Format: date-time
-                             * @description Timestamp of the metric
-                             */
-                            time: string;
-                            channels: {
-                                /** @description Channel number */
-                                channel: number;
-                                /** @description Temperature in Kelvin */
-                                kelvin: number;
-                                /** @description Resistance in Ohms */
-                                resistance: number;
-                            }[];
-                        }[];
-                    };
-                };
-            };
-            /** @description Response for status 500 */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        error: string;
-                    };
-                };
-            };
-        };
+  getMetrics: {
+    parameters: {
+      query: {
+        channels: number[];
+        time_start: Record<string, never> | string | number;
+        time_end: Record<string, never> | string | number;
+        interval: number;
+      };
+      header?: never;
+      path: {
+        instance_name: string;
+      };
+      cookie?: never;
     };
-    getScrapeMetrics: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Response for status 200 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        lastError: (string | null) | null;
-                        errorCount: {
-                            /** @description Channel number */
-                            channel: number;
-                            /** @description Number of errors for this channel */
-                            count: number;
-                        }[];
-                        /** @description Total number of successful scrapes */
-                        successCount: number;
-                    };
-                };
-            };
+        content: {
+          "application/json": {
+            /** @description Total number of data points returned */
+            dataPoints: number;
+            metrics: {
+              /**
+               * Format: date-time
+               * @description Timestamp of the metric
+               */
+              time: string;
+              channels: {
+                /** @description Channel number */
+                channel: number;
+                /** @description Temperature in Kelvin */
+                kelvin: number;
+                /** @description Resistance in Ohms */
+                resistance: number;
+              }[];
+            }[];
+          };
         };
+      };
+      /** @description Response for status 500 */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
     };
+  };
+  getScrapeMetrics: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            lastError: (string | null) | null;
+            errorCount: {
+              /** @description Channel number */
+              channel: number;
+              /** @description Number of errors for this channel */
+              count: number;
+            }[];
+            /** @description Total number of successful scrapes */
+            successCount: number;
+          };
+        };
+      };
+    };
+  };
 }

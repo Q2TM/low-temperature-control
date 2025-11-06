@@ -1,10 +1,10 @@
-import { sensorMetrics } from "@repo/tsdb";
+import { heaterMetrics, sensorMetrics } from "@repo/tsdb";
 
-import { client } from "@/core/api";
+import { heaterClient, lggClient } from "@/core/api";
 import { db } from "@/core/db";
 
-async function scrapeMetrics(instance: string, channel: number) {
-  const { data, error } = await client.GET(
+async function scrapeLGG(instance: string, channel: number) {
+  const { data, error } = await lggClient.GET(
     "/api/v1/reading/monitor/{channel}",
     {
       params: {
@@ -26,6 +26,24 @@ async function scrapeMetrics(instance: string, channel: number) {
   });
 }
 
+async function scrapeHeater(instance: string, pin: number) {
+  const { data, error } = await heaterClient.GET("/api/temp/status");
+
+  if (error) {
+    throw new Error(`Failed to fetch heater data: ${error}`);
+  }
+
+  const TEMP_MOCK_POWER = 25;
+
+  await db.insert(heaterMetrics).values({
+    time: new Date(),
+    instance,
+    pinNumber: pin,
+    dutyCycle: data.dutyCycle,
+    powerWatts: TEMP_MOCK_POWER * data.dutyCycle,
+  });
+}
+
 export class Scraper {
   static initialize() {
     setInterval(() => {
@@ -40,12 +58,18 @@ export class Scraper {
   private static async job() {
     for (let i = 1; i <= 4; i++) {
       try {
-        await scrapeMetrics("sensor-1", i);
+        await scrapeLGG("sensor-1", i);
         this.successCount++;
       } catch (_) {
         this.lastError = new Date();
         this.errorCount[i] = (this.errorCount[i] ?? 0) + 1;
       }
+    }
+
+    try {
+      await scrapeHeater("heater-1", 18);
+    } catch (_) {
+      this.lastError = new Date();
     }
   }
 }

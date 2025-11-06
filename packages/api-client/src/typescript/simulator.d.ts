@@ -4,147 +4,147 @@
  */
 
 export interface paths {
-    "/temperature/{channel}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Simulator Temperature
-         * @description Retrieve simulated temperature for a given channel
-         */
-        get: operations["getSimulatorTemperature"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  "/temperature/{channel}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/heater/{pin}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Set Heater Output
-         * @description Set the heater output level for a given GPIO pin
-         */
-        post: operations["setHeaterOutput"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get Simulator Temperature
+     * @description Retrieve simulated temperature for a given channel
+     */
+    get: operations["getSimulatorTemperature"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/heater/{pin}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    get?: never;
+    put?: never;
+    /**
+     * Set Heater Output
+     * @description Set the heater output level for a given GPIO pin
+     */
+    post: operations["setHeaterOutput"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: never;
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+  schemas: never;
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    getSimulatorTemperature: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                channel: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Response for status 200 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @description Simulated temperature in Kelvin */
-                        temperature: number;
-                        /** @description Simulated temperature in Celsius (For testing purposes) */
-                        _celcius: number;
-                    };
-                };
-            };
-            /** @description Response for status 404 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @example Channel not found */
-                        error: string;
-                    };
-                };
-            };
-        };
+  getSimulatorTemperature: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        channel: number;
+      };
+      cookie?: never;
     };
-    setHeaterOutput: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                pin: number;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": {
-                    /** @description Heater output level (0.0 to 1.0) */
-                    value: number;
-                };
-                "application/x-www-form-urlencoded": {
-                    /** @description Heater output level (0.0 to 1.0) */
-                    value: number;
-                };
-                "multipart/form-data": {
-                    /** @description Heater output level (0.0 to 1.0) */
-                    value: number;
-                };
-            };
+        content: {
+          "application/json": {
+            /** @description Simulated temperature in Kelvin */
+            temperature: number;
+            /** @description Simulated temperature in Celsius (For testing purposes) */
+            _celcius: number;
+          };
         };
-        responses: {
-            /** @description Response for status 200 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @default true */
-                        success: boolean;
-                    };
-                };
-            };
-            /** @description Response for status 404 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @example Pin not found */
-                        error: string;
-                    };
-                };
-            };
+      };
+      /** @description Response for status 404 */
+      404: {
+        headers: {
+          [name: string]: unknown;
         };
+        content: {
+          "application/json": {
+            /** @example Channel not found */
+            error: string;
+          };
+        };
+      };
     };
+  };
+  setHeaterOutput: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pin: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": {
+          /** @description Heater output level (0.0 to 1.0) */
+          value: number;
+        };
+        "application/x-www-form-urlencoded": {
+          /** @description Heater output level (0.0 to 1.0) */
+          value: number;
+        };
+        "multipart/form-data": {
+          /** @description Heater output level (0.0 to 1.0) */
+          value: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** @default true */
+            success: boolean;
+          };
+        };
+      };
+      /** @description Response for status 404 */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** @example Pin not found */
+            error: string;
+          };
+        };
+      };
+    };
+  };
 }

@@ -37,3 +37,5 @@ def development_mode(app: FastAPI):
     print("📝 OpenAPI spec has been saved to docs/openapi.json and docs/openapi.yaml ✅")
     print(
         "📖 Swagger Page is available at \x1b[1mhttp://localhost:8001/docs\x1b[0m")
+    print(
+        "📖 Scalar Page is available at \x1b[1mhttp://localhost:8001/scalar\x1b[0m")
