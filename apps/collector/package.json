@@ -16,7 +16,6 @@
     "@elysiajs/cors": "^1.4.0",
     "@elysiajs/openapi": "^1.4.11",
     "@elysiajs/opentelemetry": "^1.4.6",
-    "@leomotors/config": "^1.0.1",
     "@opentelemetry/exporter-trace-otlp-proto": "^0.207.0",
     "@opentelemetry/sdk-trace-node": "^2.2.0",
     "@repo/api-client": "workspace:*",

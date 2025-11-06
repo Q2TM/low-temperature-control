@@ -24,6 +24,18 @@ const app = new Elysia()
             "API Web Server that scrape Lakeshore Metrics and save it to time-series database, then allow user to query the data.",
           version: "0.1.0",
         },
+        tags: [
+          {
+            name: "Query",
+            description:
+              "Endpoints for querying collected data from time-series database",
+          },
+          {
+            name: "Scrape",
+            description:
+              "Endpoints for getting metrics/status from the scraper",
+          },
+        ],
       },
     }),
   )
