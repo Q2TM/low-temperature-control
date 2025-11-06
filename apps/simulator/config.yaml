@@ -1,0 +1,8 @@
+environments:
+  - name: main
+    lakeshoreChannel: 1
+    coolerPower: 2 # Watts
+    gpioPin: 18
+    heatDissipation: 0.1 # Watts per Celcius Diff
+    heaterPower: 2 # Watts
+    externalTemperature: 25
