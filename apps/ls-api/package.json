@@ -3,9 +3,6 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "cross-env USE_MOCK=1 uv run main.py"
-  },
-  "devDependencies": {
-    "cross-env": "^10.1.0"
+    "dev": "USE_MOCK=1 uv run main.py"
   }
 }

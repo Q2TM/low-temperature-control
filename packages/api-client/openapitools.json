@@ -15,6 +15,18 @@
         },
         "enablePostProcessFile": true,
         "removeOperationIdPrefix": true
+      },
+      "simulator-python": {
+        "generatorName": "python",
+        "output": "src/python/simulator",
+        "inputSpec": "../../apps/simulator/docs/openapi.json",
+        "additionalProperties": {
+          "packageName": "simulator_client",
+          "projectName": "simulator-client",
+          "packageVersion": "0.0.0"
+        },
+        "enablePostProcessFile": true,
+        "removeOperationIdPrefix": true
       }
     }
   }

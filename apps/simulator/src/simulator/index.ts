@@ -39,7 +39,7 @@ export const simulatorController = new Elysia({
         }),
         404: t.Object({
           error: t.String({
-            examples: ["Channel not found"],
+            example: "Channel not found",
           }),
         }),
       },
@@ -73,11 +73,13 @@ export const simulatorController = new Elysia({
       }),
       response: {
         200: t.Object({
-          success: t.Literal(true),
+          success: t.Boolean({
+            default: true,
+          }),
         }),
         404: t.Object({
           error: t.String({
-            examples: ["Pin not found"],
+            example: "Pin not found",
           }),
         }),
       },

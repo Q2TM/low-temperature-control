@@ -7,11 +7,9 @@
     "lint": "eslint .",
     "format": "eslint . --fix",
     "check-types": "tsc --noEmit",
-    "clean": "rimraf src/python && rm src/typescript/*.d.ts",
+    "clean": "rm -rf src/python && rm -f src/typescript/*.d.ts",
     "codegen:ogc": "openapi-generator-cli generate",
-    "codegen:ts:lgg": "pnpm openapi-typescript ../../apps/ls-api/docs/openapi.json -o ./src/typescript/lgg.d.ts",
-    "codegen:ts:rice-shower": "pnpm openapi-typescript ../../apps/collector/docs/openapi.json -o ./src/typescript/rice-shower.d.ts",
-    "codegen:ts": "pnpm codegen:ts:lgg && pnpm codegen:ts:rice-shower && pnpm format",
+    "codegen:ts": "sh ./ts-codegen.sh",
     "codegen:no-clean": "pnpm codegen:ogc && pnpm codegen:ts",
     "codegen": "pnpm clean && pnpm codegen:no-clean"
   },
@@ -19,7 +17,6 @@
     "@openapitools/openapi-generator-cli": "^2.25.0",
     "@repo/config": "workspace:*",
     "eslint": "^9.38.0",
-    "openapi-typescript": "^7.10.1",
-    "rimraf": "^6.1.0"
+    "openapi-typescript": "^7.10.1"
   }
 }

@@ -64,9 +64,7 @@
                   "type": "object",
                   "properties": {
                     "error": {
-                      "examples": [
-                        "Channel not found"
-                      ],
+                      "example": "Channel not found",
                       "type": "string"
                     }
                   },
@@ -161,7 +159,7 @@
                   "type": "object",
                   "properties": {
                     "success": {
-                      "const": true,
+                      "default": true,
                       "type": "boolean"
                     }
                   },
@@ -180,9 +178,7 @@
                   "type": "object",
                   "properties": {
                     "error": {
-                      "examples": [
-                        "Pin not found"
-                      ],
+                      "example": "Pin not found",
                       "type": "string"
                     }
                   },
