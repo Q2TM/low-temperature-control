@@ -1,3 +1,6 @@
 {
-  "python.analysis.extraPaths": ["packages/api-client/src/lgg/python"]
+  "python.analysis.extraPaths": [
+    "packages/api-client/src/python/lgg",
+    "packages/api-client/src/python/simulator"
+  ]
 }

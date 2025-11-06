@@ -5,6 +5,8 @@ import numpy as np
 from lakeshore.model_240_enums import Model240Enums
 from dataclasses import dataclass
 
+from services.simulator_client import simulator_api
+
 
 @dataclass
 class MockCurveHeader:
@@ -33,10 +35,9 @@ class MockCurve:
                 curve_data_format=Model240Enums.CurveFormat.VOLTS_PER_KELVIN,
                 temperature_limit=400.0,
                 coefficient=Model240Enums.Coefficients.NEGATIVE
-            ) 
-            self.data[i], self.poly[i] = self.generate_random_curve(10, 100) # (sensor unit, temperature kelvin)
-
-        
+            )
+            self.data[i], self.poly[i] = self.generate_random_curve(
+                10, 100)  # (sensor unit, temperature kelvin)
 
     def generate_random_curve(self, temp_start: int, temp_end: int) -> tuple[list[tuple[float, float]], np.poly1d]:
         """
@@ -54,7 +55,7 @@ class MockCurve:
         for i in range(1, 201):
             # (sensor unit, temperature kelvin)
             # sensor and temp have inverse relation
-            sensor_unit = i / 100 - random.uniform(0, 0.005)      
+            sensor_unit = i / 100 - random.uniform(0, 0.005)
             temperature_kelvin = (
                 201 - i)/200 * (temp_end - temp_start) + temp_start + random.uniform(-1, 1) * 5
 
@@ -63,11 +64,12 @@ class MockCurve:
             data_points.append((sensor_unit, temperature_kelvin))
 
         # Polynomial fitting (e.g., 3rd-degree polynomial fit)
-        coefficients = np.polyfit(resistances, temperatures, 3)        
+        coefficients = np.polyfit(resistances, temperatures, 3)
 
-        return data_points, np.poly1d(coefficients) # Create a polynomial object
-    
-    
+        # Create a polynomial object
+        return data_points, np.poly1d(coefficients)
+
+# TODO Handle mock curve and mock environment properly
 
 
 class MockRoomTempSensor:
@@ -76,6 +78,7 @@ class MockRoomTempSensor:
     updates value every 1 second in a background thread.
     Uses a lock to prevent race conditions.
     """
+
     def __init__(self, curve: MockCurve) -> None:
         self.curve = curve
         self._resistance = 0.0
@@ -83,7 +86,6 @@ class MockRoomTempSensor:
         self._running = True
         self._thread = threading.Thread(target=self._update_loop, daemon=True)
         self._thread.start()
-        
 
     def _update_loop(self):
         while self._running:
@@ -92,8 +94,13 @@ class MockRoomTempSensor:
                 self._resistance = value
             time.sleep(1)
 
-    def get_reading(self, channel:int) -> tuple[float, float, float, float]:
-        kelvin = float(self.curve.poly[channel](self._resistance))
+    def get_reading(self, channel: int) -> tuple[float, float, float, float]:
+        # kelvin = float(self.curve.poly[channel](self._resistance))
+        try:
+            kelvin = simulator_api.get_simulator_temperature(
+                channel).temperature
+        except:
+            kelvin = 0.0
         celcius = kelvin - 273.15
         fahrenheit = celcius * 9/5 + 32
         return celcius, fahrenheit, kelvin, self._resistance
@@ -101,14 +108,13 @@ class MockRoomTempSensor:
     def stop(self):
         self._running = False
         self._thread.join()
-        
-    
+
 
 if __name__ == "__main__":
     from pprint import pprint
     c = MockCurve()
     sensor = MockRoomTempSensor(c)
-    
+
     for i in range(100):
         pprint(sensor.get_reading(1))
         time.sleep(0.2)

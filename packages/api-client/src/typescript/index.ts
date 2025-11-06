@@ -11,3 +11,9 @@ export namespace RiceShower {
   export type Components = import("./rice-shower").components;
   export type Operations = import("./rice-shower").operations;
 }
+
+export namespace Simulator {
+  export type Paths = import("./simulator").paths;
+  export type Components = import("./simulator").components;
+  export type Operations = import("./simulator").operations;
+}

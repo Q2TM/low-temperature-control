@@ -31,6 +31,20 @@ app = FastAPI(
     description="API for Lakeshore Model240 temperature controller",
     version="0.1.0",
     lifespan=lifespan,
+    openapi_tags=[
+        {
+            "name": "Device",
+            "description": "Operations related to the device configuration and information.",
+        },
+        {
+            "name": "Reading",
+            "description": "Operations related to temperature readings and input parameters.",
+        },
+        {
+            "name": "Curve",
+            "description": "Operations related to calibration curves management.",
+        },
+    ]
 )
 
 print("Instrumenting app")
@@ -56,33 +70,10 @@ async def lakeshore_exception_handler(request: Request, exc: LakeshoreError) -> 
 
 app.include_router(router_v1)
 
+with open("./docs/index.html", "r") as f:
+    docs_html = f.read()
+
 
 @app.get("/scalar", response_class=HTMLResponse, include_in_schema=False)
 def get_scalar_ui():
-    return r"""
-<!doctype html>
-<html>
-  <head>
-    <title>Lingangu API Reference</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-  </head>
-
-  <body>
-    <div id="app"></div>
-
-    <!-- Load the Script -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"
-      crossorigin
-    ></script>
-
-    <!-- Initialize the Scalar API Reference -->
-    <script>
-      Scalar.createApiReference("#app", {
-        url: "./openapi.json",
-      });
-    </script>
-  </body>
-</html>
-"""
+    return docs_html

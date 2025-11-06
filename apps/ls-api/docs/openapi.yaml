@@ -7,7 +7,7 @@ paths:
   /api/v1/device/connect:
     post:
       tags:
-      - device
+      - Device
       summary: Connect
       operationId: connect
       responses:
@@ -20,7 +20,7 @@ paths:
   /api/v1/device/disconnect:
     post:
       tags:
-      - device
+      - Device
       summary: Disconnect
       operationId: disconnect
       responses:
@@ -33,7 +33,7 @@ paths:
   /api/v1/device/identification:
     get:
       tags:
-      - device
+      - Device
       summary: Get Identification
       operationId: getIdentification
       responses:
@@ -46,7 +46,7 @@ paths:
   /api/v1/device/status/{channel}:
     get:
       tags:
-      - device
+      - Device
       summary: Get Status
       operationId: getStatus
       parameters:
@@ -76,7 +76,7 @@ paths:
   /api/v1/device/module-name:
     get:
       tags:
-      - device
+      - Device
       summary: Get Modname
       operationId: getModuleName
       responses:
@@ -89,7 +89,7 @@ paths:
                 title: Response Getmodulename
     put:
       tags:
-      - device
+      - Device
       summary: Set Modname
       operationId: setModuleName
       parameters:
@@ -115,7 +115,7 @@ paths:
   /api/v1/device/brightness:
     get:
       tags:
-      - device
+      - Device
       summary: Get Brightness
       operationId: getBrightness
       responses:
@@ -127,7 +127,7 @@ paths:
                 $ref: '#/components/schemas/Brightness'
     put:
       tags:
-      - device
+      - Device
       summary: Set Brightness
       operationId: setBrightness
       parameters:
@@ -153,7 +153,7 @@ paths:
   /api/v1/device/factory-defaults:
     delete:
       tags:
-      - device
+      - Device
       summary: Set Factory Defaults
       description: Reset to factory defaults
       operationId: setFactoryDefaults
@@ -167,7 +167,7 @@ paths:
   /api/v1/reading/input/{channel}:
     get:
       tags:
-      - reading
+      - Reading
       summary: Get Input Parameter
       operationId: getInputParameter
       parameters:
@@ -196,7 +196,7 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
     put:
       tags:
-      - reading
+      - Reading
       summary: Set Input Config
       operationId: setInputParameter
       parameters:
@@ -232,7 +232,7 @@ paths:
   /api/v1/reading/monitor/{channel}:
     get:
       tags:
-      - reading
+      - Reading
       summary: Get Monitor
       operationId: getMonitor
       parameters:
@@ -262,7 +262,7 @@ paths:
   /api/v1/curve/{channel}/header:
     get:
       tags:
-      - curve
+      - Curve
       summary: Get Curve Header
       operationId: getCurveHeader
       parameters:
@@ -291,7 +291,7 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
     put:
       tags:
-      - curve
+      - Curve
       summary: Set Curve Header
       operationId: setCurveHeader
       parameters:
@@ -327,7 +327,7 @@ paths:
   /api/v1/curve/{channel}/data-point/{index}:
     get:
       tags:
-      - curve
+      - Curve
       summary: Get Curve Data Point
       operationId: getCurveDataPoint
       parameters:
@@ -366,7 +366,7 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
     put:
       tags:
-      - curve
+      - Curve
       summary: Set Curve Data Point
       operationId: setCurveDataPoint
       parameters:
@@ -412,7 +412,7 @@ paths:
   /api/v1/curve/{channel}/data-points:
     get:
       tags:
-      - curve
+      - Curve
       summary: Get Curve Data Points
       operationId: getAllCurveDataPoints
       parameters:
@@ -442,7 +442,7 @@ paths:
   /api/v1/curve/{channel}:
     delete:
       tags:
-      - curve
+      - Curve
       summary: Delete Curve
       operationId: deleteCurve
       parameters:

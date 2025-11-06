@@ -6,8 +6,8 @@ from .v1.reading import router as reading
 router_v1 = APIRouter(prefix="/api/v1")
 
 # Include all route modules
-router_v1.include_router(device, tags=["device"])
-router_v1.include_router(reading, tags=["reading"])
-router_v1.include_router(curve, tags=["curve"])
+router_v1.include_router(device, tags=["Device"])
+router_v1.include_router(reading, tags=["Reading"])
+router_v1.include_router(curve, tags=["Curve"])
 
 __all__ = ["router_v1"]

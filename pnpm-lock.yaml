@@ -77,7 +77,11 @@ importers:
 
   apps/heater-api: {}
 
-  apps/ls-api: {}
+  apps/ls-api:
+    devDependencies:
+      dotenv-cli:
+        specifier: ^11.0.0
+        version: 11.0.0
 
   apps/simulator:
     devDependencies:

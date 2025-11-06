@@ -3,6 +3,9 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "USE_MOCK=1 uv run main.py"
+    "dev": "dotenv -v USE_MOCK=1 -- uv run main.py"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^11.0.0"
   }
 }

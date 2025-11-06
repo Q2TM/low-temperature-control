@@ -9,7 +9,7 @@
     "/api/v1/device/connect": {
       "post": {
         "tags": [
-          "device"
+          "Device"
         ],
         "summary": "Connect",
         "operationId": "connect",
@@ -30,7 +30,7 @@
     "/api/v1/device/disconnect": {
       "post": {
         "tags": [
-          "device"
+          "Device"
         ],
         "summary": "Disconnect",
         "operationId": "disconnect",
@@ -51,7 +51,7 @@
     "/api/v1/device/identification": {
       "get": {
         "tags": [
-          "device"
+          "Device"
         ],
         "summary": "Get Identification",
         "operationId": "getIdentification",
@@ -72,7 +72,7 @@
     "/api/v1/device/status/{channel}": {
       "get": {
         "tags": [
-          "device"
+          "Device"
         ],
         "summary": "Get Status",
         "operationId": "getStatus",
@@ -118,7 +118,7 @@
     "/api/v1/device/module-name": {
       "get": {
         "tags": [
-          "device"
+          "Device"
         ],
         "summary": "Get Modname",
         "operationId": "getModuleName",
@@ -138,7 +138,7 @@
       },
       "put": {
         "tags": [
-          "device"
+          "Device"
         ],
         "summary": "Set Modname",
         "operationId": "setModuleName",
@@ -180,7 +180,7 @@
     "/api/v1/device/brightness": {
       "get": {
         "tags": [
-          "device"
+          "Device"
         ],
         "summary": "Get Brightness",
         "operationId": "getBrightness",
@@ -199,7 +199,7 @@
       },
       "put": {
         "tags": [
-          "device"
+          "Device"
         ],
         "summary": "Set Brightness",
         "operationId": "setBrightness",
@@ -241,7 +241,7 @@
     "/api/v1/device/factory-defaults": {
       "delete": {
         "tags": [
-          "device"
+          "Device"
         ],
         "summary": "Set Factory Defaults",
         "description": "Reset to factory defaults",
@@ -263,7 +263,7 @@
     "/api/v1/reading/input/{channel}": {
       "get": {
         "tags": [
-          "reading"
+          "Reading"
         ],
         "summary": "Get Input Parameter",
         "operationId": "getInputParameter",
@@ -307,7 +307,7 @@
       },
       "put": {
         "tags": [
-          "reading"
+          "Reading"
         ],
         "summary": "Set Input Config",
         "operationId": "setInputParameter",
@@ -363,7 +363,7 @@
     "/api/v1/reading/monitor/{channel}": {
       "get": {
         "tags": [
-          "reading"
+          "Reading"
         ],
         "summary": "Get Monitor",
         "operationId": "getMonitor",
@@ -409,7 +409,7 @@
     "/api/v1/curve/{channel}/header": {
       "get": {
         "tags": [
-          "curve"
+          "Curve"
         ],
         "summary": "Get Curve Header",
         "operationId": "getCurveHeader",
@@ -453,7 +453,7 @@
       },
       "put": {
         "tags": [
-          "curve"
+          "Curve"
         ],
         "summary": "Set Curve Header",
         "operationId": "setCurveHeader",
@@ -509,7 +509,7 @@
     "/api/v1/curve/{channel}/data-point/{index}": {
       "get": {
         "tags": [
-          "curve"
+          "Curve"
         ],
         "summary": "Get Curve Data Point",
         "operationId": "getCurveDataPoint",
@@ -566,7 +566,7 @@
       },
       "put": {
         "tags": [
-          "curve"
+          "Curve"
         ],
         "summary": "Set Curve Data Point",
         "operationId": "setCurveDataPoint",
@@ -635,7 +635,7 @@
     "/api/v1/curve/{channel}/data-points": {
       "get": {
         "tags": [
-          "curve"
+          "Curve"
         ],
         "summary": "Get Curve Data Points",
         "operationId": "getAllCurveDataPoints",
@@ -681,7 +681,7 @@
     "/api/v1/curve/{channel}": {
       "delete": {
         "tags": [
-          "curve"
+          "Curve"
         ],
         "summary": "Delete Curve",
         "operationId": "deleteCurve",
