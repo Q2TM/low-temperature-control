@@ -50,7 +50,9 @@ class RPiGPIORepository(GPIORepository):
         with self._lock:
             self.duty_cycle = dc
             if self.pwm is not None:
-                self.pwm.ChangeDutyCycle(self.duty_cycle)
+                # Due to Hardware using pull-up configuration
+                dc = 100 - dc
+                self.pwm.ChangeDutyCycle(dc)
 
     def get_duty_cycle(self) -> float:
         with self._lock:
