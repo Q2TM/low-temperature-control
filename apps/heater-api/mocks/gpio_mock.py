@@ -2,97 +2,30 @@ from repositories.gpio import GPIORepository
 
 
 class GPIORepositoryMock(GPIORepository):
-    """Mock implementation of GPIORepository for testing and development
+    """Mock version for testing, no hardware interaction."""
 
-    This mock maintains an in-memory state of GPIO pins and their configurations.
-    """
+    def __init__(self, gpio=None, pin: int = 0, frequency: float = 0.2, duty_cycle: float = 0.0) -> None:
+        self.gpio = gpio
+        self.pin = pin
+        self.frequency = frequency
+        self.duty_cycle = duty_cycle
+        self.pwm = None
 
-    def __init__(self):
-        """Initialize the mock with empty pin states"""
-        self._pin_configs = {
-            # Store pin configurations: {pin: {'frequency': float, 'duty_cycle': float}}
-        }
+    def setup_pwm(self) -> None:
+        self.pwm = True
+        print(f"[Mock] Setup PWM at pin={self.pin}, freq={self.frequency}Hz")
 
-    def setup_pwm(self, pin: int, frequency: float) -> None:
-        """Setup a GPIO pin for PWM output
+    def set_duty_cycle(self, duty_cycle: float) -> None:
+        if self.pwm is None:
+            raise RuntimeError("PWM not set up. Call setup_pwm() first.")
+        self.duty_cycle = max(0.0, min(100.0, duty_cycle))
+        print(f"[Mock] Set duty cycle to {self.duty_cycle}% on pin={self.pin}")
 
-        Args:
-            pin (int): GPIO pin number
-            frequency (float): PWM frequency in Hz
-        """
-        if pin < 0:
-            raise ValueError("Pin number must be non-negative")
-        if frequency <= 0:
-            raise ValueError("Frequency must be positive")
+    def get_duty_cycle(self) -> float:
+        if self.pwm is None:
+            raise RuntimeError("PWM not set up. Call setup_pwm() first.")
+        return self.duty_cycle
 
-        self._pin_configs[pin] = {
-            'frequency': frequency,
-            'duty_cycle': 0.0  # Initialize with 0% duty cycle
-        }
-        print(f"Mock: Setup PWM on pin {pin} with frequency {frequency} Hz")
-
-    def cleanup_channel(self, pin: int) -> None:
-        """Cleanup a GPIO pin
-
-        Args:
-            pin (int): GPIO pin number
-        """
-        if pin not in self._pin_configs:
-            print(f"Mock: Pin {pin} not configured; nothing to cleanup")
-            return
-
-        del self._pin_configs[pin]
-        print(f"Mock: Cleaned up pin {pin}")
-
-    def cleanup_all(self) -> None:
-        """Cleanup all GPIO pins"""
-        pin_count = len(self._pin_configs)
-        self._pin_configs.clear()
-        print(f"Mock: Cleaned up all pins ({pin_count} pins cleared)")
-
-    def set_duty_cycle(self, pin: int, duty_cycle: float) -> None:
-        """Set the duty cycle for a PWM pin
-
-        Args:
-            pin (int): GPIO pin number
-            duty_cycle (float): Duty cycle percentage (0.0 to 100.0)
-        """
-        if pin not in self._pin_configs:
-            raise ValueError(f"Pin {pin} has not been setup for PWM")
-        if not 0.0 <= duty_cycle <= 100.0:
-            raise ValueError("Duty cycle must be between 0.0 and 100.0")
-
-        self._pin_configs[pin]['duty_cycle'] = duty_cycle
-        print(f"Mock: Set duty cycle on pin {pin} to {duty_cycle}%")
-
-    def get_duty_cycle(self, pin: int) -> float:
-        """Get the current duty cycle for a PWM pin
-
-        Args:
-            pin (int): GPIO pin number
-        Returns:
-            float: Current duty cycle percentage
-        """
-        if pin not in self._pin_configs:
-            raise ValueError(f"Pin {pin} has not been setup for PWM")
-
-        duty_cycle = self._pin_configs[pin]['duty_cycle']
-        print(f"Mock: Retrieved duty cycle for pin {pin}: {duty_cycle}%")
-        return duty_cycle
-
-    def get_pin_config(self, pin: int) -> dict:
-        """Helper method to get the full configuration of a pin (for testing)
-
-        Args:
-            pin (int): GPIO pin number
-        Returns:
-            dict: Pin configuration containing frequency and duty_cycle
-        """
-        if pin not in self._pin_configs:
-            raise ValueError(f"Pin {pin} has not been setup for PWM")
-        return self._pin_configs[pin].copy()
-
-    def reset_all_pins(self) -> None:
-        """Helper method to reset all pin configurations (for testing)"""
-        self._pin_configs.clear()
-        print("Mock: All pins reset")
+    def cleanup(self) -> None:
+        print(f"[Mock] Cleanup pin {self.pin}")
+        self.pwm = None
