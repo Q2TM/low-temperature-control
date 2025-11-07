@@ -7,8 +7,9 @@ Capstone Project for Computer Engineering, Chulalongkorn University
 ### Apps
 
 - `collector` (Rice Shower): Data Collector for Lingangu API and Temperature API. It also serves as a TSDB query server for the dashboard app. (Bun + Elysia)
+- `heater-api` (Heater API): API Server that controls the Heater via GPIO with PID Logic (Python FastAPI app with RPi.GPIO)
 - `ls-api` (Lingangu API): Lakeshore Management API (Python FastAPI app connecting USB Serial to Lakeshore Devices)
-- `temp-api` (Temperature API): TODO (FastAPI)
+- `simulator` (Environment Simulator): Simulator for Foam Box, works as stub/mocks for lgg-api and heater-api (Bun + Elysia)
 - `web` (Almond Eye): Dashboard Application (Next.js)
 
 ### Packages (Internal)
@@ -29,7 +30,7 @@ This repository has two languages and three runtimes: TypeScript (Node.js and Bu
 
 ### Node.js and pnpm (Package Manager)
 
-Use node.js with the version specified in `.nvmrc` file (currently `lts/jod` or 22 LTS). Running `node -v` should output v22.x.x.
+Use node.js with the version specified in `.nvmrc` file (currently `lts/krypton` or 24 LTS). Running `node -v` should output v24.x.x.
 
 Recommend using `nvm` (Node Version Manager) to manage Node.js versions. Install `nvm` from [nvm-sh/nvm](https://github.com/nvm-sh/nvm).
 
@@ -70,18 +71,29 @@ Then run `pnpm db:migrate` to setup the database schema.
 
 ![](./docs/arch-v1.webp)
 
+### Running Locally
+
 To run everything locally, follow these steps:
 
 1. Make sure timescaledb is running via Docker and .env are all setup (Put .env besides .env.example files)
-2. Starts Lingangu API (Lakeshore Management API) then call `/api/v1/connect` to connect to Lakeshore devices via USB Serial. (We will make this automatically in the future)
-3. Starts Temperature API
-4. Starts Rice Shower (`apps/collector`)
-5. Starts Almond Eye (`apps/web`)
+2. If not using real device, start the simulator (`apps/simulator`)
+3. Starts Lingangu API (Lakeshore Management API)
+4. Starts Temperature API
+5. Starts Rice Shower (`apps/collector`)
+6. Starts Almond Eye (`apps/web`)
+
+Or run everything in development mode with `pnpm run dev`
+
+### Running Production
+
+todo
 
 ### URLs
 
-- Lingangu API Swagger will be available at `http://localhost:8000/docs`
-- Rice Shower Swagger will be available at `http://localhost:8100/openapi`
+- Lingangu API Swagger will be available at `http://localhost:8000/docs` or alternate scalar UI at `http://localhost:8000/scalar`
+- Heater API Swagger will be available at `http://localhost:8001/docs` or alternate scalar UI at `http://localhost:8001/scalar`
+- Rice Shower API Docs will be available at `http://localhost:8100/openapi`
+- Simulator API Docs will be available at `http://localhost:8101/openapi`
 - Almond Eye Dashboard will be available at `http://localhost:3100`
 
 ## Contribution
