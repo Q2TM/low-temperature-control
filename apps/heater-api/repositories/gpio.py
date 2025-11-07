@@ -1,52 +1,71 @@
 from abc import ABC, abstractmethod
+import threading
+from typing import Any, Optional
 
 
 class GPIORepository(ABC):
-    """Repository for controlling a GPIO port as PWM output
-    """
-
     @abstractmethod
-    def setup_pwm(self, pin: int, frequency: float) -> None:
-        """Setup a GPIO pin for PWM output
-
-        Args:
-            pin (int): GPIO pin number
-            frequency (float): PWM frequency in Hz
-        """
-        pass
-
+    def setup_pwm(self) -> None: ...
     @abstractmethod
-    def cleanup_channel(self, pin: int) -> None:
-        """Cleanup a GPIO pin
-
-        Args:
-            pin (int): GPIO pin number
-        """
-        pass
-
+    def set_duty_cycle(self, duty_cycle: float) -> None: ...
     @abstractmethod
-    def cleanup_all(self) -> None:
-        """Cleanup all GPIO pins
-        """
-        pass
-
+    def get_duty_cycle(self) -> float: ...
     @abstractmethod
-    def set_duty_cycle(self, pin: int, duty_cycle: float) -> None:
-        """Set the duty cycle for a PWM pin
+    def cleanup(self) -> None: ...
 
-        Args:
-            pin (int): GPIO pin number
-            duty_cycle (float): Duty cycle percentage (0.0 to 100.0)
-        """
-        pass
 
-    @abstractmethod
-    def get_duty_cycle(self, pin: int) -> float:
-        """Get the current duty cycle for a PWM pin
+class RPiGPIORepository(GPIORepository):
+    def __init__(self, gpio: Any, pin: int, frequency: float, duty_cycle: float = 0.0) -> None:
+        self._lock: threading.Lock = threading.Lock()
+        self.gpio = gpio
+        self.pin: int = int(pin)
+        self.frequency: float = float(frequency)
+        self.duty_cycle: float = float(duty_cycle)
+        self.pwm: Optional[Any] = None
 
-        Args:
-            pin (int): GPIO pin number
-        Returns:
-            float: Current duty cycle percentage
-        """
-        pass
+        required_attrs = ("setmode", "BCM", "setup", "OUT", "PWM", "cleanup")
+        missing = [
+            attr for attr in required_attrs if not hasattr(self.gpio, attr)]
+        if missing:
+            raise RuntimeError(
+                f"gpio object missing attributes: {', '.join(missing)}, gpio interface must have these methods and properties to function properly")
+
+        # Configure and start PWM
+        self.gpio.setmode(self.gpio.BCM)
+        self.gpio.setup(self.pin, self.gpio.OUT)
+
+    def setup_pwm(self) -> None:
+        with self._lock:
+            if self.pwm is not None:
+                try:
+                    self.pwm.stop()
+                except Exception:
+                    raise RuntimeError(
+                        "Failed to stop existing PWM instance, could not reinitialize PWM")
+            self.pwm = self.gpio.PWM(self.pin, self.frequency)
+            self.pwm.start(self.duty_cycle)
+
+    def set_duty_cycle(self, duty_cycle: float) -> None:
+        dc = max(0.0, min(100.0, float(duty_cycle)))
+        with self._lock:
+            self.duty_cycle = dc
+            if self.pwm is not None:
+                self.pwm.ChangeDutyCycle(self.duty_cycle)
+
+    def get_duty_cycle(self) -> float:
+        with self._lock:
+            return self.duty_cycle
+
+    def cleanup(self) -> None:
+        with self._lock:
+            if self.pwm is not None:
+                try:
+                    self.pwm.stop()
+                except Exception:
+                    raise RuntimeError(
+                        "Failed to stop PWM instance during cleanup")
+            try:
+                self.gpio.cleanup(self.pin)
+            except Exception:
+                raise RuntimeError(
+                    "Failed to cleanup GPIO pin during cleanup")
