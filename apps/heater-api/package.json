@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "uv run main.py"
+    "dev": "dotenv -- uv run main.py"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^11.0.0"
   }
 }
