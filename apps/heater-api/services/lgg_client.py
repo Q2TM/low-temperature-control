@@ -1,6 +1,10 @@
+import os
+
 from lgg_client import ReadingApi, ApiClient, Configuration
 
-config = Configuration(host="http://localhost:8000")
+HOST = os.getenv("LGG_URL", "http://localhost:8000")
+
+config = Configuration(host=HOST)
 api_client = ApiClient(config)
 
 readingApi = ReadingApi(api_client=api_client)

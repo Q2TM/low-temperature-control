@@ -275,6 +275,7 @@ dependencies = [
     { name = "opentelemetry-exporter-otlp-proto-grpc" },
     { name = "opentelemetry-instrumentation-fastapi" },
     { name = "opentelemetry-sdk" },
+    { name = "simulator-client" },
 ]
 
 [package.dev-dependencies]
@@ -292,6 +293,7 @@ requires-dist = [
     { name = "opentelemetry-exporter-otlp-proto-grpc", specifier = ">=1.38.0" },
     { name = "opentelemetry-instrumentation-fastapi", specifier = ">=0.59b0" },
     { name = "opentelemetry-sdk", specifier = ">=1.38.0" },
+    { name = "simulator-client", editable = "packages/api-client/src/python/simulator" },
 ]
 
 [package.metadata.requires-dev]
@@ -440,6 +442,7 @@ dependencies = [
     { name = "opentelemetry-exporter-otlp-proto-grpc" },
     { name = "opentelemetry-instrumentation-fastapi" },
     { name = "opentelemetry-sdk" },
+    { name = "simulator-client" },
     { name = "uvicorn" },
 ]
 
@@ -459,6 +462,7 @@ requires-dist = [
     { name = "opentelemetry-exporter-otlp-proto-grpc", specifier = ">=1.38.0" },
     { name = "opentelemetry-instrumentation-fastapi", specifier = ">=0.59b0" },
     { name = "opentelemetry-sdk", specifier = ">=1.38.0" },
+    { name = "simulator-client", editable = "packages/api-client/src/python/simulator" },
     { name = "uvicorn", specifier = ">=0.35.0" },
 ]
 
