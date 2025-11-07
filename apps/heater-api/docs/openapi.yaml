@@ -84,6 +84,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/temp/start:
+    post:
+      summary: Start Pid
+      description: Start the PID controller.
+      operationId: startPID
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: string
+                title: Response Startpid
+  /api/temp/stop:
+    post:
+      summary: Stop Pid
+      description: Stop the PID controller.
+      operationId: stopPID
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: string
+                title: Response Stoppid
 components:
   schemas:
     HTTPValidationError:

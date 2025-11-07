@@ -1,4 +1,6 @@
 from repositories.gpio import GPIORepository
+from services.simulator_client import simulator_api
+from simulator_client import SetHeaterOutputRequest
 
 
 class GPIORepositoryMock(GPIORepository):
@@ -19,6 +21,8 @@ class GPIORepositoryMock(GPIORepository):
         if self.pwm is None:
             raise RuntimeError("PWM not set up. Call setup_pwm() first.")
         self.duty_cycle = max(0.0, min(100.0, duty_cycle))
+        simulator_api.set_heater_output(
+            self.pin, SetHeaterOutputRequest(value=self.duty_cycle / 100.0))
         print(f"[Mock] Set duty cycle to {self.duty_cycle}% on pin={self.pin}")
 
     def get_duty_cycle(self) -> float:

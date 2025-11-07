@@ -1,15 +1,12 @@
 import threading
 import time
+import os
+
 from mocks.gpio_mock import GPIORepositoryMock
-from repositories.gpio import GPIORepository
+from repositories.gpio import GPIORepository, RPiGPIORepository
 from schemas.temp_control import Parameters, StatusOut
-from PID import PIDController
-from lgg_client import ReadingApi, ApiClient, Configuration
-
-config = Configuration(host="http://localhost:8000")
-api_client = ApiClient(config)
-
-readingApi = ReadingApi(api_client=api_client)
+from .PID import PIDController
+from .lgg_client import readingApi
 
 
 class TempService:
@@ -26,13 +23,22 @@ class TempService:
         )
 
         # Mock GPIO for development
-        self.gpio: GPIORepository = GPIORepositoryMock()
-        self.gpio.setup_pwm()
+        mode = os.getenv("GPIO_MODE")
+
+        if mode == "MOCK":
+            self.gpio: GPIORepository = GPIORepositoryMock(
+                pin=self.pin, frequency=0.2, duty_cycle=0.0)
 
         # Real GPIO
-        # import RPi.GPIO as GPIO
-        # self.gpio: GPIORepository = GPIORepository(GPIO, pin=self.pin, frequency=0.2, duty_cycle=0.0)
-        # self.gpio.setup_pwm()
+        elif mode == "REAL":
+            import RPi.GPIO as GPIO
+            self.gpio: GPIORepository = RPiGPIORepository(
+                GPIO, pin=self.pin, frequency=0.2, duty_cycle=0.0)
+        else:
+            raise RuntimeError(
+                "GPIO_MODE environment variable not set correctly. Use 'MOCK' or 'REAL'.")
+
+        self.gpio.setup_pwm()
 
         self._running = False
         self._thread: threading.Thread | None = None
@@ -63,26 +69,29 @@ class TempService:
     def start(self):
         """Start the temperature control loop in a background thread."""
         if self._running:
-            print("Control loop already running.")
-            return
+            return "Control loop already running."
 
         self._running = True
         self._thread = threading.Thread(target=self._control_loop, daemon=True)
         self._thread.start()
-        print("Temperature control loop started.")
+        return "Temperature control loop started."
 
     def stop(self):
         """Stop the temperature control loop and set duty cycle to zero."""
+
+        if not self._running:
+            return "Control loop is not running."
+
         self._running = False
         if self._thread:
             self._thread.join(timeout=2.0)
         self.gpio.set_duty_cycle(duty_cycle=0.0)
-        print("Temperature control loop stopped and heater turned off.")
+        return "Temperature control loop stopped and heater turned off."
 
     def _control_loop(self):
         """Internal method that runs in background to control temperature."""
         while self._running:
-            current_temp = readingApi.get_monitoring(1).kelvin - 273.15
+            current_temp = readingApi.get_monitor(1).kelvin - 273.15
             duty = self._pid.update(current_temp)
             self.gpio.set_duty_cycle(duty_cycle=duty)
 

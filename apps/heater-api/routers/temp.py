@@ -51,3 +51,19 @@ def set_parameters(
 ) -> Parameters:
     """Update PID parameters."""
     return service.set_parameters(params)
+
+
+@router.post("/start", response_model=str, operation_id="startPID")
+def start_pid(
+    service: TempService = Depends(get_temp_service)
+):
+    """Start the PID controller."""
+    return service.start()
+
+
+@router.post("/stop", response_model=str, operation_id="stopPID")
+def stop_pid(
+    service: TempService = Depends(get_temp_service)
+):
+    """Stop the PID controller."""
+    return service.stop()
