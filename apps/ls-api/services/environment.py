@@ -1,5 +1,5 @@
 import os
 
-DEVELOPMENT_MODE = "development"
+DEVELOPMENT_MODE = "DEVELOPMENT"
 
 mode = os.getenv("ENVIRONMENT", DEVELOPMENT_MODE)

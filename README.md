@@ -63,7 +63,7 @@ docker compose up -d
 
 ### Database Setup
 
-Go to `packages/tsdb` make sure .env is set.
+Go to `packages/tsdb`, `.env` should already be setup for local development.
 
 Then run `pnpm db:migrate` to setup the database schema.
 
@@ -73,20 +73,19 @@ Then run `pnpm db:migrate` to setup the database schema.
 
 ### Running Locally
 
-To run everything locally, follow these steps:
+Use command `pnpm run dev` to run all services with mock devices that connects
+to the simulator. `.env.dev` is already set and should not require any changes.
 
-1. Make sure timescaledb is running via Docker and .env are all setup (Put .env besides .env.example files)
-2. If not using real device, start the simulator (`apps/simulator`)
-3. Starts Lingangu API (Lakeshore Management API)
-4. Starts Temperature API
-5. Starts Rice Shower (`apps/collector`)
-6. Starts Almond Eye (`apps/web`)
+### Running in Lab Mode
 
-Or run everything in development mode with `pnpm run dev`
+Lab Mode is when you are using the real devices (Lakeshore 240 and Heater)
 
-### Running Production
+To run Lab Mode, make sure you filled in neccessary IPs in `.env.lab` files in each apps that requires it.
 
-todo
+Then on laptop, run `pnpm run lab:laptop` and on Pi, run `pnpm run lab:pi` to start the services in Lab Mode.
+
+To make uv work correctly on Raspberry Pi, you have to add `RPi.GPIO` to the `.venv`
+by using command: (I forgot)
 
 ### URLs
 

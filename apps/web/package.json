@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack --port 3100",
+    "lab:laptop": "next dev --turbopack --port 3100",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

@@ -21,6 +21,14 @@
       "cache": false,
       "persistent": true
     },
+    "lab:laptop": {
+      "cache": false,
+      "persistent": true
+    },
+    "lab:pi": {
+      "cache": false,
+      "persistent": true
+    },
     "codegen": {
       "cache": false
     }

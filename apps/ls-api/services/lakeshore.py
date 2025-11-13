@@ -1,7 +1,7 @@
 from lakeshore import Model240, Model240InputParameter, Model240CurveHeader
 import os
 
-from constants.env import USE_MOCK
+from constants.env import SIMULATOR_API_URL
 from mocks.model240 import MockModel240
 
 from typing import Self
@@ -52,7 +52,7 @@ class LakeshoreService:
                 if auto_connect:
                     print("Auto-connecting to Lakeshore Device...")
 
-                if os.getenv(USE_MOCK):
+                if os.getenv(SIMULATOR_API_URL):
                     print("Using Mock Lakeshore Connection")
                     LakeshoreService.device = MockModel240()  # type: ignore
                 else:

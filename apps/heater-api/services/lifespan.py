@@ -1,6 +1,5 @@
-import json
 from contextlib import asynccontextmanager
-from pathlib import Path
+import os
 from fastapi.openapi.utils import get_openapi
 
 from fastapi import FastAPI
@@ -10,7 +9,7 @@ from fastapi import FastAPI
 async def lifespan(app):
     # write OpenAPI schema on startup
 
-    if True:
+    if os.getenv("ENVIRONMENT") == "DEVELOPMENT":
         development_mode(app)
 
     yield

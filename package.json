@@ -8,7 +8,9 @@
     "lint": "turbo run lint --continue && prettier --check *.js",
     "format": "turbo run format --continue && prettier --write *.js",
     "check-types": "turbo run check-types",
-    "codegen": "turbo run codegen"
+    "codegen": "turbo run codegen",
+    "lab:laptop": "turbo run lab:laptop",
+    "lab:pi": "turbo run lab:pi"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",

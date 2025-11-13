@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "bun build --compile --minify-whitespace --minify-syntax --target bun --outfile out/server src/index.ts",
-    "dev": "bun --watch --no-clear-screen src/index.ts",
-    "preview": "dotenv -v NODE_ENV=production -- out/server",
+    "dev": "bun --env-file=.env.dev --watch --no-clear-screen src/index.ts",
+    "lab:laptop": "dotenv -e .env.lab -v NODE_ENV=production -- out/server",
     "lint": "eslint .",
     "format": "eslint . --fix",
     "check-types": "tsc --noEmit"
