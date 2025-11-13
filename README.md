@@ -6,23 +6,27 @@ Capstone Project for Computer Engineering, Chulalongkorn University
 
 ### Apps
 
-- `collector` (Rice Shower): Data Collector for Lingangu API and Temperature API. It also serves as a TSDB query server for the dashboard app. (Bun + Elysia)
 - `heater-api` (Heater API): API Server that controls the Heater via GPIO with PID Logic (Python FastAPI app with RPi.GPIO)
 - `ls-api` (Lingangu API): Lakeshore Management API (Python FastAPI app connecting USB Serial to Lakeshore Devices)
+- `rice-shower` (Rice Shower): Data Collector for Lingangu API and Temperature API. It also serves as a TSDB query server for the dashboard app. (Bun + Elysia)
 - `simulator` (Environment Simulator): Simulator for Foam Box, works as stub/mocks for lgg-api and heater-api (Bun + Elysia)
-- `web` (Almond Eye): Dashboard Application (Next.js)
+- `web` (Web Dashboard): Dashboard Application (Next.js)
 
 ### Packages (Internal)
 
 - `api-client`: API Client for each API services using `openapi-generator`
 - `config`: ESLint and TypeScript configurations
 - `tsdb`: Database Schema for TimescaleDB
-- `main-db`: TODO
+<!-- - `main-db`: May have -->
 - `ui`: React UI Component Library powered by Shadcn UI
 
 ### .env
 
-.env are located in the folder of each apps/packages, please refer to the `.env.example` files for the required environment variables of each app.
+`.env.dev` and `.env.lab` are located in the folder of each apps/packages,
+most of them are already setup for local development,
+for lab mode you may need to change some values (like IP addresses).
+
+When you edit IP Addresses for lab mode, please do not commit the changes.
 
 ## Setup
 
