@@ -351,8 +351,3 @@ marimo/_lsp/
 __marimo__/
 
 ignore/
-
-# Environment Variable
-# Dev -> .env.dev
-# Lab -> (Prevent accidental changes)
-.env.lab

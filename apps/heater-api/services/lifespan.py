@@ -1,3 +1,4 @@
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 import os
 from fastapi.openapi.utils import get_openapi
@@ -6,7 +7,7 @@ from fastapi import FastAPI
 
 
 @asynccontextmanager
-async def lifespan(app):
+async def lifespan(app) -> AsyncGenerator[None, None]:
     # write OpenAPI schema on startup
 
     if os.getenv("ENVIRONMENT") == "DEVELOPMENT":

@@ -23,12 +23,16 @@ otlp_exporter = OTLPSpanExporter(
 tracer_provider = cast(TracerProvider, trace.get_tracer_provider())
 tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
 
-app = FastAPI(title="Heater API")
+app = FastAPI(
+    title="Heater API (LT Capstone)",
+    description="API Server that controls the Heater via GPIO with PID Logic.",
+    version="0.1.0",
+    lifespan=lifespan,
+)
 print("Instrumenting app")
 FastAPIInstrumentor.instrument_app(app)
 
 app.include_router(temp.router, prefix="/api")
-app.router.lifespan_context = lifespan
 
 with open("./docs/index.html", "r") as f:
     docs_html = f.read()

@@ -431,7 +431,7 @@ requires-dist = [
 
 [[package]]
 name = "lingangu-api"
-version = "0.1.0"
+version = "0.2.0"
 source = { virtual = "apps/ls-api" }
 dependencies = [
     { name = "fastapi", extra = ["standard"] },

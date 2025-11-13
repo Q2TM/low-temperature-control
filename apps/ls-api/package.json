@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "dotenv -e .env.dev -- uv run main.py",
-    "lab:laptop": "dotenv -e .env.lab -v -- uv run main.py"
+    "lab:laptop": "dotenv -e .env.lab -- uv run main.py"
   },
   "devDependencies": {
     "dotenv-cli": "^11.0.0"

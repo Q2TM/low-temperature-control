@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack --port 3100",
-    "lab:laptop": "next dev --turbopack --port 3100",
+    "lab:laptop": "dotenv -v PORT=3100 -- node .next/standalone/apps/web/server.js",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -37,6 +37,7 @@
     "@types/node": "^24.9.2",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9.38.0",
     "typescript": "5.9.3"
   }

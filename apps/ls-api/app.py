@@ -27,9 +27,9 @@ tracer_provider = cast(TracerProvider, trace.get_tracer_provider())
 tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
 
 app = FastAPI(
-    title="Lakeshore Management API",
-    description="API for Lakeshore Model240 temperature controller",
-    version="0.1.0",
+    title="Lakeshore Management API (LT Capstone)",
+    description="API server that manages Lakeshore devices and exports metrics via REST API.",
+    version="0.2.0",
     lifespan=lifespan,
     openapi_tags=[
         {

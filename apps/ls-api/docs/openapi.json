@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Lakeshore Management API",
-    "description": "API for Lakeshore Model240 temperature controller",
-    "version": "0.1.0"
+    "title": "Lakeshore Management API (LT Capstone)",
+    "description": "API server that manages Lakeshore devices and exports metrics via REST API.",
+    "version": "0.2.0"
   },
   "paths": {
     "/api/v1/device/connect": {
