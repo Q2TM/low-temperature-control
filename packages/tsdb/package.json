@@ -14,7 +14,7 @@
     "@repo/config": "workspace:*",
     "drizzle-kit": "^0.31.6",
     "drizzle-orm": "^0.44.7",
-    "eslint": "^9.38.0",
+    "eslint": "^9.39.1",
     "postgres": "^3.4.7"
   }
 }

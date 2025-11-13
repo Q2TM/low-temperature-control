@@ -16,7 +16,7 @@
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.25.0",
     "@repo/config": "workspace:*",
-    "eslint": "^9.38.0",
+    "eslint": "^9.39.1",
     "openapi-typescript": "^7.10.1"
   }
 }
