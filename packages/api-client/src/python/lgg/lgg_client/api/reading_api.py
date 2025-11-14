@@ -354,6 +354,7 @@ class ReadingApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "MonitorResp",
+            '503': "str",
             '422': "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
@@ -421,6 +422,7 @@ class ReadingApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "MonitorResp",
+            '503': "str",
             '422': "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
@@ -488,6 +490,7 @@ class ReadingApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "MonitorResp",
+            '503': "str",
             '422': "HTTPValidationError",
         }
         response_data = self.api_client.call_api(

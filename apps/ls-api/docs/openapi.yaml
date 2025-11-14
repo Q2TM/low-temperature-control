@@ -254,6 +254,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MonitorResp'
+        '503':
+          description: Either the lakeshore is not connected or error communicating
+          content:
+            application/json:
+              schema:
+                type: string
+                title: Response 503 Getmonitor
         '422':
           description: Validation Error
           content:

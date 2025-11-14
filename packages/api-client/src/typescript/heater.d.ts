@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-  "/api/temp/target-temp": {
+  "/config/target-temp": {
     parameters: {
       query?: never;
       header?: never;
@@ -18,7 +18,7 @@ export interface paths {
     get: operations["getTargetTemp"];
     put?: never;
     /**
-     * Set Target
+     * Set Target Temp
      * @description Set a new target temperature.
      */
     post: operations["setTargetTemp"];
@@ -28,7 +28,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/temp/status": {
+  "/config/pid-parameters": {
     parameters: {
       query?: never;
       header?: never;
@@ -36,10 +36,34 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Get Status
-     * @description Get the current temperature status.
+     * Get Pid Parameters
+     * @description Get the current PID parameters.
      */
-    get: operations["getStatus"];
+    get: operations["getPidParameters"];
+    put?: never;
+    /**
+     * Set Pid Parameters
+     * @description Update PID parameters.
+     */
+    post: operations["setPidParameters"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/config/all": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get All Config
+     * @description Get all configuration (target temperature and PID parameters).
+     */
+    get: operations["getAllConfig"];
     put?: never;
     post?: never;
     delete?: never;
@@ -48,31 +72,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/temp/parameters": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get Parameters
-     * @description Get the current temperature PID parameters.
-     */
-    get: operations["getParameters"];
-    put?: never;
-    /**
-     * Set Parameters
-     * @description Update PID parameters.
-     */
-    post: operations["setParameters"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/temp/start": {
+  "/pid/start": {
     parameters: {
       query?: never;
       header?: never;
@@ -92,7 +92,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/temp/stop": {
+  "/pid/stop": {
     parameters: {
       query?: never;
       header?: never;
@@ -112,10 +112,66 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/pid/status": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Pid Status
+     * @description Get comprehensive PID status.
+     *
+     *     Returns:
+     *     - is_active: Whether PID controller is currently running
+     *     - target: Target temperature
+     *     - duty_cycle: Current PWM duty cycle
+     *     - current_temp: Current temperature reading
+     *     - pid_parameters: Current PID coefficients (Kp, Ki, Kd)
+     *     - pid_variables: Internal PID variables (integral, last_error, last_measurement)
+     *     - error_stats: Error statistics including counts for last 1m, 10m, and since start
+     */
+    get: operations["getPidStatus"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /**
+     * ConfigAll
+     * @description Schema for all configuration data.
+     *
+     *     Contains target temperature and PID parameters.
+     */
+    ConfigAll: {
+      /** Targettemp */
+      targetTemp: number;
+      pidParameters: components["schemas"]["Parameters"];
+    };
+    /**
+     * ErrorStats
+     * @description Schema for error statistics.
+     *
+     *     Tracks API call errors over different time periods.
+     */
+    ErrorStats: {
+      /** Errorslast1M */
+      errorsLast1M: number;
+      /** Errorslast10M */
+      errorsLast10M: number;
+      /** Errorssincestart */
+      errorsSinceStart: number;
+      /** Lasterrormessage */
+      lastErrorMessage: string | null;
+    };
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
@@ -146,17 +202,37 @@ export interface components {
       kd: number;
     };
     /**
-     * StatusOut
-     * @description Schema for temperature status.
+     * PidStatusOut
+     * @description Schema for PID status output.
      *
-     *     Used by GET /temp/status endpoints
-     *     to retrieve or update temperature status.
+     *     Contains comprehensive information about PID controller state.
      */
-    StatusOut: {
+    PidStatusOut: {
+      /** Isactive */
+      isActive: boolean;
       /** Target */
       target: number;
       /** Dutycycle */
       dutyCycle: number;
+      /** Currenttemp */
+      currentTemp: number | null;
+      pidParameters: components["schemas"]["Parameters"];
+      pidVariables: components["schemas"]["PidVariables"];
+      errorStats: components["schemas"]["ErrorStats"];
+    };
+    /**
+     * PidVariables
+     * @description Schema for PID internal variables.
+     *
+     *     Contains the interval variables used in PID calculations.
+     */
+    PidVariables: {
+      /** Integral */
+      integral: number;
+      /** Lasterror */
+      lastError: number;
+      /** Lastmeasurement */
+      lastMeasurement: number | null;
     };
     /**
      * TargetTemp
@@ -240,27 +316,7 @@ export interface operations {
       };
     };
   };
-  getStatus: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["StatusOut"];
-        };
-      };
-    };
-  };
-  getParameters: {
+  getPidParameters: {
     parameters: {
       query?: never;
       header?: never;
@@ -280,7 +336,7 @@ export interface operations {
       };
     };
   };
-  setParameters: {
+  setPidParameters: {
     parameters: {
       query?: never;
       header?: never;
@@ -309,6 +365,26 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  getAllConfig: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ConfigAll"];
         };
       };
     };
@@ -349,6 +425,26 @@ export interface operations {
         };
         content: {
           "application/json": string;
+        };
+      };
+    };
+  };
+  getPidStatus: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PidStatusOut"];
         };
       };
     };

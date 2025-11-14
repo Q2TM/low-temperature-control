@@ -276,10 +276,13 @@ class LakeshoreService:
             raise ChannelError(channel)
         with request.app.state.lock:
             device = self.get_device()
-            # celsius = device.get_celsius_reading(channel)
-            # farenheit = device.get_fahrenheit_reading(channel)
-            kelvin = device.get_kelvin_reading(channel)
+
             sensor = device.get_sensor_reading(channel)
+            kelvin = device.get_kelvin_reading(channel)
+
+            if kelvin == 0 or sensor == 0:
+                raise HTTPException(503, "Reading error: received zero value")
+
             return MonitorResp(
                 kelvin=kelvin,
                 sensor=sensor

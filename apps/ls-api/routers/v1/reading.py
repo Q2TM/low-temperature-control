@@ -28,7 +28,7 @@ def set_input_config(
     return OperationResult(is_success=True, message="Input configuration updated successfully")
 
 
-@router.get("/monitor/{channel}", operation_id="getMonitor", response_model=MonitorResp)
+@router.get("/monitor/{channel}", operation_id="getMonitor", response_model=MonitorResp, responses={503: {"description": "Either the lakeshore is not connected or error communicating", "model": str}})
 def get_monitor(
     request: Request,
     channel: int = ChannelQueryParam,

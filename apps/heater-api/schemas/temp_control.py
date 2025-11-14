@@ -1,4 +1,5 @@
 from fastapi_camelcase import CamelModel
+from typing import Optional
 
 
 class TargetTemp(CamelModel):
@@ -32,3 +33,51 @@ class Parameters(CamelModel):
     kp: float = 1.0
     ki: float = 0.0
     kd: float = 0.0
+
+
+class PidVariables(CamelModel):
+    """
+    Schema for PID internal variables.
+
+    Contains the interval variables used in PID calculations.
+    """
+    integral: float
+    last_error: float
+    last_measurement: Optional[float]
+
+
+class ErrorStats(CamelModel):
+    """
+    Schema for error statistics.
+
+    Tracks API call errors over different time periods.
+    """
+    errors_last_1m: int
+    errors_last_10m: int
+    errors_since_start: int
+    last_error_message: Optional[str]
+
+
+class ConfigAll(CamelModel):
+    """
+    Schema for all configuration data.
+
+    Contains target temperature and PID parameters.
+    """
+    target_temp: float
+    pid_parameters: Parameters
+
+
+class PidStatusOut(CamelModel):
+    """
+    Schema for PID status output.
+
+    Contains comprehensive information about PID controller state.
+    """
+    is_active: bool
+    target: float
+    duty_cycle: float
+    current_temp: Optional[float]
+    pid_parameters: Parameters
+    pid_variables: PidVariables
+    error_stats: ErrorStats

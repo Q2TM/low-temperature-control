@@ -1,10 +1,12 @@
 import threading
 import time
 import os
+from collections import deque
+from typing import Optional
 
 from mocks.gpio_mock import GPIORepositoryMock
 from repositories.gpio import GPIORepository, RPiGPIORepository
-from schemas.temp_control import Parameters, StatusOut
+from schemas.temp_control import Parameters, StatusOut, PidVariables, ErrorStats, PidStatusOut
 from .PID import PIDController
 from .lgg_client import readingApi
 
@@ -43,6 +45,13 @@ class TempService:
         self._running = False
         self._thread: threading.Thread | None = None
 
+        # Error tracking
+        self._error_timestamps: deque = deque()
+        self._total_errors = 0
+        self._last_error_message: Optional[str] = None
+        self._current_temp: Optional[float] = None
+        self._error_lock = threading.Lock()
+
     def get_target(self):
         return self._target
 
@@ -65,6 +74,70 @@ class TempService:
             kd=params.kd,
         )
         return self._params
+
+    def _record_error(self, error_message: str):
+        """Record an error with timestamp for tracking."""
+        with self._error_lock:
+            current_time = time.time()
+            self._error_timestamps.append(current_time)
+            self._total_errors += 1
+            self._last_error_message = error_message
+
+            # Clean up old timestamps (older than 10 minutes)
+            cutoff_time = current_time - 600  # 10 minutes
+            while self._error_timestamps and self._error_timestamps[0] < cutoff_time:
+                self._error_timestamps.popleft()
+
+    def _get_error_stats(self) -> ErrorStats:
+        """Get error statistics for different time periods."""
+        with self._error_lock:
+            current_time = time.time()
+
+            # Count errors in last 1 minute
+            one_min_ago = current_time - 60
+            errors_1m = sum(
+                1 for ts in self._error_timestamps if ts >= one_min_ago)
+
+            # Count errors in last 10 minutes (all in deque)
+            errors_10m = len(self._error_timestamps)
+
+            return ErrorStats(
+                errors_last_1m=errors_1m,
+                errors_last_10m=errors_10m,
+                errors_since_start=self._total_errors,
+                last_error_message=self._last_error_message
+            )
+
+    def get_pid_status(self) -> PidStatusOut:
+        """Get comprehensive PID status including all internal variables."""
+        duty_cycle = self.gpio.get_duty_cycle()
+
+        # Get PID internal state
+        pid_state = self._pid.get_state()
+
+        pid_parameters = Parameters(
+            kp=pid_state["Kp"],
+            ki=pid_state["Ki"],
+            kd=pid_state["Kd"]
+        )
+
+        pid_variables = PidVariables(
+            integral=pid_state["integral"],
+            last_error=pid_state["last_error"],
+            last_measurement=self._current_temp
+        )
+
+        error_stats = self._get_error_stats()
+
+        return PidStatusOut(
+            is_active=self._running,
+            target=self._target,
+            duty_cycle=duty_cycle,
+            current_temp=self._current_temp,
+            pid_parameters=pid_parameters,
+            pid_variables=pid_variables,
+            error_stats=error_stats
+        )
 
     def start(self):
         """Start the temperature control loop in a background thread."""
@@ -91,12 +164,19 @@ class TempService:
     def _control_loop(self):
         """Internal method that runs in background to control temperature."""
         while self._running:
-            current_temp = readingApi.get_monitor(1).kelvin - 273.15
-            duty = self._pid.update(current_temp)
-            self.gpio.set_duty_cycle(duty_cycle=duty)
+            try:
+                current_temp = readingApi.get_monitor(1).kelvin - 273.15
+                self._current_temp = current_temp
+                duty = self._pid.update(current_temp)
+                self.gpio.set_duty_cycle(duty_cycle=duty)
 
-            print(
-                f"T={current_temp:.2f}°C | Target={self._target:.1f}°C | Duty={duty:.1f}%")
+                print(
+                    f"T={current_temp:.2f}°C | Target={self._target:.1f}°C | Duty={duty:.1f}%")
+            except Exception as e:
+                error_msg = f"Error in PID control loop: {type(e).__name__}: {str(e)}"
+                print(error_msg)
+                self._record_error(error_msg)
+                # Continue running despite errors
 
             time.sleep(5)
 

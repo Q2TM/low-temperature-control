@@ -13,7 +13,7 @@ async function scrapeLGG(instance: string, channel: number) {
     },
   );
 
-  if (error) {
+  if (error || !data) {
     throw new Error(`Failed to fetch data for channel ${channel}: ${error}`);
   }
 
@@ -27,13 +27,13 @@ async function scrapeLGG(instance: string, channel: number) {
 }
 
 async function scrapeHeater(instance: string, pin: number) {
-  const { data, error } = await heaterClient.GET("/api/temp/status");
+  const { data, error } = await heaterClient.GET("/pid/status");
 
   if (error) {
     throw new Error(`Failed to fetch heater data: ${error}`);
   }
 
-  const TEMP_MOCK_POWER = 25;
+  const TEMP_MOCK_POWER = 45;
 
   await db.insert(heaterMetrics).values({
     time: new Date(),
@@ -56,7 +56,7 @@ export class Scraper {
   static successCount = 0;
 
   private static async job() {
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 1; i++) {
       try {
         await scrapeLGG("sensor-1", i);
         this.successCount++;

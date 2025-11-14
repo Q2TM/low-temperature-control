@@ -1,7 +1,7 @@
 from typing import cast
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from routers import temp
+from routers import config, pid
 from services.lifespan import lifespan
 
 from opentelemetry import trace
@@ -28,11 +28,22 @@ app = FastAPI(
     description="API Server that controls the Heater via GPIO with PID Logic.",
     version="0.1.0",
     lifespan=lifespan,
+    openapi_tags=[
+        {
+            "name": "Config",
+            "description": "Configuration endpoints for managing target temperature and PID parameters. These settings control the behavior of the PID controller.",
+        },
+        {
+            "name": "PID",
+            "description": "PID controller operations for starting, stopping, and monitoring the temperature control loop. Includes comprehensive status information and error tracking.",
+        },
+    ],
 )
 print("Instrumenting app")
 FastAPIInstrumentor.instrument_app(app)
 
-app.include_router(temp.router, prefix="/api")
+app.include_router(config.router)
+app.include_router(pid.router)
 
 with open("./docs/index.html", "r") as f:
     docs_html = f.read()

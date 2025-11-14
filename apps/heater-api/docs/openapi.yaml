@@ -4,8 +4,10 @@ info:
   description: API Server that controls the Heater via GPIO with PID Logic.
   version: 0.1.0
 paths:
-  /api/temp/target-temp:
+  /config/target-temp:
     get:
+      tags:
+      - Config
       summary: Get Target Temp
       description: Get the current target temperature.
       operationId: getTargetTemp
@@ -17,7 +19,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/TargetTemp'
     post:
-      summary: Set Target
+      tags:
+      - Config
+      summary: Set Target Temp
       description: Set a new target temperature.
       operationId: setTargetTemp
       requestBody:
@@ -38,23 +42,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/temp/status:
+  /config/pid-parameters:
     get:
-      summary: Get Status
-      description: Get the current temperature status.
-      operationId: getStatus
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StatusOut'
-  /api/temp/parameters:
-    get:
-      summary: Get Parameters
-      description: Get the current temperature PID parameters.
-      operationId: getParameters
+      tags:
+      - Config
+      summary: Get Pid Parameters
+      description: Get the current PID parameters.
+      operationId: getPidParameters
       responses:
         '200':
           description: Successful Response
@@ -63,9 +57,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Parameters'
     post:
-      summary: Set Parameters
+      tags:
+      - Config
+      summary: Set Pid Parameters
       description: Update PID parameters.
-      operationId: setParameters
+      operationId: setPidParameters
       requestBody:
         content:
           application/json:
@@ -85,8 +81,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/temp/start:
+  /config/all:
+    get:
+      tags:
+      - Config
+      summary: Get All Config
+      description: Get all configuration (target temperature and PID parameters).
+      operationId: getAllConfig
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigAll'
+  /pid/start:
     post:
+      tags:
+      - PID
       summary: Start Pid
       description: Start the PID controller.
       operationId: startPID
@@ -98,8 +110,10 @@ paths:
               schema:
                 type: string
                 title: Response Startpid
-  /api/temp/stop:
+  /pid/stop:
     post:
+      tags:
+      - PID
       summary: Stop Pid
       description: Stop the PID controller.
       operationId: stopPID
@@ -111,8 +125,83 @@ paths:
               schema:
                 type: string
                 title: Response Stoppid
+  /pid/status:
+    get:
+      tags:
+      - PID
+      summary: Get Pid Status
+      description: 'Get comprehensive PID status.
+
+
+        Returns:
+
+        - is_active: Whether PID controller is currently running
+
+        - target: Target temperature
+
+        - duty_cycle: Current PWM duty cycle
+
+        - current_temp: Current temperature reading
+
+        - pid_parameters: Current PID coefficients (Kp, Ki, Kd)
+
+        - pid_variables: Internal PID variables (integral, last_error, last_measurement)
+
+        - error_stats: Error statistics including counts for last 1m, 10m, and since
+        start'
+      operationId: getPidStatus
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PidStatusOut'
 components:
   schemas:
+    ConfigAll:
+      properties:
+        targetTemp:
+          type: number
+          title: Targettemp
+        pidParameters:
+          $ref: '#/components/schemas/Parameters'
+      type: object
+      required:
+      - targetTemp
+      - pidParameters
+      title: ConfigAll
+      description: 'Schema for all configuration data.
+
+
+        Contains target temperature and PID parameters.'
+    ErrorStats:
+      properties:
+        errorsLast1M:
+          type: integer
+          title: Errorslast1M
+        errorsLast10M:
+          type: integer
+          title: Errorslast10M
+        errorsSinceStart:
+          type: integer
+          title: Errorssincestart
+        lastErrorMessage:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lasterrormessage
+      type: object
+      required:
+      - errorsLast1M
+      - errorsLast10M
+      - errorsSinceStart
+      - lastErrorMessage
+      title: ErrorStats
+      description: 'Schema for error statistics.
+
+
+        Tracks API call errors over different time periods.'
     HTTPValidationError:
       properties:
         detail:
@@ -144,25 +233,65 @@ components:
         Used by GET and PUT /temp/parameters endpoints
 
         to retrieve or update temperature parameters.'
-    StatusOut:
+    PidStatusOut:
       properties:
+        isActive:
+          type: boolean
+          title: Isactive
         target:
           type: number
           title: Target
         dutyCycle:
           type: number
           title: Dutycycle
+        currentTemp:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Currenttemp
+        pidParameters:
+          $ref: '#/components/schemas/Parameters'
+        pidVariables:
+          $ref: '#/components/schemas/PidVariables'
+        errorStats:
+          $ref: '#/components/schemas/ErrorStats'
       type: object
       required:
+      - isActive
       - target
       - dutyCycle
-      title: StatusOut
-      description: 'Schema for temperature status.
+      - currentTemp
+      - pidParameters
+      - pidVariables
+      - errorStats
+      title: PidStatusOut
+      description: 'Schema for PID status output.
 
 
-        Used by GET /temp/status endpoints
+        Contains comprehensive information about PID controller state.'
+    PidVariables:
+      properties:
+        integral:
+          type: number
+          title: Integral
+        lastError:
+          type: number
+          title: Lasterror
+        lastMeasurement:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Lastmeasurement
+      type: object
+      required:
+      - integral
+      - lastError
+      - lastMeasurement
+      title: PidVariables
+      description: 'Schema for PID internal variables.
 
-        to retrieve or update temperature status.'
+
+        Contains the interval variables used in PID calculations.'
     TargetTemp:
       properties:
         target:
