@@ -7,5 +7,4 @@ const fetchClient = createFetchClient<RiceShower.Paths>({
   baseUrl: process.env.RICE_SHOWER_URL || "http://localhost:8100",
 });
 
-export const $api = createClient(fetchClient);
-export const useQuery = $api.useQuery;
+export const riceShower = createClient(fetchClient);
