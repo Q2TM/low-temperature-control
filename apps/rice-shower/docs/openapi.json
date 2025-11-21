@@ -16,14 +16,14 @@
     }
   ],
   "paths": {
-    "/query/{instance_name}": {
+    "/query/temp/{instance_name}": {
       "get": {
         "tags": [
           "Query"
         ],
-        "operationId": "getMetrics",
-        "summary": "Get Metrics",
-        "description": "Query metrics data from time series database",
+        "operationId": "getTempMetrics",
+        "summary": "Get Temperature Metrics",
+        "description": "Query temperature metrics data from time series database",
         "parameters": [
           {
             "name": "instance_name",
@@ -190,14 +190,96 @@
         }
       }
     },
-    "/scrape/metrics": {
+    "/query/heater/{instance_name}": {
       "get": {
         "tags": [
-          "Scrape"
+          "Query"
         ],
-        "operationId": "getScrapeMetrics",
-        "summary": "Get Scrape Metrics",
-        "description": "Retrieve metrics about the scraping process, including last error time, error counts per channel, and total successful scrapes",
+        "operationId": "getHeaterMetrics",
+        "summary": "Get Heater Metrics",
+        "description": "Query heater metrics data from time series database",
+        "parameters": [
+          {
+            "name": "instance_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pins",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "description": "List of pin numbers to retrieve",
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          {
+            "name": "time_start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "description": "Start time for the query in ISO format",
+              "anyOf": [
+                {
+                  "description": "Start time for the query in ISO format",
+                  "type": "Date"
+                },
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          {
+            "name": "time_end",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "description": "End time for the query in ISO format",
+              "anyOf": [
+                {
+                  "description": "End time for the query in ISO format",
+                  "type": "Date"
+                },
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          {
+            "name": "interval",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "description": "Interval in seconds for time bucketing",
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -206,48 +288,198 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "lastError": {
-                      "nullable": true,
-                      "anyOf": [
-                        {
-                          "description": "Timestamp of the last error, or null if no errors have occurred",
-                          "format": "date-time",
-                          "type": "string"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
+                    "dataPoints": {
+                      "description": "Total number of data points returned",
+                      "type": "number"
                     },
-                    "errorCount": {
+                    "metrics": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
-                          "channel": {
-                            "description": "Channel number",
-                            "type": "number"
+                          "time": {
+                            "description": "Timestamp of the metric",
+                            "format": "date-time",
+                            "type": "string"
                           },
-                          "count": {
-                            "description": "Number of errors for this channel",
-                            "type": "number"
+                          "pins": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "pinNumber": {
+                                  "description": "Pin number",
+                                  "type": "number"
+                                },
+                                "dutyCycle": {
+                                  "description": "Duty cycle (0-1)",
+                                  "type": "number"
+                                },
+                                "powerWatts": {
+                                  "description": "Power in Watts",
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "pinNumber",
+                                "dutyCycle",
+                                "powerWatts"
+                              ]
+                            }
                           }
                         },
                         "required": [
-                          "channel",
-                          "count"
+                          "time",
+                          "pins"
                         ]
                       }
-                    },
-                    "successCount": {
-                      "description": "Total number of successful scrapes",
-                      "type": "number"
                     }
                   },
                   "required": [
-                    "lastError",
-                    "errorCount",
-                    "successCount"
+                    "dataPoints",
+                    "metrics"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Response for status 500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scrape/metrics": {
+      "get": {
+        "tags": [
+          "Scrape"
+        ],
+        "operationId": "getScrapeMetrics",
+        "summary": "Get Scrape Metrics",
+        "description": "Retrieve metrics about the scraping process for both sensor and heater data, including last error time, error counts, and total successful scrapes",
+        "responses": {
+          "200": {
+            "description": "Response for status 200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sensor": {
+                      "description": "Scraping metrics for sensor data (LGG)",
+                      "type": "object",
+                      "properties": {
+                        "lastError": {
+                          "nullable": true,
+                          "anyOf": [
+                            {
+                              "description": "Timestamp of the last error, or null if no errors have occurred",
+                              "format": "date-time",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "errorCount": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "description": "Channel number or pin number",
+                                "type": "number"
+                              },
+                              "count": {
+                                "description": "Number of errors for this channel/pin",
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "count"
+                            ]
+                          }
+                        },
+                        "successCount": {
+                          "description": "Total number of successful scrapes",
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "lastError",
+                        "errorCount",
+                        "successCount"
+                      ]
+                    },
+                    "heater": {
+                      "description": "Scraping metrics for heater data",
+                      "type": "object",
+                      "properties": {
+                        "lastError": {
+                          "nullable": true,
+                          "anyOf": [
+                            {
+                              "description": "Timestamp of the last error, or null if no errors have occurred",
+                              "format": "date-time",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "errorCount": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "description": "Channel number or pin number",
+                                "type": "number"
+                              },
+                              "count": {
+                                "description": "Number of errors for this channel/pin",
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "count"
+                            ]
+                          }
+                        },
+                        "successCount": {
+                          "description": "Total number of successful scrapes",
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "lastError",
+                        "errorCount",
+                        "successCount"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "sensor",
+                    "heater"
                   ]
                 }
               }
