@@ -163,12 +163,21 @@ class TempService:
 
     def _control_loop(self):
         """Internal method that runs in background to control temperature."""
+        last_time = time.monotonic()
         while self._running:
             try:
+                current_time = time.monotonic()
+                dt = current_time - last_time
+                if dt <= 0.0:
+                    dt = 5.0
+
                 current_temp = readingApi.get_monitor(1).kelvin - 273.15
                 self._current_temp = current_temp
-                duty = self._pid.update(current_temp)
+
+                duty = self._pid.update(measurement=current_temp, dt=dt)
                 self.gpio.set_duty_cycle(duty_cycle=duty)
+
+                last_time = current_time
 
                 print(
                     f"T={current_temp:.2f}°C | Target={self._target:.1f}°C | Duty={duty:.1f}%")

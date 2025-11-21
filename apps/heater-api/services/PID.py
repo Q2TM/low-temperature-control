@@ -17,12 +17,15 @@ class PIDController:
     # ----------------------
     # PID Logic
     # ----------------------
-    def update(self, measurement: float) -> float:
+    def update(self, measurement: float, dt: float) -> float:
         with self._lock:
             error = self.setpoint - measurement
-            new_integral = self._integral + error
-            derivative = 0.0 if self._last_measurement is None else (
-                error - self._last_error)
+            new_integral = self._integral + error * dt
+            # derivative = 0.0 if self._last_measurement is None else (
+            #     (error - self._last_error) / dt)
+            
+            # Using measurement derivative to avoid derivative kick
+            derivative = 0.0 if self._last_measurement is None else -(measurement - self._last_measurement) / dt
 
             output = (
                 (self.kp * error) +
