@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -18,7 +16,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@repo/ui/base/chart";
-import { ToggleGroup, ToggleGroupItem } from "@repo/ui/base/toggle-group";
 
 export const description = "A line chart";
 
@@ -39,6 +36,10 @@ const chartConfig = {
     label: "Channel 4",
     color: "var(--chart-4)",
   },
+  heater: {
+    label: "Heater Power",
+    color: "var(--chart-5)",
+  },
 } satisfies ChartConfig;
 
 type TemperatureChartProps = {
@@ -50,11 +51,6 @@ type TemperatureChartProps = {
 };
 
 export function TemperatureChart({ data, nMinutes }: TemperatureChartProps) {
-  // State for selected channels (default: only Channel 1)
-  const [selectedChannels, setSelectedChannels] = useState<string[]>([
-    "Channel 1",
-  ]);
-
   // Get all channel keys (exclude 'time')
   const channelKeys =
     data.length > 0
@@ -67,8 +63,8 @@ export function TemperatureChart({ data, nMinutes }: TemperatureChartProps) {
     };
     channelKeys.forEach((key) => {
       const value = item[key];
-      // Convert Kelvin to Celsius if it's a number
-      if (typeof value === "number") {
+      // Convert Kelvin to Celsius for temperature channels only
+      if (typeof value === "number" && key.startsWith("Channel ")) {
         converted[key] = value - 273.15;
       } else if (value !== undefined) {
         converted[key] = value;
@@ -77,14 +73,13 @@ export function TemperatureChart({ data, nMinutes }: TemperatureChartProps) {
     return converted;
   });
 
-  // Filter channels based on selection
-  const visibleChannels = channelKeys.filter((key) =>
-    selectedChannels.includes(key),
-  );
+  // Separate temperature channels and heater power channels
+  const tempChannels = channelKeys.filter((key) => key.startsWith("Channel "));
+  const heaterChannels = channelKeys.filter((key) => key.includes("Power (W)"));
 
-  // Calculate Y-axis domain based on visible temperature data only
+  // Calculate Y-axis domain based on temperature data
   const allTemperatures = mappedData.flatMap((item) =>
-    visibleChannels
+    tempChannels
       .map((key) => item[key])
       .filter((temp): temp is number => typeof temp === "number"),
   );
@@ -102,34 +97,6 @@ export function TemperatureChart({ data, nMinutes }: TemperatureChartProps) {
       <CardHeader>
         <CardTitle>Temperature Chart</CardTitle>
         <CardDescription>Past {nMinutes} Minutes</CardDescription>
-        <CardAction>
-          <ToggleGroup
-            type="multiple"
-            value={selectedChannels}
-            onValueChange={(value) => {
-              // Ensure at least one channel is selected
-              if (value.length > 0) {
-                setSelectedChannels(value);
-              }
-            }}
-            variant="outline"
-            size="sm"
-          >
-            {channelKeys.map((channelKey) => {
-              // Extract channel number from "Channel X" format
-              const channelNum = channelKey.replace("Channel ", "");
-              return (
-                <ToggleGroupItem
-                  key={channelKey}
-                  value={channelKey}
-                  className="py-1 px-4"
-                >
-                  {channelNum}
-                </ToggleGroupItem>
-              );
-            })}
-          </ToggleGroup>
-        </CardAction>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -160,12 +127,23 @@ export function TemperatureChart({ data, nMinutes }: TemperatureChartProps) {
               }}
             />
             <YAxis
+              yAxisId="temp"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
               domain={yDomain}
               tickFormatter={(value) => `${value.toFixed(1)}°C`}
             />
+            {heaterChannels.length > 0 && (
+              <YAxis
+                yAxisId="power"
+                orientation="right"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => `${value.toFixed(0)}W`}
+              />
+            )}
             <ChartTooltip
               cursor={false}
               content={
@@ -186,20 +164,36 @@ export function TemperatureChart({ data, nMinutes }: TemperatureChartProps) {
                       hour12: false,
                     });
                   }}
-                  unit="°C"
                 />
               }
             />
-            {visibleChannels.map((channelKey) => {
+            {tempChannels.map((channelKey) => {
               const channelIndex = channelKeys.indexOf(channelKey);
               return (
                 <Line
                   key={channelKey}
+                  yAxisId="temp"
                   dataKey={channelKey}
                   type="natural"
                   stroke={`var(--chart-${(channelIndex % 5) + 1})`}
                   strokeWidth={2}
                   dot={false}
+                  unit="°C"
+                />
+              );
+            })}
+            {heaterChannels.map((channelKey) => {
+              return (
+                <Line
+                  key={channelKey}
+                  yAxisId="power"
+                  dataKey={channelKey}
+                  type="natural"
+                  stroke="var(--chart-5)"
+                  strokeWidth={2}
+                  dot={false}
+                  strokeDasharray="5 5"
+                  unit="W"
                 />
               );
             })}

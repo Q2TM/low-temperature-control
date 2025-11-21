@@ -2,6 +2,7 @@ import { heaterMetrics, sensorMetrics } from "@repo/tsdb";
 
 import { heaterClient, lggClient } from "@/core/api";
 import { db } from "@/core/db";
+import { environment } from "@/core/environment";
 
 async function scrapeLGG(instance: string, channel: number) {
   const { data, error } = await lggClient.GET(
@@ -44,6 +45,12 @@ async function scrapeHeater(instance: string, pin: number) {
   });
 }
 
+type ScrapeMetrics = {
+  lastError: Date | null;
+  errorCount: Record<number, number>;
+  successCount: number;
+};
+
 export class Scraper {
   static initialize() {
     setInterval(() => {
@@ -51,25 +58,42 @@ export class Scraper {
     }, 1000);
   }
 
-  static lastError: Date | null = null;
-  static errorCount: Record<number, number> = {};
-  static successCount = 0;
+  // Sensor (LGG) metrics
+  static sensor: ScrapeMetrics = {
+    lastError: null,
+    errorCount: {},
+    successCount: 0,
+  };
+
+  // Heater metrics
+  static heater: ScrapeMetrics = {
+    lastError: null,
+    errorCount: {},
+    successCount: 0,
+  };
 
   private static async job() {
-    for (let i = 1; i <= 1; i++) {
+    // Scrape sensor data
+    for (const channel of environment.SCRAPE_CHANNELS) {
       try {
-        await scrapeLGG("sensor-1", i);
-        this.successCount++;
+        await scrapeLGG("sensor-1", channel);
+        this.sensor.successCount++;
       } catch (_) {
-        this.lastError = new Date();
-        this.errorCount[i] = (this.errorCount[i] ?? 0) + 1;
+        this.sensor.lastError = new Date();
+        this.sensor.errorCount[channel] =
+          (this.sensor.errorCount[channel] ?? 0) + 1;
       }
     }
 
-    try {
-      await scrapeHeater("heater-1", 18);
-    } catch (_) {
-      this.lastError = new Date();
+    // Scrape heater data
+    for (const pin of environment.SCRAPE_PINS) {
+      try {
+        await scrapeHeater("heater-1", pin);
+        this.heater.successCount++;
+      } catch (_) {
+        this.heater.lastError = new Date();
+        this.heater.errorCount[pin] = (this.heater.errorCount[pin] ?? 0) + 1;
+      }
     }
   }
 }

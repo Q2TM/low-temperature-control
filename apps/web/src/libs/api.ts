@@ -3,9 +3,8 @@ import createClient from "openapi-react-query";
 
 import type { RiceShower } from "@repo/api-client";
 
-const fetchClient = createFetchClient<RiceShower.Paths>({
-  baseUrl: process.env.RICE_SHOWER_URL || "http://localhost:8100",
+const rsClient = createFetchClient<RiceShower.Paths>({
+  baseUrl: process.env.NEXT_PUBLIC_RICE_SHOWER_URL,
 });
 
-export const $api = createClient(fetchClient);
-export const useQuery = $api.useQuery;
+export const riceShower = createClient(rsClient);

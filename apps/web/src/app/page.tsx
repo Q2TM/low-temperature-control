@@ -1,102 +1,10 @@
-"use client";
+import { getHeaterConfig } from "@/actions/heater";
+import { DashboardContent } from "@/components/DashboardContent";
 
-/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
-import { FileWarning, Heater, TrendingDown, TrendingUp } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-
-import { Badge } from "@repo/ui/base/badge";
-import { Button } from "@repo/ui/base/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@repo/ui/base/card";
-import { Spinner } from "@repo/ui/base/spinner";
-
-import { TemperatureChart } from "@/components/charts/TemperatureChart";
-import { useQuery } from "@/libs/api";
-
-export default function Home() {
-  // temp for demo: pick
-  // const timeStart = "2025-09-12T11:00:00Z";
-  // const timeEnd = "2025-09-12T11:10:00Z";
-
-  const nMinutes = 10;
-  const [timeEnd, setTimeEnd] = useState<number>(() => Date.now());
-  const timeStart = useMemo(
-    () => timeEnd && timeEnd - nMinutes * 60 * 1000,
-    [timeEnd],
-  );
-
-  const { data: rawData } = useQuery("get", "/query/{instance_name}", {
-    params: {
-      path: {
-        instance_name: "sensor-1",
-      },
-      query: {
-        channels: [1, 2, 3, 4],
-        time_start: timeStart,
-        time_end: timeEnd,
-        interval: 10,
-      },
-    },
-  });
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeEnd(Date.now());
-    }, 10_000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  if (!rawData) {
-    return <Spinner />;
-  }
-
-  const data = rawData.metrics;
-
-  // const data = (
-  //   await queryApi.getMetrics("sensor-1", [1, 2, 3, 4], timeStart, timeEnd, 10)
-  // ).metrics;
-
-  const lastEntry = data[data.length - 1];
-  const firstEntry = data[0];
-
-  const lastEntryTempC = lastEntry
-    ? lastEntry.channels.find((entry) => entry.channel === 1)?.kelvin! - 273.15
-    : null;
-  const firstEntryTempC = firstEntry
-    ? firstEntry.channels.find((entry) => entry.channel === 1)?.kelvin! - 273.15
-    : null;
-  const tempChange =
-    lastEntryTempC !== null && firstEntryTempC !== null
-      ? (((lastEntryTempC - firstEntryTempC) / firstEntryTempC) * 100).toFixed(
-          2,
-        )
-      : null;
-  const avgChannel1 =
-    data.reduce(
-      (sum, entry) =>
-        sum + entry.channels.find((e) => e.channel === 1)?.kelvin! - 273.15,
-      0,
-    ) / data.length;
-  const avgChannel1C = avgChannel1;
-
-  const legacyData = data.map((entry) => {
-    const o = { time: entry.time };
-
-    for (const channel of entry.channels) {
-      // @ts-expect-error temp speedrun
-      o[`Channel ${channel.channel}`] = channel.kelvin;
-    }
-
-    return o;
-  });
+export default async function Home() {
+  // Fetch heater config on the server
+  const heaterConfig = await getHeaterConfig();
+  const targetTemp = heaterConfig?.targetTemp ?? null;
 
   return (
     <main className="p-4 flex flex-col gap-6 max-w-5xl mx-auto">
@@ -106,78 +14,7 @@ export default function Home() {
         </h1>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader>
-            <CardDescription className="text-lg">
-              Current Temperature
-            </CardDescription>
-            <CardTitle className="text-2xl">
-              {lastEntryTempC ? lastEntryTempC.toFixed(2) : "--"} °C
-            </CardTitle>
-            <CardAction>
-              <Badge variant="outline">
-                {Number.isNaN(Number(tempChange)) ? (
-                  <FileWarning />
-                ) : Number(tempChange) >= 0 ? (
-                  <TrendingUp />
-                ) : (
-                  <TrendingDown />
-                )}
-                {Number.isNaN(Number(tempChange)) ? "--" : tempChange}%
-              </Badge>
-            </CardAction>
-          </CardHeader>
-          <CardFooter className="flex-col items-start gap-1.5 text-sm">
-            <div className="line-clamp-1 flex gap-2 font-medium">
-              Average Temperature Past {nMinutes} Minutes
-            </div>
-            <div className="text-muted-foreground">
-              {avgChannel1C ? avgChannel1C.toFixed(2) : "--"} °C
-            </div>
-          </CardFooter>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardDescription className="text-lg">
-              Current Heat Power
-            </CardDescription>
-            <CardTitle className="text-2xl">6.5 W</CardTitle>
-            <CardAction>
-              <Badge variant="outline">
-                <Heater />
-                80%
-              </Badge>
-            </CardAction>
-          </CardHeader>
-          <CardFooter className="flex-col items-start gap-1.5 text-sm">
-            <div className="line-clamp-1 flex gap-2 font-medium">
-              Total Power Past {nMinutes} Minutes
-            </div>
-            <div className="text-muted-foreground">4200 J (1.17 Wh)</div>
-          </CardFooter>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardDescription className="text-lg">
-              Target Temperature
-            </CardDescription>
-            <CardAction>
-              <Heater />
-            </CardAction>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold">24 °C</div>
-          </CardContent>
-          <CardFooter>
-            <Button>Edit</Button>
-          </CardFooter>
-        </Card>
-      </div>
-
-      <TemperatureChart data={legacyData} nMinutes={nMinutes} />
+      <DashboardContent initialTargetTemp={targetTemp} />
     </main>
   );
 }
