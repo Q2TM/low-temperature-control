@@ -15,50 +15,92 @@ import {
 import { Spinner } from "@repo/ui/base/spinner";
 
 import { TemperatureChart } from "@/components/charts/TemperatureChart";
+import { DashboardControls } from "@/components/DashboardControls";
+import HeaterCards from "@/components/HeaterCards";
+import { useHeaterMetrics } from "@/hooks/useHeaterMetrics";
 import { useTempMetrics } from "@/hooks/useTempMetrics";
 
 type DashboardContentProps = {
-  nMinutes: number;
-  heaterCards: React.ReactNode;
+  initialTargetTemp: number | null;
 };
 
-export function DashboardContent({
-  nMinutes,
-  heaterCards,
-}: DashboardContentProps) {
+export function DashboardContent({ initialTargetTemp }: DashboardContentProps) {
   const [timeEnd, setTimeEnd] = useState<number>(() => Date.now());
+  const [selectedPin, setSelectedPin] = useState<number>(18);
+  const [timeRange, setTimeRange] = useState<number>(10); // minutes
+  const [timeInterval, setTimeInterval] = useState<number>(1); // seconds
+  const [refreshInterval, setRefreshInterval] = useState<number>(10000); // ms
+
   const timeStart = useMemo(
-    () => timeEnd - nMinutes * 60 * 1000,
-    [timeEnd, nMinutes],
+    () => timeEnd - timeRange * 60 * 1000,
+    [timeEnd, timeRange],
   );
 
-  const metrics = useTempMetrics({
-    interval: 1,
+  const tempMetrics = useTempMetrics({
+    interval: timeInterval,
     timeStart,
-    timeRange: nMinutes * 60 * 1000,
+    timeRange: timeRange * 60 * 1000,
     channels: [1],
+  });
+
+  const heaterMetrics = useHeaterMetrics({
+    interval: timeInterval,
+    timeStart,
+    timeRange: timeRange * 60 * 1000,
+    pins: [selectedPin],
   });
 
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeEnd(Date.now());
-    }, 10_000);
+    }, refreshInterval);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [refreshInterval]);
 
-  if (!metrics) {
+  if (!tempMetrics || !heaterMetrics) {
     return <Spinner />;
   }
 
-  const { channels, chartData } = metrics;
-  const channel1Data = channels[1];
+  const { channels: tempChannels, chartData: tempChartData } = tempMetrics;
+  const { pins: heaterPins, chartData: heaterChartData } = heaterMetrics;
+
+  const channel1Data = tempChannels[1];
   const currentTemp = channel1Data?.currentTemp ?? null;
   const tempChange = channel1Data?.tempChange ?? null;
   const avgTemp = channel1Data?.avgTemp ?? null;
 
+  const heaterPinData = heaterPins[selectedPin];
+  const heaterCardData = heaterPinData
+    ? {
+        currentPower: heaterPinData.currentPower,
+        dutyCycle: heaterPinData.currentDutyCycle,
+        totalEnergy: heaterPinData.totalEnergy,
+      }
+    : null;
+
+  // Merge temperature and heater chart data
+  const combinedChartData = tempChartData.map((tempEntry) => {
+    const heaterEntry = heaterChartData.find((h) => h.time === tempEntry.time);
+    return {
+      ...tempEntry,
+      ...(heaterEntry || {}),
+    };
+  });
+
   return (
     <>
+      <DashboardControls
+        selectedPin={selectedPin}
+        onPinChange={setSelectedPin}
+        timeInterval={timeInterval}
+        onTimeIntervalChange={setTimeInterval}
+        refreshInterval={refreshInterval}
+        onRefreshIntervalChange={setRefreshInterval}
+        timeRange={timeRange}
+        onTimeRangeChange={setTimeRange}
+      />
+
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         <Card>
           <CardHeader>
@@ -86,7 +128,7 @@ export function DashboardContent({
           </CardHeader>
           <CardFooter className="flex-col items-start gap-1.5 text-sm">
             <div className="line-clamp-1 flex gap-2 font-medium">
-              Average Temperature Past {nMinutes} Minutes
+              Average Temperature Past {timeRange} Minutes
             </div>
             <div className="text-muted-foreground">
               {avgTemp !== null ? avgTemp.toFixed(2) : "--"} °C
@@ -94,10 +136,14 @@ export function DashboardContent({
           </CardFooter>
         </Card>
 
-        {heaterCards}
+        <HeaterCards
+          nMinutes={timeRange}
+          heaterStatus={heaterCardData}
+          targetTemp={initialTargetTemp}
+        />
       </div>
 
-      <TemperatureChart data={chartData} nMinutes={nMinutes} />
+      <TemperatureChart data={combinedChartData} nMinutes={timeRange} />
     </>
   );
 }

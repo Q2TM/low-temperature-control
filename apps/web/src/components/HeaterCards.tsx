@@ -12,7 +12,25 @@ import {
   CardTitle,
 } from "@repo/ui/base/card";
 
-export default function HeaterCards({ nMinutes }: { nMinutes: number }) {
+type HeaterCardsProps = {
+  nMinutes: number;
+  heaterStatus: {
+    currentPower: number | null;
+    dutyCycle: number | null;
+    totalEnergy: number | null;
+  } | null;
+  targetTemp: number | null;
+};
+
+export default function HeaterCards({
+  nMinutes,
+  heaterStatus,
+  targetTemp,
+}: HeaterCardsProps) {
+  const currentPower = heaterStatus?.currentPower ?? null;
+  const dutyCycle = heaterStatus?.dutyCycle ?? null;
+  const totalEnergy = heaterStatus?.totalEnergy ?? null;
+
   return (
     <>
       <Card>
@@ -20,19 +38,25 @@ export default function HeaterCards({ nMinutes }: { nMinutes: number }) {
           <CardDescription className="text-lg">
             Current Heat Power
           </CardDescription>
-          <CardTitle className="text-2xl">6.5 W</CardTitle>
+          <CardTitle className="text-2xl">
+            {currentPower !== null ? currentPower.toFixed(2) : "--"} W
+          </CardTitle>
           <CardAction>
             <Badge variant="outline">
               <Heater />
-              80%
+              {dutyCycle !== null ? `${(dutyCycle * 100).toFixed(0)}%` : "--"}
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Total Power Past {nMinutes} Minutes
+            Total Energy Past {nMinutes} Minutes
           </div>
-          <div className="text-muted-foreground">4200 J (1.17 Wh)</div>
+          <div className="text-muted-foreground">
+            {totalEnergy !== null
+              ? `${totalEnergy.toFixed(0)} J (${(totalEnergy / 3600).toFixed(2)} Wh)`
+              : "-- J (-- Wh)"}
+          </div>
         </CardFooter>
       </Card>
 
@@ -46,7 +70,9 @@ export default function HeaterCards({ nMinutes }: { nMinutes: number }) {
           </CardAction>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-semibold">24 °C</div>
+          <div className="text-2xl font-semibold">
+            {targetTemp !== null ? `${targetTemp.toFixed(1)} °C` : "-- °C"}
+          </div>
         </CardContent>
         <CardFooter>
           <Button>Edit</Button>

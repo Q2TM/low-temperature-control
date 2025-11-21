@@ -45,7 +45,7 @@ export function useTempMetrics({
     data: rawData,
     isLoading,
     error,
-  } = riceShower.useQuery("get", "/query/{instance_name}", {
+  } = riceShower.useQuery("get", "/query/temp/{instance_name}", {
     params: {
       path: {
         instance_name: instanceName,
