@@ -51,3 +51,50 @@ export async function setTargetTemperature(target: number) {
     return { success: false, error: "Failed to set target temperature" };
   }
 }
+
+export async function startPID() {
+  try {
+    const { data, error } = await heaterFetchClient.POST("/pid/start");
+
+    if (error) {
+      return { success: false, error: "Failed to start PID controller" };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Failed to start PID:", error);
+    return { success: false, error: "Failed to start PID controller" };
+  }
+}
+
+export async function stopPID() {
+  try {
+    const { data, error } = await heaterFetchClient.POST("/pid/stop");
+
+    if (error) {
+      return { success: false, error: "Failed to stop PID controller" };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Failed to stop PID:", error);
+    return { success: false, error: "Failed to stop PID controller" };
+  }
+}
+
+export async function getPIDParameters() {
+  try {
+    const { data, error } = await heaterFetchClient.GET(
+      "/config/pid-parameters",
+    );
+
+    if (error || !data) {
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch PID parameters:", error);
+    return null;
+  }
+}

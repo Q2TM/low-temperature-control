@@ -41,7 +41,7 @@ async function scrapeHeater(instance: string, pin: number) {
     instance,
     pinNumber: pin,
     dutyCycle: data.dutyCycle,
-    powerWatts: TEMP_MOCK_POWER * data.dutyCycle,
+    powerWatts: (TEMP_MOCK_POWER * data.dutyCycle) / 100,
   });
 }
 

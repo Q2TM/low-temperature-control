@@ -16,20 +16,53 @@ import { Spinner } from "@repo/ui/base/spinner";
 
 import { TemperatureChart } from "@/components/charts/TemperatureChart";
 import { DashboardControls } from "@/components/DashboardControls";
-import HeaterCards from "@/components/HeaterCards";
+import HeaterControl from "@/components/HeaterControl";
 import { useHeaterMetrics } from "@/hooks/useHeaterMetrics";
 import { useTempMetrics } from "@/hooks/useTempMetrics";
 
 type DashboardContentProps = {
   initialTargetTemp: number | null;
+  initialIsActive: boolean;
+  initialPidParameters: {
+    kp: number;
+    ki: number;
+    kd: number;
+  } | null;
 };
 
-export function DashboardContent({ initialTargetTemp }: DashboardContentProps) {
+export function DashboardContent({
+  initialTargetTemp,
+  initialIsActive,
+  initialPidParameters,
+}: DashboardContentProps) {
   const [timeEnd, setTimeEnd] = useState<number>(() => Date.now());
   const [selectedPin, setSelectedPin] = useState<number>(18);
   const [timeRange, setTimeRange] = useState<number>(10); // minutes
   const [timeInterval, setTimeInterval] = useState<number>(1); // seconds
   const [refreshInterval, setRefreshInterval] = useState<number>(10000); // ms
+  const [targetTemp, setTargetTemp] = useState(initialTargetTemp);
+  const [isActive, setIsActive] = useState(initialIsActive);
+  const [pidParameters, setPidParameters] = useState(initialPidParameters);
+
+  const handleStatusRefresh = async () => {
+    // Re-fetch heater status and config from server
+    const { getHeaterConfig, getHeaterStatus, getPIDParameters } = await import(
+      "@/actions/heater"
+    );
+
+    const [config, status, params] = await Promise.all([
+      getHeaterConfig(),
+      getHeaterStatus(),
+      getPIDParameters(),
+    ]);
+
+    if (config) setTargetTemp(config.targetTemp ?? null);
+    if (status) setIsActive(status.isActive);
+    if (params) setPidParameters(params);
+
+    // Also trigger data refresh
+    setTimeEnd(Date.now());
+  };
 
   const timeStart = useMemo(
     () => timeEnd - timeRange * 60 * 1000,
@@ -136,10 +169,13 @@ export function DashboardContent({ initialTargetTemp }: DashboardContentProps) {
           </CardFooter>
         </Card>
 
-        <HeaterCards
+        <HeaterControl
           nMinutes={timeRange}
           heaterStatus={heaterCardData}
-          targetTemp={initialTargetTemp}
+          targetTemp={targetTemp}
+          isActive={isActive}
+          pidParameters={pidParameters}
+          onStatusChange={handleStatusRefresh}
         />
       </div>
 

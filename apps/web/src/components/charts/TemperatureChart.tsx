@@ -201,7 +201,7 @@ export function TemperatureChart({ data, nMinutes }: TemperatureChartProps) {
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
-        ling gan gu footer
+        Footer Text
       </CardFooter>
     </Card>
   );
