@@ -166,18 +166,18 @@ class TempService:
         last_time = time.monotonic()
         while self._running:
             try:
-                current_time = time.monotonic()
-                dt = current_time - last_time
-                if dt <= 0.0:
-                    dt = 5.0
-
+                loop_start = time.monotonic()
+                dt = loop_start - last_time
+                if dt < 1.0:
+                    dt = 1.0
+                elif dt > 15.0:
+                    dt = 15.0
+                    
                 current_temp = readingApi.get_monitor(1).kelvin - 273.15
                 self._current_temp = current_temp
 
                 duty = self._pid.update(measurement=current_temp, dt=dt)
                 self.gpio.set_duty_cycle(duty_cycle=duty)
-
-                last_time = current_time
 
                 print(
                     f"T={current_temp:.2f}°C | Target={self._target:.1f}°C | Duty={duty:.1f}%")
@@ -187,6 +187,7 @@ class TempService:
                 self._record_error(error_msg)
                 # Continue running despite errors
 
+            last_time = loop_start
             time.sleep(5)
 
     def cleanup(self):
