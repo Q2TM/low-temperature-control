@@ -5,6 +5,8 @@ import {
 } from "@/actions/heater";
 import { DashboardContent } from "@/components/DashboardContent";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   // Fetch heater data on the server
   const [heaterConfig, heaterStatus, pidParameters] = await Promise.all([

@@ -1,5 +1,4 @@
 "use client";
-
 import { FileWarning, TrendingDown, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -14,6 +13,11 @@ import {
 } from "@repo/ui/base/card";
 import { Spinner } from "@repo/ui/base/spinner";
 
+import {
+  getHeaterConfig,
+  getHeaterStatus,
+  getPIDParameters,
+} from "@/actions/heater";
 import { TemperatureChart } from "@/components/charts/TemperatureChart";
 import { DashboardControls } from "@/components/DashboardControls";
 import HeaterControl from "@/components/HeaterControl";
@@ -46,10 +50,6 @@ export function DashboardContent({
 
   const handleStatusRefresh = async () => {
     // Re-fetch heater status and config from server
-    const { getHeaterConfig, getHeaterStatus, getPIDParameters } = await import(
-      "@/actions/heater"
-    );
-
     const [config, status, params] = await Promise.all([
       getHeaterConfig(),
       getHeaterStatus(),
