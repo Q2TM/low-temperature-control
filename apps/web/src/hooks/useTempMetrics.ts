@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import { riceShower } from "@/libs/api";
 
 type UseTempMetricsProps = {
@@ -45,91 +47,100 @@ export function useTempMetrics({
     data: rawData,
     isLoading,
     error,
-  } = riceShower.useQuery("get", "/query/temp/{instance_name}", {
-    params: {
-      path: {
-        instance_name: instanceName,
-      },
-      query: {
-        channels,
-        time_start: timeStart,
-        time_end: timeEnd,
-        interval,
+  } = riceShower.useQuery(
+    "get",
+    "/query/temp/{instance_name}",
+    {
+      params: {
+        path: {
+          instance_name: instanceName,
+        },
+        query: {
+          channels,
+          time_start: timeStart,
+          time_end: timeEnd,
+          interval,
+        },
       },
     },
-  });
+    {
+      placeholderData: (previousData) => previousData,
+    },
+  );
 
-  if (!rawData) {
-    return undefined;
-  }
+  return useMemo(() => {
+    if (!rawData) {
+      return undefined;
+    }
 
-  const data = rawData.metrics;
+    const data = rawData.metrics;
 
-  // Helper function to convert Kelvin to Celsius
-  const kelvinToCelsius = (kelvin: number): number => kelvin - 273.15;
+    // Helper function to convert Kelvin to Celsius
+    const kelvinToCelsius = (kelvin: number): number => kelvin - 273.15;
 
-  // Helper function to safely get temperature for a channel
-  const getChannelTemp = (
-    entry: (typeof data)[number],
-    channelNum: number,
-  ): number | null => {
-    const channelData = entry.channels.find((c) => c.channel === channelNum);
-    return channelData ? kelvinToCelsius(channelData.kelvin) : null;
-  };
-
-  // Get first and last entries
-  const lastEntry = data.length > 0 ? data[data.length - 1] : null;
-  const firstEntry = data.length > 0 ? data[0] : null;
-
-  // Calculate metrics for all channels
-  const channelsData: Record<number, ChannelData> = {};
-
-  channels.forEach((channelNum) => {
-    const currentTemp = lastEntry
-      ? getChannelTemp(lastEntry, channelNum)
-      : null;
-    const firstTemp = firstEntry
-      ? getChannelTemp(firstEntry, channelNum)
-      : null;
-
-    const tempChange =
-      currentTemp !== null && firstTemp !== null && firstTemp !== 0
-        ? ((currentTemp - firstTemp) / Math.abs(firstTemp)) * 100
-        : null;
-
-    const avgTemp =
-      data.length > 0
-        ? data.reduce((sum, entry) => {
-            const temp = getChannelTemp(entry, channelNum);
-            return sum + (temp ?? 0);
-          }, 0) / data.length
-        : null;
-
-    channelsData[channelNum] = {
-      currentTemp,
-      firstTemp,
-      tempChange,
-      avgTemp,
-    };
-  });
-
-  // Transform data for chart consumption
-  const chartData = data.map((entry) => {
-    const dataPoint: { time: string; [key: string]: string | number } = {
-      time: entry.time,
+    // Helper function to safely get temperature for a channel
+    const getChannelTemp = (
+      entry: (typeof data)[number],
+      channelNum: number,
+    ): number | null => {
+      const channelData = entry.channels.find((c) => c.channel === channelNum);
+      return channelData ? kelvinToCelsius(channelData.kelvin) : null;
     };
 
-    entry.channels.forEach((channel) => {
-      dataPoint[`Channel ${channel.channel}`] = channel.kelvin;
+    // Get first and last entries
+    const lastEntry = data.length > 0 ? data[data.length - 1] : null;
+    const firstEntry = data.length > 0 ? data[0] : null;
+
+    // Calculate metrics for all channels
+    const channelsData: Record<number, ChannelData> = {};
+
+    channels.forEach((channelNum) => {
+      const currentTemp = lastEntry
+        ? getChannelTemp(lastEntry, channelNum)
+        : null;
+      const firstTemp = firstEntry
+        ? getChannelTemp(firstEntry, channelNum)
+        : null;
+
+      const tempChange =
+        currentTemp !== null && firstTemp !== null && firstTemp !== 0
+          ? ((currentTemp - firstTemp) / Math.abs(firstTemp)) * 100
+          : null;
+
+      const avgTemp =
+        data.length > 0
+          ? data.reduce((sum, entry) => {
+              const temp = getChannelTemp(entry, channelNum);
+              return sum + (temp ?? 0);
+            }, 0) / data.length
+          : null;
+
+      channelsData[channelNum] = {
+        currentTemp,
+        firstTemp,
+        tempChange,
+        avgTemp,
+      };
     });
 
-    return dataPoint;
-  });
+    // Transform data for chart consumption
+    const chartData = data.map((entry) => {
+      const dataPoint: { time: string; [key: string]: string | number } = {
+        time: entry.time,
+      };
 
-  return {
-    isLoading,
-    error,
-    channels: channelsData,
-    chartData,
-  };
+      entry.channels.forEach((channel) => {
+        dataPoint[`Channel ${channel.channel}`] = channel.kelvin;
+      });
+
+      return dataPoint;
+    });
+
+    return {
+      isLoading,
+      error,
+      channels: channelsData,
+      chartData,
+    };
+  }, [rawData, isLoading, error, channels]);
 }

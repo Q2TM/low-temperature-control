@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import { riceShower } from "@/libs/api";
 
 type UseHeaterMetricsProps = {
@@ -58,111 +60,117 @@ export function useHeaterMetrics({
         },
       },
     },
+    {
+      placeholderData: (previousData) => previousData,
+    },
   );
 
-  if (!rawData) {
-    return undefined;
-  }
+  return useMemo(() => {
+    if (!rawData) {
+      return undefined;
+    }
 
-  const data = rawData.metrics;
+    const data = rawData.metrics;
 
-  // Helper function to safely get pin data
-  const getPinDutyCycle = (
-    entry: (typeof data)[number],
-    pinNum: number,
-  ): number | null => {
-    const pinData = entry.pins.find((p) => p.pinNumber === pinNum);
-    return pinData ? pinData.dutyCycle : null;
-  };
-
-  const getPinPower = (
-    entry: (typeof data)[number],
-    pinNum: number,
-  ): number | null => {
-    const pinData = entry.pins.find((p) => p.pinNumber === pinNum);
-    return pinData ? pinData.powerWatts : null;
-  };
-
-  // Get first and last entries
-  const lastEntry = data.length > 0 ? data[data.length - 1] : null;
-  const firstEntry = data.length > 0 ? data[0] : null;
-
-  // Calculate metrics for all pins
-  const pinsData: Record<number, PinData> = {};
-
-  pins.forEach((pinNum) => {
-    const currentDutyCycle = lastEntry
-      ? getPinDutyCycle(lastEntry, pinNum)
-      : null;
-    const firstDutyCycle = firstEntry
-      ? getPinDutyCycle(firstEntry, pinNum)
-      : null;
-
-    const dutyCycleChange =
-      currentDutyCycle !== null &&
-      firstDutyCycle !== null &&
-      firstDutyCycle !== 0
-        ? ((currentDutyCycle - firstDutyCycle) / Math.abs(firstDutyCycle)) * 100
-        : null;
-
-    const avgDutyCycle =
-      data.length > 0
-        ? data.reduce((sum, entry) => {
-            const dutyCycle = getPinDutyCycle(entry, pinNum);
-            return sum + (dutyCycle ?? 0);
-          }, 0) / data.length
-        : null;
-
-    const currentPower = lastEntry ? getPinPower(lastEntry, pinNum) : null;
-    const firstPower = firstEntry ? getPinPower(firstEntry, pinNum) : null;
-
-    const powerChange =
-      currentPower !== null && firstPower !== null && firstPower !== 0
-        ? ((currentPower - firstPower) / Math.abs(firstPower)) * 100
-        : null;
-
-    const avgPower =
-      data.length > 0
-        ? data.reduce((sum, entry) => {
-            const power = getPinPower(entry, pinNum);
-            return sum + (power ?? 0);
-          }, 0) / data.length
-        : null;
-
-    // Calculate total energy (integral of power over time)
-    // Energy = average power * time duration (in seconds)
-    const totalEnergy =
-      avgPower !== null ? avgPower * (timeRange / 1000) : null;
-
-    pinsData[pinNum] = {
-      currentDutyCycle,
-      firstDutyCycle,
-      dutyCycleChange,
-      avgDutyCycle,
-      currentPower,
-      firstPower,
-      powerChange,
-      avgPower,
-      totalEnergy,
-    };
-  });
-
-  // Transform data for chart consumption
-  const chartData = data.map((entry) => {
-    const dataPoint: { time: string; [key: string]: string | number } = {
-      time: entry.time,
+    // Helper function to safely get pin data
+    const getPinDutyCycle = (
+      entry: (typeof data)[number],
+      pinNum: number,
+    ): number | null => {
+      const pinData = entry.pins.find((p) => p.pinNumber === pinNum);
+      return pinData ? pinData.dutyCycle : null;
     };
 
-    entry.pins.forEach((pin) => {
-      dataPoint[`Pin ${pin.pinNumber} Duty Cycle`] = pin.dutyCycle;
-      dataPoint[`Pin ${pin.pinNumber} Power (W)`] = pin.powerWatts;
+    const getPinPower = (
+      entry: (typeof data)[number],
+      pinNum: number,
+    ): number | null => {
+      const pinData = entry.pins.find((p) => p.pinNumber === pinNum);
+      return pinData ? pinData.powerWatts : null;
+    };
+
+    // Get first and last entries
+    const lastEntry = data.length > 0 ? data[data.length - 1] : null;
+    const firstEntry = data.length > 0 ? data[0] : null;
+
+    // Calculate metrics for all pins
+    const pinsData: Record<number, PinData> = {};
+
+    pins.forEach((pinNum) => {
+      const currentDutyCycle = lastEntry
+        ? getPinDutyCycle(lastEntry, pinNum)
+        : null;
+      const firstDutyCycle = firstEntry
+        ? getPinDutyCycle(firstEntry, pinNum)
+        : null;
+
+      const dutyCycleChange =
+        currentDutyCycle !== null &&
+        firstDutyCycle !== null &&
+        firstDutyCycle !== 0
+          ? ((currentDutyCycle - firstDutyCycle) / Math.abs(firstDutyCycle)) *
+            100
+          : null;
+
+      const avgDutyCycle =
+        data.length > 0
+          ? data.reduce((sum, entry) => {
+              const dutyCycle = getPinDutyCycle(entry, pinNum);
+              return sum + (dutyCycle ?? 0);
+            }, 0) / data.length
+          : null;
+
+      const currentPower = lastEntry ? getPinPower(lastEntry, pinNum) : null;
+      const firstPower = firstEntry ? getPinPower(firstEntry, pinNum) : null;
+
+      const powerChange =
+        currentPower !== null && firstPower !== null && firstPower !== 0
+          ? ((currentPower - firstPower) / Math.abs(firstPower)) * 100
+          : null;
+
+      const avgPower =
+        data.length > 0
+          ? data.reduce((sum, entry) => {
+              const power = getPinPower(entry, pinNum);
+              return sum + (power ?? 0);
+            }, 0) / data.length
+          : null;
+
+      // Calculate total energy (integral of power over time)
+      // Energy = average power * time duration (in seconds)
+      const totalEnergy =
+        avgPower !== null ? avgPower * (timeRange / 1000) : null;
+
+      pinsData[pinNum] = {
+        currentDutyCycle,
+        firstDutyCycle,
+        dutyCycleChange,
+        avgDutyCycle,
+        currentPower,
+        firstPower,
+        powerChange,
+        avgPower,
+        totalEnergy,
+      };
     });
 
-    return dataPoint;
-  });
+    // Transform data for chart consumption
+    const chartData = data.map((entry) => {
+      const dataPoint: { time: string; [key: string]: string | number } = {
+        time: entry.time,
+      };
 
-  return {
-    pins: pinsData,
-    chartData,
-  };
+      entry.pins.forEach((pin) => {
+        dataPoint[`Pin ${pin.pinNumber} Duty Cycle`] = pin.dutyCycle;
+        dataPoint[`Pin ${pin.pinNumber} Power (W)`] = pin.powerWatts;
+      });
+
+      return dataPoint;
+    });
+
+    return {
+      pins: pinsData,
+      chartData,
+    };
+  }, [rawData, timeRange, pins]);
 }
