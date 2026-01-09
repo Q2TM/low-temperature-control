@@ -127,3 +127,19 @@
     font-family: var(--font-geist-mono), ui-monospace, monospace;
   }
 }
+
+@layer utilities {
+  .dashboard-layout {
+    @apply grid gap-6 max-w-[1600px] mx-auto;
+    @apply lg:grid-cols-[320px_1fr];
+  }
+
+  .dashboard-sidebar {
+    @apply space-y-4;
+    @apply lg:sticky lg:top-4 lg:self-start;
+  }
+
+  .dashboard-content {
+    @apply min-w-0;
+  }
+}

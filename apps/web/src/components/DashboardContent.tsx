@@ -1,4 +1,5 @@
 "use client";
+
 import { FileWarning, TrendingDown, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -123,63 +124,110 @@ export function DashboardContent({
 
   return (
     <>
-      <DashboardControls
-        selectedPin={selectedPin}
-        onPinChange={setSelectedPin}
-        timeInterval={timeInterval}
-        onTimeIntervalChange={setTimeInterval}
-        refreshInterval={refreshInterval}
-        onRefreshIntervalChange={setRefreshInterval}
-        timeRange={timeRange}
-        onTimeRangeChange={setTimeRange}
-      />
+      <aside className="dashboard-sidebar">
+        <div className="hidden lg:block mb-6">
+          <h1 className="text-2xl font-bold">Lab 20-05</h1>
+          <p className="text-sm text-muted-foreground">
+            20th Floor, Building 4
+          </p>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader>
-            <CardDescription className="text-lg">
-              Current Temperature
-            </CardDescription>
-            <CardTitle className="text-2xl">
-              {currentTemp !== null ? currentTemp.toFixed(2) : "--"} °C
-            </CardTitle>
-            <CardAction>
-              <Badge variant="outline">
-                {tempChange === null || Number.isNaN(tempChange) ? (
-                  <FileWarning />
-                ) : tempChange >= 0 ? (
-                  <TrendingUp />
-                ) : (
-                  <TrendingDown />
-                )}
-                {tempChange === null || Number.isNaN(tempChange)
-                  ? "--"
-                  : tempChange.toFixed(2)}
-                %
-              </Badge>
-            </CardAction>
-          </CardHeader>
-          <CardFooter className="flex-col items-start gap-1.5 text-sm">
-            <div className="line-clamp-1 flex gap-2 font-medium">
-              Average Temperature Past {timeRange} Minutes
-            </div>
-            <div className="text-muted-foreground">
-              {avgTemp !== null ? avgTemp.toFixed(2) : "--"} °C
-            </div>
-          </CardFooter>
-        </Card>
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold mb-3">PID Controller</h2>
+            <HeaterControl
+              targetTemp={targetTemp}
+              isActive={isActive}
+              pidParameters={pidParameters}
+              onStatusChange={handleStatusRefresh}
+            />
+          </div>
 
-        <HeaterControl
-          nMinutes={timeRange}
-          heaterStatus={heaterCardData}
-          targetTemp={targetTemp}
-          isActive={isActive}
-          pidParameters={pidParameters}
-          onStatusChange={handleStatusRefresh}
-        />
+          <Card>
+            <CardHeader>
+              <CardDescription className="text-lg">
+                Current Temperature
+              </CardDescription>
+              <CardTitle className="text-2xl">
+                {currentTemp !== null ? currentTemp.toFixed(2) : "--"} °C
+              </CardTitle>
+              <CardAction>
+                <Badge variant="outline">
+                  {tempChange === null || Number.isNaN(tempChange) ? (
+                    <FileWarning />
+                  ) : tempChange >= 0 ? (
+                    <TrendingUp />
+                  ) : (
+                    <TrendingDown />
+                  )}
+                  {tempChange === null || Number.isNaN(tempChange)
+                    ? "--"
+                    : tempChange.toFixed(2)}
+                  %
+                </Badge>
+              </CardAction>
+            </CardHeader>
+            <CardFooter className="flex-col items-start gap-1.5 text-sm">
+              <div className="line-clamp-1 flex gap-2 font-medium">
+                Average Temperature Past {timeRange} Minutes
+              </div>
+              <div className="text-muted-foreground">
+                {avgTemp !== null ? avgTemp.toFixed(2) : "--"} °C
+              </div>
+            </CardFooter>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardDescription className="text-lg">
+                Current Heat Power
+              </CardDescription>
+              <CardTitle className="text-2xl">
+                {heaterCardData?.currentPower !== null &&
+                heaterCardData?.currentPower !== undefined
+                  ? heaterCardData.currentPower.toFixed(2)
+                  : "--"}{" "}
+                W
+              </CardTitle>
+              <CardAction>
+                <Badge variant="outline">
+                  {heaterCardData?.dutyCycle !== null &&
+                  heaterCardData?.dutyCycle !== undefined
+                    ? `${(heaterCardData.dutyCycle * 100).toFixed(0)}%`
+                    : "--"}
+                </Badge>
+              </CardAction>
+            </CardHeader>
+            <CardFooter className="flex-col items-start gap-1.5 text-sm">
+              <div className="line-clamp-1 flex gap-2 font-medium">
+                Total Energy Past {timeRange} Minutes
+              </div>
+              <div className="text-muted-foreground">
+                {heaterCardData?.totalEnergy !== null &&
+                heaterCardData?.totalEnergy !== undefined
+                  ? `${heaterCardData.totalEnergy.toFixed(0)} J (${(heaterCardData.totalEnergy / 3600).toFixed(2)} Wh)`
+                  : "-- J (-- Wh)"}
+              </div>
+            </CardFooter>
+          </Card>
+        </div>
+      </aside>
+
+      <div className="dashboard-content">
+        <div className="mb-4">
+          <DashboardControls
+            selectedPin={selectedPin}
+            onPinChange={setSelectedPin}
+            timeInterval={timeInterval}
+            onTimeIntervalChange={setTimeInterval}
+            refreshInterval={refreshInterval}
+            onRefreshIntervalChange={setRefreshInterval}
+            timeRange={timeRange}
+            onTimeRangeChange={setTimeRange}
+          />
+        </div>
+        <TemperatureChart data={combinedChartData} nMinutes={timeRange} />
       </div>
-
-      <TemperatureChart data={combinedChartData} nMinutes={timeRange} />
     </>
   );
 }

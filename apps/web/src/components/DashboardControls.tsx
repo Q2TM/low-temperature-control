@@ -21,8 +21,8 @@ type DashboardControlsProps = {
 };
 
 export function DashboardControls({
-  selectedPin,
-  onPinChange,
+  // selectedPin,
+  // onPinChange,
   timeInterval,
   onTimeIntervalChange,
   refreshInterval,
@@ -31,14 +31,16 @@ export function DashboardControls({
   onTimeRangeChange,
 }: DashboardControlsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
-      <div className="space-y-2">
-        <Label htmlFor="time-range-select">Time Range</Label>
+    <div className="flex flex-wrap items-center justify-end gap-4 p-4 bg-muted/50 rounded-lg">
+      <div className="flex items-center gap-2">
+        <Label htmlFor="time-range-select" className="whitespace-nowrap">
+          Time Range
+        </Label>
         <Select
           value={timeRange.toString()}
           onValueChange={(value) => onTimeRangeChange(Number(value))}
         >
-          <SelectTrigger id="time-range-select">
+          <SelectTrigger id="time-range-select" className="w-[140px]">
             <SelectValue placeholder="Select range" />
           </SelectTrigger>
           <SelectContent>
@@ -51,13 +53,15 @@ export function DashboardControls({
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="interval-select">Data Resolution</Label>
+      <div className="flex items-center gap-2">
+        <Label htmlFor="interval-select" className="whitespace-nowrap">
+          Data Resolution
+        </Label>
         <Select
           value={timeInterval.toString()}
           onValueChange={(value) => onTimeIntervalChange(Number(value))}
         >
-          <SelectTrigger id="interval-select">
+          <SelectTrigger id="interval-select" className="w-[140px]">
             <SelectValue placeholder="Select interval" />
           </SelectTrigger>
           <SelectContent>
@@ -70,13 +74,15 @@ export function DashboardControls({
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="refresh-select">Refresh Rate</Label>
+      <div className="flex items-center gap-2">
+        <Label htmlFor="refresh-select" className="whitespace-nowrap">
+          Refresh Rate
+        </Label>
         <Select
           value={refreshInterval.toString()}
           onValueChange={(value) => onRefreshIntervalChange(Number(value))}
         >
-          <SelectTrigger id="refresh-select">
+          <SelectTrigger id="refresh-select" className="w-[140px]">
             <SelectValue placeholder="Select refresh" />
           </SelectTrigger>
           <SelectContent>

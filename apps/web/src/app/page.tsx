@@ -19,18 +19,20 @@ export default async function Home() {
   const isActive = heaterStatus?.isActive ?? false;
 
   return (
-    <main className="p-4 flex flex-col gap-6 max-w-5xl mx-auto">
-      <header className="self-center my-8">
+    <main className="p-4">
+      <header className="text-center my-8 lg:hidden">
         <h1 className="text-3xl font-bold">
           Lab 20-05 (20th Floor, Building 4)
         </h1>
       </header>
 
-      <DashboardContent
-        initialTargetTemp={targetTemp}
-        initialIsActive={isActive}
-        initialPidParameters={pidParameters}
-      />
+      <div className="dashboard-layout">
+        <DashboardContent
+          initialTargetTemp={targetTemp}
+          initialIsActive={isActive}
+          initialPidParameters={pidParameters}
+        />
+      </div>
     </main>
   );
 }

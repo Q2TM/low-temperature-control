@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Heater, Pause, Play, X } from "lucide-react";
+import { Check, Pause, Play, X } from "lucide-react";
 import { useState, useTransition } from "react";
 
 import { Badge } from "@repo/ui/base/badge";
@@ -12,18 +12,11 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@repo/ui/base/card";
 
 import { setTargetTemperature, startPID, stopPID } from "@/actions/heater";
 
 type HeaterControlProps = {
-  nMinutes: number;
-  heaterStatus: {
-    currentPower: number | null;
-    dutyCycle: number | null;
-    totalEnergy: number | null;
-  } | null;
   targetTemp: number | null;
   isActive: boolean;
   pidParameters: {
@@ -35,17 +28,11 @@ type HeaterControlProps = {
 };
 
 export default function HeaterControl({
-  nMinutes,
-  heaterStatus,
   targetTemp,
   isActive,
   pidParameters,
   onStatusChange,
 }: HeaterControlProps) {
-  const currentPower = heaterStatus?.currentPower ?? null;
-  const dutyCycle = heaterStatus?.dutyCycle ?? null;
-  const totalEnergy = heaterStatus?.totalEnergy ?? null;
-
   const [isEditing, setIsEditing] = useState(false);
   const [newTargetTemp, setNewTargetTemp] = useState(
     targetTemp?.toString() ?? "",
@@ -88,33 +75,6 @@ export default function HeaterControl({
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardDescription className="text-lg">
-            Current Heat Power
-          </CardDescription>
-          <CardTitle className="text-2xl">
-            {currentPower !== null ? currentPower.toFixed(2) : "--"} W
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <Heater />
-              {dutyCycle !== null ? `${(dutyCycle * 100).toFixed(0)}%` : "--"}
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Total Energy Past {nMinutes} Minutes
-          </div>
-          <div className="text-muted-foreground">
-            {totalEnergy !== null
-              ? `${totalEnergy.toFixed(0)} J (${(totalEnergy / 3600).toFixed(2)} Wh)`
-              : "-- J (-- Wh)"}
-          </div>
-        </CardFooter>
-      </Card>
-
       <Card>
         <CardHeader>
           <CardDescription className="text-lg">PID Controller</CardDescription>
