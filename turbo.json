@@ -12,7 +12,7 @@
         "build/**",
         "out/**"
       ],
-      "env": ["DATABASE_URL", "RICE_SHOWER_URL", "HEATER_URL"]
+      "env": ["DATABASE_URL", "RICE_SHOWER_URL", "HEATER_URL", "LAKESHORE_URL"]
     },
     "lint": {
       "dependsOn": ["^lint"]

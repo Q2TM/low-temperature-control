@@ -2,6 +2,7 @@
   "extends": "@repo/config/tsconfig.react-library.json",
   "compilerOptions": {
     "outDir": "dist",
+    "rootDir": "src",
     "paths": {
       "@repo/ui/*": ["./src/*"]
     }

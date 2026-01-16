@@ -10,7 +10,13 @@ export function NavBar() {
           Almond Dashboard
         </Link>
 
-        <div className="flex flex-row justify-end gap-4">
+        <div className="flex flex-row items-center gap-6">
+          <Link
+            href="/curve"
+            className="text-sm font-medium hover:text-primary transition-colors"
+          >
+            Curve Editor
+          </Link>
           <ThemeToggle />
         </div>
       </div>
