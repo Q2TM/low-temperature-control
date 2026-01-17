@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@source "./components";
+
+@source "./atom";
+@source "./icon";
+@source "./molecule";
+@source "./organism";
+@source "./template";
 
 @custom-variant dark (&:is(.dark *));
 

@@ -5,8 +5,14 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
-import { Button } from "@repo/ui/base/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/base/card";
+import { Button } from "@repo/ui/atom/button";
+import { Input } from "@repo/ui/atom/input";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/ui/molecule/card";
 import {
   Form,
   FormControl,
@@ -14,15 +20,14 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@repo/ui/base/form";
-import { Input } from "@repo/ui/base/input";
+} from "@repo/ui/molecule/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/ui/base/select";
+} from "@repo/ui/molecule/select";
 
 const curveHeaderSchema = z.object({
   curveName: z.string().min(1, "Curve name is required"),

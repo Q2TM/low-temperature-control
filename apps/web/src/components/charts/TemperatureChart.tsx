@@ -9,13 +9,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@repo/ui/base/card";
+} from "@repo/ui/molecule/card";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@repo/ui/base/chart";
+} from "@repo/ui/organism/chart";
 
 export const description = "A line chart";
 

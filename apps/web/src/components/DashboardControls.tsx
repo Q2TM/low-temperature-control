@@ -1,13 +1,13 @@
 "use client";
 
-import { Label } from "@repo/ui/base/label";
+import { Label } from "@repo/ui/atom/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/ui/base/select";
+} from "@repo/ui/molecule/select";
 
 type DashboardControlsProps = {
   selectedPin: number;

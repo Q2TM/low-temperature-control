@@ -3,8 +3,8 @@
 import { Check, Pause, Play, X } from "lucide-react";
 import { useState, useTransition } from "react";
 
-import { Badge } from "@repo/ui/base/badge";
-import { Button } from "@repo/ui/base/button";
+import { Badge } from "@repo/ui/atom/badge";
+import { Button } from "@repo/ui/atom/button";
 import {
   Card,
   CardAction,
@@ -12,7 +12,7 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-} from "@repo/ui/base/card";
+} from "@repo/ui/molecule/card";
 
 import { setTargetTemperature, startPID, stopPID } from "@/actions/heater";
 

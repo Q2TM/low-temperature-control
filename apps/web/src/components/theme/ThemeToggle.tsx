@@ -4,13 +4,13 @@ import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import * as React from "react";
 
-import { Button } from "@repo/ui/base/button";
+import { Button } from "@repo/ui/atom/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@repo/ui/base/dropdown-menu";
+} from "@repo/ui/molecule/dropdown-menu";
 
 // https://ui.shadcn.com/docs/dark-mode/next
 export function ThemeToggle() {

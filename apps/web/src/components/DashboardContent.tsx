@@ -3,7 +3,8 @@
 import { FileWarning, TrendingDown, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { Badge } from "@repo/ui/base/badge";
+import { Badge } from "@repo/ui/atom/badge";
+import { Spinner } from "@repo/ui/icon/spinner";
 import {
   Card,
   CardAction,
@@ -11,8 +12,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@repo/ui/base/card";
-import { Spinner } from "@repo/ui/base/spinner";
+} from "@repo/ui/molecule/card";
 
 import {
   getHeaterConfig,

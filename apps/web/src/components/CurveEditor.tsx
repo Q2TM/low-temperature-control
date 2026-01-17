@@ -3,8 +3,14 @@
 import * as React from "react";
 import { useCallback, useEffect, useState } from "react";
 
-import { Button } from "@repo/ui/base/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/base/card";
+import { Button } from "@repo/ui/atom/button";
+import { Spinner } from "@repo/ui/icon/spinner";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/ui/molecule/card";
 import {
   Dialog,
   DialogContent,
@@ -12,24 +18,23 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@repo/ui/base/dialog";
+} from "@repo/ui/molecule/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/ui/base/select";
-import { Spinner } from "@repo/ui/base/spinner";
-import { CurveChart } from "@repo/ui/components/molecule/CurveChart";
+} from "@repo/ui/molecule/select";
+import { CurveChart } from "@repo/ui/organism/CurveChart";
 import {
   type CurveDataPoint,
   CurveDataTable,
-} from "@repo/ui/components/molecule/CurveDataTable";
+} from "@repo/ui/organism/CurveDataTable";
 import {
   CurveHeaderForm,
   type CurveHeaderFormValues,
-} from "@repo/ui/components/molecule/CurveHeaderForm";
+} from "@repo/ui/organism/CurveHeaderForm";
 
 import {
   deleteCurve,

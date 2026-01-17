@@ -6,14 +6,16 @@
   "exports": {
     "./globals.css": "./src/globals.css",
     "./postcss.config.js": "./postcss.config.js",
-    "./lib/*": "./src/lib/*.ts",
+    "./utils": "./src/lib/utils.ts",
     "./hooks/*": [
       "./src/hooks/*.ts",
       "./src/hooks/*.tsx"
     ],
-    "./base/*": "./src/components/ui/*.tsx",
-    "./components/molecule/*": "./src/components/molecule/*.tsx",
-    "./components/organism/*": "./src/components/organism/*.tsx"
+    "./icon/*": "./src/icon/*.tsx",
+    "./atom/*": "./src/atom/*.tsx",
+    "./molecule/*": "./src/molecule/*.tsx",
+    "./organism/*": "./src/organism/*.tsx",
+    "./template/*": "./src/template/*.tsx"
   },
   "scripts": {
     "lint": "eslint .",

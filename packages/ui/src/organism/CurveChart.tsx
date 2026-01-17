@@ -10,7 +10,12 @@ import {
   YAxis,
 } from "recharts";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/base/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/ui/molecule/card";
 
 export interface CurveDataPoint {
   index: number;

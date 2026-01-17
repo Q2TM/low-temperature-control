@@ -2,9 +2,14 @@
 
 import * as React from "react";
 
-import { Button } from "@repo/ui/base/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/base/card";
-import { Input } from "@repo/ui/base/input";
+import { Button } from "@repo/ui/atom/button";
+import { Input } from "@repo/ui/atom/input";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/ui/molecule/card";
 import {
   Table,
   TableBody,
@@ -12,7 +17,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@repo/ui/base/table";
+} from "@repo/ui/molecule/table";
 
 export interface CurveDataPoint {
   index: number;

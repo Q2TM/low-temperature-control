@@ -1,7 +1,7 @@
 import { Heater } from "lucide-react";
 
-import { Badge } from "@repo/ui/base/badge";
-import { Button } from "@repo/ui/base/button";
+import { Badge } from "@repo/ui/atom/badge";
+import { Button } from "@repo/ui/atom/button";
 import {
   Card,
   CardAction,
@@ -10,7 +10,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@repo/ui/base/card";
+} from "@repo/ui/molecule/card";
 
 type HeaterCardsProps = {
   nMinutes: number;
