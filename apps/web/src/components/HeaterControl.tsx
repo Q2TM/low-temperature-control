@@ -14,7 +14,12 @@ import {
   CardHeader,
 } from "@repo/ui/molecule/card";
 
-import { setTargetTemperature, startPID, stopPID } from "@/actions/heater";
+import {
+  setPIDParameters,
+  setTargetTemperature,
+  startPID,
+  stopPID,
+} from "@/actions/heater";
 
 type HeaterControlProps = {
   targetTemp: number | null;
@@ -34,9 +39,13 @@ export default function HeaterControl({
   onStatusChange,
 }: HeaterControlProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingPID, setIsEditingPID] = useState(false);
   const [newTargetTemp, setNewTargetTemp] = useState(
     targetTemp?.toString() ?? "",
   );
+  const [newKp, setNewKp] = useState(pidParameters?.kp.toString() ?? "");
+  const [newKi, setNewKi] = useState(pidParameters?.ki.toString() ?? "");
+  const [newKd, setNewKd] = useState(pidParameters?.kd.toString() ?? "");
   const [isPending, startTransition] = useTransition();
 
   const handleSetTargetTemp = async () => {
@@ -60,6 +69,46 @@ export default function HeaterControl({
   const handleCancelEdit = () => {
     setIsEditing(false);
     setNewTargetTemp(targetTemp?.toString() ?? "");
+  };
+
+  const handleEditPID = () => {
+    setNewKp(pidParameters?.kp.toString() ?? "");
+    setNewKi(pidParameters?.ki.toString() ?? "");
+    setNewKd(pidParameters?.kd.toString() ?? "");
+    setIsEditingPID(true);
+  };
+
+  const handleSetPIDParams = async () => {
+    const kp = parseFloat(newKp);
+    const ki = parseFloat(newKi);
+    const kd = parseFloat(newKd);
+
+    if (isNaN(kp) || isNaN(ki) || isNaN(kd)) {
+      alert("Please enter valid numbers for all PID parameters");
+      return;
+    }
+
+    if (kp < 0 || ki < 0 || kd < 0) {
+      alert("PID parameters must be non-negative");
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await setPIDParameters({ kp, ki, kd });
+      if (result.success) {
+        setIsEditingPID(false);
+        onStatusChange?.();
+      } else {
+        alert(result.error || "Failed to set PID parameters");
+      }
+    });
+  };
+
+  const handleCancelPIDEdit = () => {
+    setIsEditingPID(false);
+    setNewKp(pidParameters?.kp.toString() ?? "");
+    setNewKi(pidParameters?.ki.toString() ?? "");
+    setNewKd(pidParameters?.kd.toString() ?? "");
   };
 
   const handleTogglePID = async () => {
@@ -128,54 +177,138 @@ export default function HeaterControl({
           {pidParameters && (
             <div className="space-y-2">
               <div className="text-sm font-medium">PID Parameters</div>
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <div>
-                  <div className="text-muted-foreground">Kp</div>
-                  <div className="font-mono">{pidParameters.kp.toFixed(3)}</div>
+              {isEditingPID ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground w-8">
+                      Kp
+                    </span>
+                    <input
+                      type="number"
+                      step="0.001"
+                      value={newKp}
+                      onChange={(e) => setNewKp(e.target.value)}
+                      className="flex-1 px-2 py-1 text-sm font-mono bg-transparent border rounded outline-none border-primary"
+                      placeholder="0.0"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground w-8">
+                      Ki
+                    </span>
+                    <input
+                      type="number"
+                      step="0.001"
+                      value={newKi}
+                      onChange={(e) => setNewKi(e.target.value)}
+                      className="flex-1 px-2 py-1 text-sm font-mono bg-transparent border rounded outline-none border-primary"
+                      placeholder="0.0"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground w-8">
+                      Kd
+                    </span>
+                    <input
+                      type="number"
+                      step="0.001"
+                      value={newKd}
+                      onChange={(e) => setNewKd(e.target.value)}
+                      className="flex-1 px-2 py-1 text-sm font-mono bg-transparent border rounded outline-none border-primary"
+                      placeholder="0.0"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={handleSetPIDParams}
+                      disabled={isPending}
+                      className="flex-1"
+                    >
+                      <Check className="mr-1 h-3 w-3" />
+                      Save
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleCancelPIDEdit}
+                      disabled={isPending}
+                      className="flex-1"
+                    >
+                      <X className="mr-1 h-3 w-3" />
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-muted-foreground">Ki</div>
-                  <div className="font-mono">{pidParameters.ki.toFixed(3)}</div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <div>
+                    <div className="text-muted-foreground">Kp</div>
+                    <div className="font-mono">
+                      {pidParameters.kp.toFixed(3)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Ki</div>
+                    <div className="font-mono">
+                      {pidParameters.ki.toFixed(3)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Kd</div>
+                    <div className="font-mono">
+                      {pidParameters.kd.toFixed(3)}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-muted-foreground">Kd</div>
-                  <div className="font-mono">{pidParameters.kd.toFixed(3)}</div>
-                </div>
-              </div>
+              )}
             </div>
           )}
         </CardContent>
-        <CardFooter className="gap-2">
-          {!isEditing && (
+        <CardFooter className="flex-col gap-2">
+          {!isEditing && !isEditingPID && (
+            <div className="flex w-full gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setIsEditing(true)}
+                disabled={isPending}
+              >
+                Edit Target
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={handleEditPID}
+                disabled={isPending}
+              >
+                Edit PID
+              </Button>
+            </div>
+          )}
+          {!isEditingPID && (
             <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => setIsEditing(true)}
+              onClick={handleTogglePID}
               disabled={isPending}
+              variant={isActive ? "destructive" : "default"}
+              className="w-full"
             >
-              Edit Target
+              {isPending ? (
+                "..."
+              ) : isActive ? (
+                <>
+                  <Pause className="mr-2 h-4 w-4" />
+                  Stop
+                </>
+              ) : (
+                <>
+                  <Play className="mr-2 h-4 w-4" />
+                  Start
+                </>
+              )}
             </Button>
           )}
-          <Button
-            onClick={handleTogglePID}
-            disabled={isPending}
-            variant={isActive ? "destructive" : "default"}
-            className="flex-1"
-          >
-            {isPending ? (
-              "..."
-            ) : isActive ? (
-              <>
-                <Pause className="mr-2 h-4 w-4" />
-                Stop
-              </>
-            ) : (
-              <>
-                <Play className="mr-2 h-4 w-4" />
-                Start
-              </>
-            )}
-          </Button>
         </CardFooter>
       </Card>
     </>

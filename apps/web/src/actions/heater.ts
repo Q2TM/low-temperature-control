@@ -98,3 +98,27 @@ export async function getPIDParameters() {
     return null;
   }
 }
+
+export async function setPIDParameters(params: {
+  kp: number;
+  ki: number;
+  kd: number;
+}) {
+  try {
+    const { data, error } = await heaterFetchClient.POST(
+      "/config/pid-parameters",
+      {
+        body: params,
+      },
+    );
+
+    if (error) {
+      return { success: false, error: "Failed to set PID parameters" };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Failed to set PID parameters:", error);
+    return { success: false, error: "Failed to set PID parameters" };
+  }
+}

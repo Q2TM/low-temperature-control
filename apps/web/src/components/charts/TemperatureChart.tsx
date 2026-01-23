@@ -174,7 +174,7 @@ export function TemperatureChart({ data, nMinutes }: TemperatureChartProps) {
                   key={channelKey}
                   yAxisId="temp"
                   dataKey={channelKey}
-                  type="natural"
+                  type="monotone"
                   stroke={`var(--chart-${(channelIndex % 5) + 1})`}
                   strokeWidth={2}
                   dot={false}
@@ -188,7 +188,7 @@ export function TemperatureChart({ data, nMinutes }: TemperatureChartProps) {
                   key={channelKey}
                   yAxisId="power"
                   dataKey={channelKey}
-                  type="natural"
+                  type="monotone"
                   stroke="var(--chart-5)"
                   strokeWidth={2}
                   dot={false}
