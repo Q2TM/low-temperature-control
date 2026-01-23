@@ -38,6 +38,10 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": [
+                    "temperature",
+                    "_celcius"
+                  ],
                   "properties": {
                     "temperature": {
                       "description": "Simulated temperature in Kelvin",
@@ -47,11 +51,7 @@
                       "description": "Simulated temperature in Celsius (For testing purposes)",
                       "type": "number"
                     }
-                  },
-                  "required": [
-                    "temperature",
-                    "_celcius"
-                  ]
+                  }
                 }
               }
             }
@@ -62,15 +62,15 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": [
+                    "error"
+                  ],
                   "properties": {
                     "error": {
                       "example": "Channel not found",
                       "type": "string"
                     }
-                  },
-                  "required": [
-                    "error"
-                  ]
+                  }
                 }
               }
             }
@@ -103,6 +103,9 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "value"
+                ],
                 "properties": {
                   "value": {
                     "description": "Heater output level (0.0 to 1.0)",
@@ -110,15 +113,15 @@
                     "maximum": 1,
                     "type": "number"
                   }
-                },
-                "required": [
-                  "value"
-                ]
+                }
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "value"
+                ],
                 "properties": {
                   "value": {
                     "description": "Heater output level (0.0 to 1.0)",
@@ -126,15 +129,15 @@
                     "maximum": 1,
                     "type": "number"
                   }
-                },
-                "required": [
-                  "value"
-                ]
+                }
               }
             },
             "multipart/form-data": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "value"
+                ],
                 "properties": {
                   "value": {
                     "description": "Heater output level (0.0 to 1.0)",
@@ -142,10 +145,7 @@
                     "maximum": 1,
                     "type": "number"
                   }
-                },
-                "required": [
-                  "value"
-                ]
+                }
               }
             }
           }
@@ -157,15 +157,15 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": [
+                    "success"
+                  ],
                   "properties": {
                     "success": {
                       "default": true,
                       "type": "boolean"
                     }
-                  },
-                  "required": [
-                    "success"
-                  ]
+                  }
                 }
               }
             }
@@ -176,15 +176,15 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": [
+                    "error"
+                  ],
                   "properties": {
                     "error": {
                       "example": "Pin not found",
                       "type": "string"
                     }
-                  },
-                  "required": [
-                    "error"
-                  ]
+                  }
                 }
               }
             }

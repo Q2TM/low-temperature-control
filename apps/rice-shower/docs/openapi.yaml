@@ -71,6 +71,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - dataPoints
+                  - metrics
                 properties:
                   dataPoints:
                     description: Total number of data points returned
@@ -79,6 +82,9 @@ paths:
                     type: array
                     items:
                       type: object
+                      required:
+                        - time
+                        - channels
                       properties:
                         time:
                           description: Timestamp of the metric
@@ -88,6 +94,10 @@ paths:
                           type: array
                           items:
                             type: object
+                            required:
+                              - channel
+                              - kelvin
+                              - resistance
                             properties:
                               channel:
                                 description: Channel number
@@ -98,27 +108,17 @@ paths:
                               resistance:
                                 description: Resistance in Ohms
                                 type: number
-                            required:
-                              - channel
-                              - kelvin
-                              - resistance
-                      required:
-                        - time
-                        - channels
-                required:
-                  - dataPoints
-                  - metrics
         "500":
           description: Response for status 500
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - error
                 properties:
                   error:
                     type: string
-                required:
-                  - error
   /query/heater/{instance_name}:
     get:
       tags:
@@ -180,6 +180,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - dataPoints
+                  - metrics
                 properties:
                   dataPoints:
                     description: Total number of data points returned
@@ -188,6 +191,9 @@ paths:
                     type: array
                     items:
                       type: object
+                      required:
+                        - time
+                        - pins
                       properties:
                         time:
                           description: Timestamp of the metric
@@ -197,6 +203,10 @@ paths:
                           type: array
                           items:
                             type: object
+                            required:
+                              - pinNumber
+                              - dutyCycle
+                              - powerWatts
                             properties:
                               pinNumber:
                                 description: Pin number
@@ -207,27 +217,17 @@ paths:
                               powerWatts:
                                 description: Power in Watts
                                 type: number
-                            required:
-                              - pinNumber
-                              - dutyCycle
-                              - powerWatts
-                      required:
-                        - time
-                        - pins
-                required:
-                  - dataPoints
-                  - metrics
         "500":
           description: Response for status 500
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - error
                 properties:
                   error:
                     type: string
-                required:
-                  - error
   /scrape/metrics:
     get:
       tags:
@@ -244,10 +244,17 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - sensor
+                  - heater
                 properties:
                   sensor:
                     description: Scraping metrics for sensor data (LGG)
                     type: object
+                    required:
+                      - lastError
+                      - errorCount
+                      - successCount
                     properties:
                       lastError:
                         nullable: true
@@ -260,6 +267,9 @@ paths:
                         type: array
                         items:
                           type: object
+                          required:
+                            - id
+                            - count
                           properties:
                             id:
                               description: Channel number or pin number
@@ -267,19 +277,16 @@ paths:
                             count:
                               description: Number of errors for this channel/pin
                               type: number
-                          required:
-                            - id
-                            - count
                       successCount:
                         description: Total number of successful scrapes
                         type: number
-                    required:
-                      - lastError
-                      - errorCount
-                      - successCount
                   heater:
                     description: Scraping metrics for heater data
                     type: object
+                    required:
+                      - lastError
+                      - errorCount
+                      - successCount
                     properties:
                       lastError:
                         nullable: true
@@ -292,6 +299,9 @@ paths:
                         type: array
                         items:
                           type: object
+                          required:
+                            - id
+                            - count
                           properties:
                             id:
                               description: Channel number or pin number
@@ -299,18 +309,8 @@ paths:
                             count:
                               description: Number of errors for this channel/pin
                               type: number
-                          required:
-                            - id
-                            - count
                       successCount:
                         description: Total number of successful scrapes
                         type: number
-                    required:
-                      - lastError
-                      - errorCount
-                      - successCount
-                required:
-                  - sensor
-                  - heater
 components:
   schemas: {}
