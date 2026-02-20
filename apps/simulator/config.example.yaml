@@ -1,0 +1,17 @@
+environments:
+  - name: main
+    enabled: true
+    size: [3, 3]
+    instruments:
+      - type: thermometer
+        position: [0, 0]
+        name: Main Thermometer
+        thermoChannel: 1
+      - type: heater
+        position: [2, 2]
+        name: Main Heater
+        heaterPin: 18
+        heaterPower: 2 # Watts
+    externalTemperature: 25
+    externalConductivity: 0.1 # Watts per Kelvin
+    internalConductivity: 0.5 # Watts per Kelvin
