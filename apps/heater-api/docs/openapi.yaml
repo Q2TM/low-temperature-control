@@ -4,13 +4,88 @@ info:
   description: API Server that controls the Heater via GPIO with PID Logic.
   version: 0.1.0
 paths:
-  /config/target-temp:
+  /channels:
+    get:
+      tags:
+      - Channels
+      summary: List Channels
+      description: 'List all configured channels from config.yaml.
+
+
+        Returns information about all channels including their configuration
+
+        and current runtime status (whether PID is active).'
+      operationId: listChannels
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelListResponse'
+  /channels/{channel_id}:
+    get:
+      tags:
+      - Channels
+      summary: Get Channel Info
+      description: 'Get information about a specific channel.
+
+
+        Returns configuration and runtime status for the specified channel.'
+      operationId: getChannelInfo
+      parameters:
+      - name: channel_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Channel Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelInfo'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /channels/status/all:
+    get:
+      tags:
+      - Channels
+      summary: Get All Channels Status
+      description: 'Get comprehensive PID status for all enabled channels at once.
+
+
+        Returns detailed PID status including temperature, duty cycle, parameters,
+
+        and error statistics for each enabled channel.'
+      operationId: getAllChannelsStatus
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllChannelsStatus'
+  /config/{channel_id}/target-temp:
     get:
       tags:
       - Config
       summary: Get Target Temp
-      description: Get the current target temperature.
+      description: Get the current target temperature for a specific channel.
       operationId: getTargetTemp
+      parameters:
+      - name: channel_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Channel Id
       responses:
         '200':
           description: Successful Response
@@ -18,18 +93,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TargetTemp'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
     post:
       tags:
       - Config
       summary: Set Target Temp
-      description: Set a new target temperature.
+      description: Set a new target temperature for a specific channel.
       operationId: setTargetTemp
+      parameters:
+      - name: channel_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Channel Id
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/TargetTemp'
-        required: true
       responses:
         '200':
           description: Successful Response
@@ -42,32 +130,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /config/pid-parameters:
+  /config/{channel_id}/pid-parameters:
     get:
       tags:
       - Config
       summary: Get Pid Parameters
-      description: Get the current PID parameters.
+      description: Get the current PID parameters for a specific channel.
       operationId: getPidParameters
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Parameters'
-    post:
-      tags:
-      - Config
-      summary: Set Pid Parameters
-      description: Update PID parameters.
-      operationId: setPidParameters
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Parameters'
+      parameters:
+      - name: channel_id
+        in: path
         required: true
+        schema:
+          type: string
+          title: Channel Id
       responses:
         '200':
           description: Successful Response
@@ -81,13 +157,53 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /config/all:
+    post:
+      tags:
+      - Config
+      summary: Set Pid Parameters
+      description: Update PID parameters for a specific channel.
+      operationId: setPidParameters
+      parameters:
+      - name: channel_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Channel Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parameters'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parameters'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /config/{channel_id}/all:
     get:
       tags:
       - Config
       summary: Get All Config
-      description: Get all configuration (target temperature and PID parameters).
+      description: Get all configuration (target temperature and PID parameters) for
+        a specific channel.
       operationId: getAllConfig
+      parameters:
+      - name: channel_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Channel Id
       responses:
         '200':
           description: Successful Response
@@ -95,13 +211,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConfigAll'
-  /pid/start:
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /pid/{channel_id}/start:
     post:
       tags:
       - PID
       summary: Start Pid
-      description: Start the PID controller.
+      description: Start the PID controller for a specific channel.
       operationId: startPID
+      parameters:
+      - name: channel_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Channel Id
       responses:
         '200':
           description: Successful Response
@@ -110,13 +239,26 @@ paths:
               schema:
                 type: string
                 title: Response Startpid
-  /pid/stop:
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /pid/{channel_id}/stop:
     post:
       tags:
       - PID
       summary: Stop Pid
-      description: Stop the PID controller.
+      description: Stop the PID controller for a specific channel.
       operationId: stopPID
+      parameters:
+      - name: channel_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Channel Id
       responses:
         '200':
           description: Successful Response
@@ -125,15 +267,25 @@ paths:
               schema:
                 type: string
                 title: Response Stoppid
-  /pid/status:
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /pid/{channel_id}/status:
     get:
       tags:
       - PID
       summary: Get Pid Status
-      description: 'Get comprehensive PID status.
+      description: 'Get comprehensive PID status for a specific channel.
 
 
         Returns:
+
+        - channel_id: Channel identifier
+
+        - channel_name: Channel name
 
         - is_active: Whether PID controller is currently running
 
@@ -150,6 +302,13 @@ paths:
         - error_stats: Error statistics including counts for last 1m, 10m, and since
         start'
       operationId: getPidStatus
+      parameters:
+      - name: channel_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Channel Id
       responses:
         '200':
           description: Successful Response
@@ -157,8 +316,68 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PidStatusOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    AllChannelsStatus:
+      properties:
+        channels:
+          additionalProperties:
+            $ref: '#/components/schemas/PidStatusOut'
+          type: object
+          title: Channels
+      type: object
+      required:
+      - channels
+      title: AllChannelsStatus
+      description: Status of all channels at once.
+    ChannelInfo:
+      properties:
+        channelId:
+          type: string
+          title: Channelid
+        name:
+          type: string
+          title: Name
+        gpioPin:
+          type: integer
+          title: Gpiopin
+        sensorChannel:
+          type: integer
+          title: Sensorchannel
+        enabled:
+          type: boolean
+          title: Enabled
+        isActive:
+          type: boolean
+          title: Isactive
+      type: object
+      required:
+      - channelId
+      - name
+      - gpioPin
+      - sensorChannel
+      - enabled
+      - isActive
+      title: ChannelInfo
+      description: Channel information with runtime status.
+    ChannelListResponse:
+      properties:
+        channels:
+          items:
+            $ref: '#/components/schemas/ChannelInfo'
+          type: array
+          title: Channels
+      type: object
+      required:
+      - channels
+      title: ChannelListResponse
+      description: List of all configured channels.
     ConfigAll:
       properties:
         targetTemp:
@@ -235,6 +454,12 @@ components:
         to retrieve or update temperature parameters.'
     PidStatusOut:
       properties:
+        channelId:
+          type: string
+          title: Channelid
+        channelName:
+          type: string
+          title: Channelname
         isActive:
           type: boolean
           title: Isactive
@@ -257,6 +482,8 @@ components:
           $ref: '#/components/schemas/ErrorStats'
       type: object
       required:
+      - channelId
+      - channelName
       - isActive
       - target
       - dutyCycle

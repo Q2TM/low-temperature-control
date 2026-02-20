@@ -10,11 +10,12 @@ dependencies = [
   "opentelemetry-exporter-otlp-proto-grpc>=1.38.0",
   "opentelemetry-instrumentation-fastapi>=0.59b0",
   "opentelemetry-sdk>=1.38.0",
+  "pyyaml>=6.0.3",
   "simulator_client",
 ]
 
 [dependency-groups]
-dev = ["autopep8>=2.3.2", "pyyaml>=6.0.3"]
+dev = ["autopep8>=2.3.2"]
 
 [tool.uv.sources]
 lgg_client = { workspace = true }

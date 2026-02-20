@@ -12,10 +12,21 @@ from .lgg_client import readingApi
 
 
 class TempService:
-    def __init__(self):
+    def __init__(
+        self,
+        channel_id: str,
+        channel_name: str,
+        gpio_pin: int,
+        sensor_channel: int
+    ):
+        """Initialize temperature service for a specific channel."""
+        self.channel_id = channel_id
+        self.channel_name = channel_name
+        self.pin = gpio_pin
+        self.sensor_channel = sensor_channel
+
         self._target = 30.0
         self._params = Parameters()
-        self.pin = 18
 
         self._pid = PIDController(
             kp=self._params.kp,
@@ -130,6 +141,8 @@ class TempService:
         error_stats = self._get_error_stats()
 
         return PidStatusOut(
+            channel_id=self.channel_id,
+            channel_name=self.channel_name,
             is_active=self._running,
             target=self._target,
             duty_cycle=duty_cycle,
@@ -164,6 +177,7 @@ class TempService:
     def _control_loop(self):
         """Internal method that runs in background to control temperature."""
         last_time = time.monotonic()
+        loop_start = time.monotonic()
         while self._running:
             try:
                 loop_start = time.monotonic()
@@ -172,18 +186,21 @@ class TempService:
                     dt = 1.0
                 elif dt > 15.0:
                     dt = 15.0
-                    
-                current_temp = readingApi.get_monitor(1).kelvin - 273.15
+
+                current_temp = readingApi.get_monitor(
+                    self.sensor_channel).kelvin - 273.15
                 self._current_temp = current_temp
 
                 duty = self._pid.update(measurement=current_temp, dt=dt)
                 self.gpio.set_duty_cycle(duty_cycle=duty)
 
                 print(
-                    f"T={current_temp:.2f}°C | Target={self._target:.1f}°C | Duty={duty:.1f}%")
+                    f"[{self.channel_id}] T={current_temp:.2f}°C | "
+                    f"Target={self._target:.1f}°C | Duty={duty:.1f}%"
+                )
             except Exception as e:
                 error_msg = f"Error in PID control loop: {type(e).__name__}: {str(e)}"
-                print(error_msg)
+                print(f"[{self.channel_id}] {error_msg}")
                 self._record_error(error_msg)
                 # Continue running despite errors
 

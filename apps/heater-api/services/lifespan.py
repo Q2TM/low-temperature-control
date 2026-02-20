@@ -8,12 +8,31 @@ from fastapi import FastAPI
 
 @asynccontextmanager
 async def lifespan(app) -> AsyncGenerator[None, None]:
-    # write OpenAPI schema on startup
+    # Initialize channel manager from config file on startup
+    from routers.dependencies import initialize_channel_manager, get_channel_manager
 
+    print("🔧 Initializing channels from config file...")
+    try:
+        initialize_channel_manager()
+        print("✅ Channel initialization complete\n")
+    except Exception as e:
+        print(f"❌ Failed to initialize channels: {e}")
+        raise
+
+    # write OpenAPI schema on startup
     if os.getenv("ENVIRONMENT") == "DEVELOPMENT":
         development_mode(app)
 
     yield
+
+    # Cleanup all channels on shutdown
+    print("\n🛑 Shutting down channels...")
+    try:
+        manager = get_channel_manager()
+        manager.cleanup_all()
+        print("✅ All channels cleaned up")
+    except Exception as e:
+        print(f"⚠️  Error during cleanup: {e}")
 
 
 def development_mode(app: FastAPI):

@@ -1,36 +1,49 @@
-from fastapi import APIRouter, Depends
-from services.temp_service import TempService
+from fastapi import APIRouter, Depends, HTTPException
+from services.channel_manager import ChannelManager
 from schemas.temp_control import PidStatusOut
-from .dependencies import get_temp_service
+from .dependencies import get_channel_manager
 
 
 router = APIRouter(prefix="/pid", tags=["PID"])
 
 
-@router.post("/start", response_model=str, operation_id="startPID")
+@router.post("/{channel_id}/start", response_model=str, operation_id="startPID")
 def start_pid(
-    service: TempService = Depends(get_temp_service)
+    channel_id: str,
+    manager: ChannelManager = Depends(get_channel_manager)
 ):
-    """Start the PID controller."""
-    return service.start()
+    """Start the PID controller for a specific channel."""
+    try:
+        service = manager.get_channel(channel_id)
+        return service.start()
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.post("/stop", response_model=str, operation_id="stopPID")
+@router.post("/{channel_id}/stop", response_model=str, operation_id="stopPID")
 def stop_pid(
-    service: TempService = Depends(get_temp_service)
+    channel_id: str,
+    manager: ChannelManager = Depends(get_channel_manager)
 ):
-    """Stop the PID controller."""
-    return service.stop()
+    """Stop the PID controller for a specific channel."""
+    try:
+        service = manager.get_channel(channel_id)
+        return service.stop()
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.get("/status", response_model=PidStatusOut, operation_id="getPidStatus")
+@router.get("/{channel_id}/status", response_model=PidStatusOut, operation_id="getPidStatus")
 def get_pid_status(
-    service: TempService = Depends(get_temp_service)
+    channel_id: str,
+    manager: ChannelManager = Depends(get_channel_manager)
 ) -> PidStatusOut:
     """
-    Get comprehensive PID status.
+    Get comprehensive PID status for a specific channel.
 
     Returns:
+    - channel_id: Channel identifier
+    - channel_name: Channel name
     - is_active: Whether PID controller is currently running
     - target: Target temperature
     - duty_cycle: Current PWM duty cycle
@@ -39,4 +52,8 @@ def get_pid_status(
     - pid_variables: Internal PID variables (integral, last_error, last_measurement)
     - error_stats: Error statistics including counts for last 1m, 10m, and since start
     """
-    return service.get_pid_status()
+    try:
+        service = manager.get_channel(channel_id)
+        return service.get_pid_status()
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))

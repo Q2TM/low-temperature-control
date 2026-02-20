@@ -278,13 +278,13 @@ dependencies = [
     { name = "opentelemetry-exporter-otlp-proto-grpc" },
     { name = "opentelemetry-instrumentation-fastapi" },
     { name = "opentelemetry-sdk" },
+    { name = "pyyaml" },
     { name = "simulator-client" },
 ]
 
 [package.dev-dependencies]
 dev = [
     { name = "autopep8" },
-    { name = "pyyaml" },
 ]
 
 [package.metadata]
@@ -296,14 +296,12 @@ requires-dist = [
     { name = "opentelemetry-exporter-otlp-proto-grpc", specifier = ">=1.38.0" },
     { name = "opentelemetry-instrumentation-fastapi", specifier = ">=0.59b0" },
     { name = "opentelemetry-sdk", specifier = ">=1.38.0" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "simulator-client", editable = "packages/api-client/src/python/simulator" },
 ]
 
 [package.metadata.requires-dev]
-dev = [
-    { name = "autopep8", specifier = ">=2.3.2" },
-    { name = "pyyaml", specifier = ">=6.0.3" },
-]
+dev = [{ name = "autopep8", specifier = ">=2.3.2" }]
 
 [[package]]
 name = "httpcore"

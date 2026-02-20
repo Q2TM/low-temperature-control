@@ -1,0 +1,24 @@
+# Heater API Channel Configuration
+# This file defines the heater channels to be controlled by the API.
+# Each channel represents a heater connected to a specific GPIO pin and associated with a Lakeshore sensor.
+
+channels:
+  # Primary heater channel (current default configuration)
+  - channel_id: "heater_1"
+    name: "Primary Heater"
+    gpio_pin: 18 # GPIO BCM pin number
+    sensor_channel: 1 # Lakeshore Model 240 sensor channel number
+    enabled: true
+
+  # Example: Additional channels can be added below
+  # - channel_id: "heater_2"
+  #   name: "Secondary Heater"
+  #   gpio_pin: 23
+  #   sensor_channel: 2
+  #   enabled: true
+
+  # - channel_id: "heater_3"
+  #   name: "Backup Heater"
+  #   gpio_pin: 24
+  #   sensor_channel: 3
+  #   enabled: false  # Can be disabled without removing from config

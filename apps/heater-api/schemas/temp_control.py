@@ -74,6 +74,8 @@ class PidStatusOut(CamelModel):
 
     Contains comprehensive information about PID controller state.
     """
+    channel_id: str
+    channel_name: str
     is_active: bool
     target: float
     duty_cycle: float

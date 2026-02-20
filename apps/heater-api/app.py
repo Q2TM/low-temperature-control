@@ -1,7 +1,7 @@
 from typing import cast
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from routers import config, pid
+from routers import channels, config, pid
 from services.lifespan import lifespan
 
 from opentelemetry import trace
@@ -30,18 +30,23 @@ app = FastAPI(
     lifespan=lifespan,
     openapi_tags=[
         {
+            "name": "Channels",
+            "description": "Channel information and management. Channels are configured in config.yaml.",
+        },
+        {
             "name": "Config",
-            "description": "Configuration endpoints for managing target temperature and PID parameters. These settings control the behavior of the PID controller.",
+            "description": "Configuration endpoints for managing target temperature and PID parameters per channel. These settings control the behavior of each PID controller.",
         },
         {
             "name": "PID",
-            "description": "PID controller operations for starting, stopping, and monitoring the temperature control loop. Includes comprehensive status information and error tracking.",
+            "description": "PID controller operations per channel for starting, stopping, and monitoring the temperature control loop. Includes comprehensive status information and error tracking.",
         },
     ],
 )
 print("Instrumenting app")
 FastAPIInstrumentor.instrument_app(app)
 
+app.include_router(channels.router)
 app.include_router(config.router)
 app.include_router(pid.router)
 
