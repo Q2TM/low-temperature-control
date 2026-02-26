@@ -1,3 +1,4 @@
+import { fixupConfigRules, fixupPluginRules } from "@eslint/compat";
 import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
@@ -10,7 +11,7 @@ import { config as baseConfig } from "./eslint-base.js";
  * @type {import("eslint").Linter.Config[]} */
 export const config = [
   ...baseConfig,
-  pluginReact.configs.flat.recommended,
+  ...fixupConfigRules([pluginReact.configs.flat.recommended]),
   {
     languageOptions: {
       ...pluginReact.configs.flat.recommended.languageOptions,
@@ -22,7 +23,7 @@ export const config = [
   },
   {
     plugins: {
-      "react-hooks": pluginReactHooks,
+      "react-hooks": fixupPluginRules(pluginReactHooks),
     },
     settings: { react: { version: "detect" } },
     rules: {

@@ -1,3 +1,4 @@
+import { fixupConfigRules, fixupPluginRules } from "@eslint/compat";
 import pluginNext from "@next/eslint-plugin-next";
 import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
@@ -12,15 +13,17 @@ import { config as baseConfig } from "./eslint-base.js";
  * */
 export const nextJsConfig = [
   ...baseConfig,
-  {
-    ...pluginReact.configs.flat.recommended,
-    languageOptions: {
-      ...pluginReact.configs.flat.recommended.languageOptions,
-      globals: {
-        ...globals.serviceworker,
+  ...fixupConfigRules([
+    {
+      ...pluginReact.configs.flat.recommended,
+      languageOptions: {
+        ...pluginReact.configs.flat.recommended.languageOptions,
+        globals: {
+          ...globals.serviceworker,
+        },
       },
     },
-  },
+  ]),
   {
     plugins: {
       "@next/next": pluginNext,
@@ -32,7 +35,7 @@ export const nextJsConfig = [
   },
   {
     plugins: {
-      "react-hooks": pluginReactHooks,
+      "react-hooks": fixupPluginRules(pluginReactHooks),
     },
     settings: { react: { version: "detect" } },
     rules: {
