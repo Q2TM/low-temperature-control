@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 
-import { getTemperature, setHeaterOutput } from "./service";
+import { getTemperature, setHeaterOutput, simulators } from "./service";
+import { simStateSchema } from "./types";
 
 export const simulatorController = new Elysia({
   detail: {
@@ -81,6 +82,26 @@ export const simulatorController = new Elysia({
           error: t.String({
             example: "Pin not found",
           }),
+        }),
+      },
+    },
+  )
+  .get(
+    "/all",
+    () => {
+      return {
+        simulators: simulators.map((sim) => sim.getState()),
+      };
+    },
+    {
+      detail: {
+        operationId: "getAllStates",
+        summary: "Get All Simulator States",
+        description: "Retrieve the state of all simulators",
+      },
+      response: {
+        200: t.Object({
+          simulators: t.Array(simStateSchema),
         }),
       },
     },

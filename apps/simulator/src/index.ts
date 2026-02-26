@@ -5,6 +5,7 @@ import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-node";
 import { Elysia } from "elysia";
 import { stringify } from "yaml";
 
+import { sanitizeForOas30 } from "./openapi-sanitize";
 import { simulatorController } from "./simulator";
 
 const app = new Elysia()
@@ -45,6 +46,9 @@ if (app.server?.development) {
   const openapiSpec = await fetch(appUrl + "/openapi/json").then((r) =>
     r.json(),
   );
+
+  // Post-process to fix TypeBox JSON Schema → OpenAPI 3.0 incompatibilities
+  sanitizeForOas30(openapiSpec);
 
   await Bun.write("docs/openapi.json", JSON.stringify(openapiSpec, null, 2));
   await Bun.write("docs/openapi.yaml", stringify(openapiSpec));

@@ -125,5 +125,112 @@ paths:
                   error:
                     example: Pin not found
                     type: string
+  /all:
+    get:
+      tags:
+        - Simulator
+      operationId: getAllStates
+      summary: Get All Simulator States
+      description: Retrieve the state of all simulators
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - simulators
+                properties:
+                  simulators:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - config
+                        - state
+                      properties:
+                        config:
+                          type: object
+                          required:
+                            - name
+                            - enabled
+                            - size
+                            - instruments
+                            - externalTemperature
+                            - externalConductivity
+                            - internalConductivity
+                          properties:
+                            name:
+                              type: string
+                            enabled:
+                              type: boolean
+                            size:
+                              type: array
+                              items:
+                                type: number
+                              minItems: 2
+                              maxItems: 2
+                            instruments:
+                              type: array
+                              items:
+                                anyOf:
+                                  - type: object
+                                    required:
+                                      - type
+                                      - position
+                                      - name
+                                      - thermoChannel
+                                    properties:
+                                      type:
+                                        type: string
+                                        enum:
+                                          - thermometer
+                                      position:
+                                        type: array
+                                        items:
+                                          type: number
+                                        minItems: 2
+                                        maxItems: 2
+                                      name:
+                                        type: string
+                                      thermoChannel:
+                                        type: number
+                                  - type: object
+                                    required:
+                                      - type
+                                      - position
+                                      - name
+                                      - heaterPin
+                                      - heaterPower
+                                    properties:
+                                      type:
+                                        type: string
+                                        enum:
+                                          - heater
+                                      position:
+                                        type: array
+                                        items:
+                                          type: number
+                                        minItems: 2
+                                        maxItems: 2
+                                      name:
+                                        type: string
+                                      heaterPin:
+                                        type: number
+                                      heaterPower:
+                                        type: number
+                            externalTemperature:
+                              type: number
+                            externalConductivity:
+                              type: number
+                            internalConductivity:
+                              type: number
+                        state:
+                          type: array
+                          items:
+                            type: array
+                            items:
+                              type: number
 components:
   schemas: {}

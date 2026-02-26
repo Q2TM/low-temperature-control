@@ -1,12 +1,14 @@
+import { Value } from "@sinclair/typebox/value";
 import { parse } from "yaml";
 
 import { environment } from "@/environment";
 
-import { configSchema, SimEnvConfig } from "./types";
+import { configSchema, SimEnvConfig } from "./config";
+import { SimState } from "./types";
 
 const configRaw = await Bun.file(environment.CONFIG_FILE).text();
 
-const allConfigs = configSchema.parse(parse(configRaw));
+const allConfigs = Value.Parse(configSchema, parse(configRaw));
 
 const thermoMap = new Map<number, Simulator>();
 const heaterMap = new Map<number, Simulator>();
@@ -19,8 +21,12 @@ if (enabledConfigs.length === 0) {
   throw new Error("No enabled environments found in configuration");
 }
 
+function posKey(x: number, y: number): string {
+  return `${x},${y}`;
+}
+
 class Simulator {
-  readonly temperature = new Map<[number, number], number>(); // position -> temperature
+  readonly temperature = new Map<string, number>(); // "x,y" -> temperature
   readonly heaterOutput = new Map<number, number>(); // pin -> output (0 to 1)
 
   constructor(
@@ -30,7 +36,7 @@ class Simulator {
     const [width, height] = this.config.size;
     for (let x = 0; x < width; x++) {
       for (let y = 0; y < height; y++) {
-        this.temperature.set([x, y], this.config.externalTemperature);
+        this.temperature.set(posKey(x, y), this.config.externalTemperature);
       }
     }
 
@@ -39,12 +45,13 @@ class Simulator {
 
   private loop() {
     const [width, height] = this.config.size;
-    const tempDiffs = new Map<[number, number], number>();
+    const tempDiffs = new Map<string, number>();
 
     // Calculate all temperature differences first
     for (let x = 0; x < width; x++) {
       for (let y = 0; y < height; y++) {
-        const currentTemp = this.temperature.get([x, y])!;
+        const key = posKey(x, y);
+        const currentTemp = this.temperature.get(key)!;
         let diff = 0;
 
         // Check if this tile has a heater
@@ -77,7 +84,7 @@ class Simulator {
         for (const [adjX, adjY] of adjacentPositions) {
           // Check boundaries
           if (adjX >= 0 && adjX < width && adjY >= 0 && adjY < height) {
-            const adjacentTemp = this.temperature.get([adjX, adjY])!;
+            const adjacentTemp = this.temperature.get(posKey(adjX, adjY))!;
             diff +=
               (adjacentTemp - currentTemp) *
               this.config.internalConductivity *
@@ -85,16 +92,17 @@ class Simulator {
           }
         }
 
-        tempDiffs.set([x, y], diff);
+        tempDiffs.set(key, diff);
       }
     }
 
     // Apply all temperature changes
     for (let x = 0; x < width; x++) {
       for (let y = 0; y < height; y++) {
-        const currentTemp = this.temperature.get([x, y])!;
-        const diff = tempDiffs.get([x, y])!;
-        this.temperature.set([x, y], currentTemp + diff);
+        const key = posKey(x, y);
+        const currentTemp = this.temperature.get(key)!;
+        const diff = tempDiffs.get(key)!;
+        this.temperature.set(key, currentTemp + diff);
       }
     }
   }
@@ -104,11 +112,24 @@ class Simulator {
       (inst) => inst.type === "thermometer" && inst.thermoChannel === channel,
     );
     if (!instrument) return undefined;
-    return this.temperature.get(instrument.position);
+    return this.temperature.get(posKey(...instrument.position));
   }
 
   setHeaterOutput(pin: number, value: number) {
     this.heaterOutput.set(pin, Math.max(0, Math.min(1, value)));
+  }
+
+  getState() {
+    const [width, height] = this.config.size;
+    const state: number[][] = [];
+    for (let x = 0; x < width; x++) {
+      const row: number[] = [];
+      for (let y = 0; y < height; y++) {
+        row.push(this.temperature.get(posKey(x, y))!);
+      }
+      state.push(row);
+    }
+    return { config: this.config, state } satisfies SimState;
   }
 }
 

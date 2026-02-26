@@ -1,9 +1,12 @@
-import { z } from "zod";
+import { Value } from "@sinclair/typebox/value";
+import { Static, t } from "elysia";
 
-export const environmentSchema = z.object({
-  DATABASE_URL: z.string(),
-  LGG_URL: z.url().optional().default("http://localhost:8000"),
-  CONFIG_FILE: z.string().default("./config.yaml"),
+export const environmentSchema = t.Object({
+  DATABASE_URL: t.String(),
+  LGG_URL: t.String({ default: "http://localhost:8000" }),
+  CONFIG_FILE: t.String({ default: "./config.yaml" }),
 });
 
-export const environment = environmentSchema.parse(process.env);
+export type Environment = Static<typeof environmentSchema>;
+
+export const environment = Value.Parse(environmentSchema, process.env);

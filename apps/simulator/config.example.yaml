@@ -12,6 +12,16 @@ environments:
         name: Main Heater
         heaterPin: 18
         heaterPower: 2 # Watts
+      - type: heater
+        position: [0, 2]
+        name: Cooler 1
+        heaterPin: 1
+        heaterPower: -2 # Watts
+      - type: heater
+        position: [0, 2]
+        name: Cooler 2
+        heaterPin: 2
+        heaterPower: -2 # Watts
     externalTemperature: 25
     externalConductivity: 0.1 # Watts per Kelvin
     internalConductivity: 0.5 # Watts per Kelvin
