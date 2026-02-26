@@ -38,7 +38,7 @@ paths:
         in: path
         required: true
         schema:
-          type: string
+          type: integer
           title: Channel Id
       responses:
         '200':
@@ -84,7 +84,7 @@ paths:
         in: path
         required: true
         schema:
-          type: string
+          type: integer
           title: Channel Id
       responses:
         '200':
@@ -110,7 +110,7 @@ paths:
         in: path
         required: true
         schema:
-          type: string
+          type: integer
           title: Channel Id
       requestBody:
         required: true
@@ -142,7 +142,7 @@ paths:
         in: path
         required: true
         schema:
-          type: string
+          type: integer
           title: Channel Id
       responses:
         '200':
@@ -168,7 +168,7 @@ paths:
         in: path
         required: true
         schema:
-          type: string
+          type: integer
           title: Channel Id
       requestBody:
         required: true
@@ -202,7 +202,7 @@ paths:
         in: path
         required: true
         schema:
-          type: string
+          type: integer
           title: Channel Id
       responses:
         '200':
@@ -229,7 +229,7 @@ paths:
         in: path
         required: true
         schema:
-          type: string
+          type: integer
           title: Channel Id
       responses:
         '200':
@@ -257,7 +257,7 @@ paths:
         in: path
         required: true
         schema:
-          type: string
+          type: integer
           title: Channel Id
       responses:
         '200':
@@ -307,7 +307,7 @@ paths:
         in: path
         required: true
         schema:
-          type: string
+          type: integer
           title: Channel Id
       responses:
         '200':
@@ -327,9 +327,9 @@ components:
     AllChannelsStatus:
       properties:
         channels:
-          additionalProperties:
+          items:
             $ref: '#/components/schemas/PidStatusOut'
-          type: object
+          type: array
           title: Channels
       type: object
       required:
@@ -339,7 +339,7 @@ components:
     ChannelInfo:
       properties:
         channelId:
-          type: string
+          type: integer
           title: Channelid
         name:
           type: string
@@ -356,6 +356,8 @@ components:
         isActive:
           type: boolean
           title: Isactive
+          description: Whether PID controller is currently active
+          default: false
       type: object
       required:
       - channelId
@@ -363,7 +365,6 @@ components:
       - gpioPin
       - sensorChannel
       - enabled
-      - isActive
       title: ChannelInfo
       description: Channel information with runtime status.
     ChannelListResponse:
@@ -455,7 +456,7 @@ components:
     PidStatusOut:
       properties:
         channelId:
-          type: string
+          type: integer
           title: Channelid
         channelName:
           type: string

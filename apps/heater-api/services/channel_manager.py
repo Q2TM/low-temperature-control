@@ -14,8 +14,8 @@ class ChannelManager:
         Args:
             config_path: Path to YAML configuration file (default: config.yaml)
         """
-        self._channels: Dict[str, TempService] = {}
-        self._configs: Dict[str, ChannelConfig] = {}
+        self._channels: Dict[int, TempService] = {}
+        self._configs: Dict[int, ChannelConfig] = {}
         self._initialize_channels(config_path)
 
     def _initialize_channels(self, config_path: str):
@@ -42,7 +42,7 @@ class ChannelManager:
                     f"⊘ Skipped disabled channel: {config.channel_id} ({config.name})"
                 )
 
-    def get_channel(self, channel_id: str) -> TempService:
+    def get_channel(self, channel_id: int) -> TempService:
         """
         Get a specific channel service instance.
 
@@ -85,7 +85,7 @@ class ChannelManager:
             ))
         return result
 
-    def get_channel_info(self, channel_id: str) -> ChannelInfo:
+    def get_channel_info(self, channel_id: int) -> ChannelInfo:
         """
         Get info for a specific channel.
 
@@ -120,11 +120,12 @@ class ChannelManager:
         Get PID status for all enabled channels.
 
         Returns:
-            AllChannelsStatus object with status dict
+            AllChannelsStatus object with status list
         """
-        statuses = {}
-        for channel_id, service in self._channels.items():
-            statuses[channel_id] = service.get_pid_status()
+        statuses = [
+            service.get_pid_status()
+            for service in self._channels.values()
+        ]
         return AllChannelsStatus(channels=statuses)
 
     def cleanup_all(self):

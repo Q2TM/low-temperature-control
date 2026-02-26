@@ -9,7 +9,7 @@ router = APIRouter(prefix="/pid", tags=["PID"])
 
 @router.post("/{channel_id}/start", response_model=str, operation_id="startPID")
 def start_pid(
-    channel_id: str,
+    channel_id: int,
     manager: ChannelManager = Depends(get_channel_manager)
 ):
     """Start the PID controller for a specific channel."""
@@ -22,7 +22,7 @@ def start_pid(
 
 @router.post("/{channel_id}/stop", response_model=str, operation_id="stopPID")
 def stop_pid(
-    channel_id: str,
+    channel_id: int,
     manager: ChannelManager = Depends(get_channel_manager)
 ):
     """Stop the PID controller for a specific channel."""
@@ -35,7 +35,7 @@ def stop_pid(
 
 @router.get("/{channel_id}/status", response_model=PidStatusOut, operation_id="getPidStatus")
 def get_pid_status(
-    channel_id: str,
+    channel_id: int,
     manager: ChannelManager = Depends(get_channel_manager)
 ) -> PidStatusOut:
     """

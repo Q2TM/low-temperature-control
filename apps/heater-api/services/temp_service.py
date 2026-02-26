@@ -14,7 +14,7 @@ from .lgg_client import readingApi
 class TempService:
     def __init__(
         self,
-        channel_id: str,
+        channel_id: int,
         channel_name: str,
         gpio_pin: int,
         sensor_channel: int

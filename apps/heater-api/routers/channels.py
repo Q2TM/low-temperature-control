@@ -22,7 +22,7 @@ def list_channels(
 
 @router.get("/{channel_id}", response_model=ChannelInfo, operation_id="getChannelInfo")
 def get_channel_info(
-    channel_id: str,
+    channel_id: int,
     manager: ChannelManager = Depends(get_channel_manager)
 ) -> ChannelInfo:
     """

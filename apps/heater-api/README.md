@@ -24,7 +24,7 @@ API Server that controls multiple heaters via GPIO with PID Logic. Supports mult
 2. Edit `config.yaml` to define your heater channels:
    ```yaml
    channels:
-     - channel_id: "heater_1"
+     - channel_id: 1
        name: "Primary Heater"
        gpio_pin: 18 # GPIO BCM pin number
        sensor_channel: 1 # Lakeshore sensor channel
@@ -33,7 +33,7 @@ API Server that controls multiple heaters via GPIO with PID Logic. Supports mult
 
 ### Configuration Options
 
-- `channel_id`: Unique identifier for the channel (used in API endpoints)
+- `channel_id`: Unique integer identifier for the channel (used in API endpoints)
 - `name`: Human-readable name for the channel
 - `gpio_pin`: GPIO BCM pin number (0-40) for PWM control
 - `sensor_channel`: Lakeshore Model 240 sensor channel number (≥1)

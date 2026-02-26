@@ -42,7 +42,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
+              "type": "integer",
               "title": "Channel Id"
             }
           }
@@ -107,7 +107,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
+              "type": "integer",
               "title": "Channel Id"
             }
           }
@@ -148,7 +148,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
+              "type": "integer",
               "title": "Channel Id"
             }
           }
@@ -199,7 +199,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
+              "type": "integer",
               "title": "Channel Id"
             }
           }
@@ -240,7 +240,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
+              "type": "integer",
               "title": "Channel Id"
             }
           }
@@ -293,7 +293,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
+              "type": "integer",
               "title": "Channel Id"
             }
           }
@@ -336,7 +336,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
+              "type": "integer",
               "title": "Channel Id"
             }
           }
@@ -380,7 +380,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
+              "type": "integer",
               "title": "Channel Id"
             }
           }
@@ -424,7 +424,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
+              "type": "integer",
               "title": "Channel Id"
             }
           }
@@ -459,10 +459,10 @@
       "AllChannelsStatus": {
         "properties": {
           "channels": {
-            "additionalProperties": {
+            "items": {
               "$ref": "#/components/schemas/PidStatusOut"
             },
-            "type": "object",
+            "type": "array",
             "title": "Channels"
           }
         },
@@ -476,7 +476,7 @@
       "ChannelInfo": {
         "properties": {
           "channelId": {
-            "type": "string",
+            "type": "integer",
             "title": "Channelid"
           },
           "name": {
@@ -497,7 +497,9 @@
           },
           "isActive": {
             "type": "boolean",
-            "title": "Isactive"
+            "title": "Isactive",
+            "description": "Whether PID controller is currently active",
+            "default": false
           }
         },
         "type": "object",
@@ -506,8 +508,7 @@
           "name",
           "gpioPin",
           "sensorChannel",
-          "enabled",
-          "isActive"
+          "enabled"
         ],
         "title": "ChannelInfo",
         "description": "Channel information with runtime status."
@@ -621,7 +622,7 @@
       "PidStatusOut": {
         "properties": {
           "channelId": {
-            "type": "string",
+            "type": "integer",
             "title": "Channelid"
           },
           "channelName": {

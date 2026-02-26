@@ -9,7 +9,7 @@ router = APIRouter(prefix="/config", tags=["Config"])
 
 @router.get("/{channel_id}/target-temp", response_model=TargetTemp, operation_id="getTargetTemp")
 def get_target_temp(
-    channel_id: str,
+    channel_id: int,
     manager: ChannelManager = Depends(get_channel_manager)
 ) -> TargetTemp:
     """Get the current target temperature for a specific channel."""
@@ -22,7 +22,7 @@ def get_target_temp(
 
 @router.post("/{channel_id}/target-temp", response_model=None, operation_id="setTargetTemp")
 def set_target_temp(
-    channel_id: str,
+    channel_id: int,
     payload: TargetTemp,
     manager: ChannelManager = Depends(get_channel_manager)
 ) -> None:
@@ -37,7 +37,7 @@ def set_target_temp(
 
 @router.get("/{channel_id}/pid-parameters", response_model=Parameters, operation_id="getPidParameters")
 def get_pid_parameters(
-    channel_id: str,
+    channel_id: int,
     manager: ChannelManager = Depends(get_channel_manager)
 ) -> Parameters:
     """Get the current PID parameters for a specific channel."""
@@ -50,7 +50,7 @@ def get_pid_parameters(
 
 @router.post("/{channel_id}/pid-parameters", response_model=Parameters, operation_id="setPidParameters")
 def set_pid_parameters(
-    channel_id: str,
+    channel_id: int,
     params: Parameters,
     manager: ChannelManager = Depends(get_channel_manager)
 ) -> Parameters:
@@ -64,7 +64,7 @@ def set_pid_parameters(
 
 @router.get("/{channel_id}/all", response_model=ConfigAll, operation_id="getAllConfig")
 def get_all_config(
-    channel_id: str,
+    channel_id: int,
     manager: ChannelManager = Depends(get_channel_manager)
 ) -> ConfigAll:
     """Get all configuration (target temperature and PID parameters) for a specific channel."""

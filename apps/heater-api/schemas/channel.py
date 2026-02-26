@@ -7,7 +7,7 @@ from schemas.temp_control import PidStatusOut
 
 class ChannelConfig(CamelModel):
     """Channel configuration loaded from YAML file."""
-    channel_id: str = Field(...,
+    channel_id: int = Field(...,
                             description="Unique identifier for the channel")
     name: str = Field(..., description="Human-readable name")
     gpio_pin: int = Field(..., ge=0, le=40, description="GPIO BCM pin number")
@@ -19,12 +19,13 @@ class ChannelConfig(CamelModel):
 
 class ChannelInfo(CamelModel):
     """Channel information with runtime status."""
-    channel_id: str
+    channel_id: int
     name: str
     gpio_pin: int
     sensor_channel: int
     enabled: bool
-    is_active: bool  # Whether PID is currently running
+    is_active: bool = Field(
+        default=False, description="Whether PID controller is currently active")
 
 
 class ChannelListResponse(CamelModel):
@@ -34,4 +35,4 @@ class ChannelListResponse(CamelModel):
 
 class AllChannelsStatus(CamelModel):
     """Status of all channels at once."""
-    channels: dict[str, PidStatusOut]  # channel_id -> status
+    channels: list[PidStatusOut]
