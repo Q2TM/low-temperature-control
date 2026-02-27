@@ -26,6 +26,13 @@ class TestSimulatorApi(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
+    def test_get_all_states(self) -> None:
+        """Test case for get_all_states
+
+        Get All Simulator States
+        """
+        pass
+
     def test_get_simulator_temperature(self) -> None:
         """Test case for get_simulator_temperature
 

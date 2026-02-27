@@ -4,9 +4,74 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**get_all_states**](SimulatorApi.md#get_all_states) | **GET** /all | Get All Simulator States
 [**get_simulator_temperature**](SimulatorApi.md#get_simulator_temperature) | **GET** /temperature/{channel} | Get Simulator Temperature
 [**set_heater_output**](SimulatorApi.md#set_heater_output) | **POST** /heater/{pin} | Set Heater Output
 
+
+# **get_all_states**
+> GetAllStates200Response get_all_states()
+
+Get All Simulator States
+
+Retrieve the state of all simulators
+
+### Example
+
+
+```python
+import simulator_client
+from simulator_client.models.get_all_states200_response import GetAllStates200Response
+from simulator_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = simulator_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with simulator_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = simulator_client.SimulatorApi(api_client)
+
+    try:
+        # Get All Simulator States
+        api_response = api_instance.get_all_states()
+        print("The response of SimulatorApi->get_all_states:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling SimulatorApi->get_all_states: %s\n" % e)
+```
+
+
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**GetAllStates200Response**](GetAllStates200Response.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Response for status 200 |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **get_simulator_temperature**
 > GetSimulatorTemperature200Response get_simulator_temperature(channel)

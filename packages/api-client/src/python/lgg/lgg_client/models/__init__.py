@@ -22,11 +22,11 @@ from lgg_client.models.curve_header import CurveHeader
 from lgg_client.models.http_validation_error import HTTPValidationError
 from lgg_client.models.identification_resp import IdentificationResp
 from lgg_client.models.input_parameter import InputParameter
+from lgg_client.models.location_inner import LocationInner
 from lgg_client.models.monitor_resp import MonitorResp
 from lgg_client.models.operation_result import OperationResult
 from lgg_client.models.sensor_types import SensorTypes
 from lgg_client.models.status_resp import StatusResp
 from lgg_client.models.units import Units
 from lgg_client.models.validation_error import ValidationError
-from lgg_client.models.validation_error_loc_inner import ValidationErrorLocInner
 

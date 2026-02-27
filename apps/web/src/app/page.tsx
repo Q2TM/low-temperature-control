@@ -10,9 +10,9 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   // Fetch heater data on the server
   const [heaterConfig, heaterStatus, pidParameters] = await Promise.all([
-    getHeaterConfig(),
-    getHeaterStatus(),
-    getPIDParameters(),
+    getHeaterConfig(1),
+    getHeaterStatus(1),
+    getPIDParameters(1),
   ]);
 
   const targetTemp = heaterConfig?.targetTemp ?? null;

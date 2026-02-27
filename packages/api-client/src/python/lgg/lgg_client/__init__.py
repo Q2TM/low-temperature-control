@@ -39,13 +39,13 @@ __all__ = [
     "HTTPValidationError",
     "IdentificationResp",
     "InputParameter",
+    "LocationInner",
     "MonitorResp",
     "OperationResult",
     "SensorTypes",
     "StatusResp",
     "Units",
     "ValidationError",
-    "ValidationErrorLocInner",
 ]
 
 # import apis into sdk package
@@ -74,11 +74,11 @@ from lgg_client.models.curve_header import CurveHeader as CurveHeader
 from lgg_client.models.http_validation_error import HTTPValidationError as HTTPValidationError
 from lgg_client.models.identification_resp import IdentificationResp as IdentificationResp
 from lgg_client.models.input_parameter import InputParameter as InputParameter
+from lgg_client.models.location_inner import LocationInner as LocationInner
 from lgg_client.models.monitor_resp import MonitorResp as MonitorResp
 from lgg_client.models.operation_result import OperationResult as OperationResult
 from lgg_client.models.sensor_types import SensorTypes as SensorTypes
 from lgg_client.models.status_resp import StatusResp as StatusResp
 from lgg_client.models.units import Units as Units
 from lgg_client.models.validation_error import ValidationError as ValidationError
-from lgg_client.models.validation_error_loc_inner import ValidationErrorLocInner as ValidationErrorLocInner
 

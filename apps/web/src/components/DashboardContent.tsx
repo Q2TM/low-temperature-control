@@ -52,9 +52,9 @@ export function DashboardContent({
   const handleStatusRefresh = async () => {
     // Re-fetch heater status and config from server
     const [config, status, params] = await Promise.all([
-      getHeaterConfig(),
-      getHeaterStatus(),
-      getPIDParameters(),
+      getHeaterConfig(1),
+      getHeaterStatus(1),
+      getPIDParameters(1),
     ]);
 
     if (config) setTargetTemp(config.targetTemp ?? null);

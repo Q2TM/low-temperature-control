@@ -56,7 +56,7 @@ export default function HeaterControl({
     }
 
     startTransition(async () => {
-      const result = await setTargetTemperature(temp);
+      const result = await setTargetTemperature(1, temp);
       if (result.success) {
         setIsEditing(false);
         onStatusChange?.();
@@ -94,7 +94,7 @@ export default function HeaterControl({
     }
 
     startTransition(async () => {
-      const result = await setPIDParameters({ kp, ki, kd });
+      const result = await setPIDParameters(1, { kp, ki, kd });
       if (result.success) {
         setIsEditingPID(false);
         onStatusChange?.();
@@ -113,7 +113,7 @@ export default function HeaterControl({
 
   const handleTogglePID = async () => {
     startTransition(async () => {
-      const result = isActive ? await stopPID() : await startPID();
+      const result = isActive ? await stopPID(1) : await startPID(1);
       if (result.success) {
         onStatusChange?.();
       } else {

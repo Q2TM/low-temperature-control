@@ -1,5 +1,3 @@
-# coding: utf-8
-
 """
     Lakeshore Management API (LT Capstone)
 

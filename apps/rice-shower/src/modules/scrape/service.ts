@@ -28,7 +28,13 @@ async function scrapeLGG(instance: string, channel: number) {
 }
 
 async function scrapeHeater(instance: string, pin: number) {
-  const { data, error } = await heaterClient.GET("/pid/status");
+  const { data, error } = await heaterClient.GET("/pid/{channel_id}/status", {
+    params: {
+      path: {
+        channel_id: pin,
+      },
+    },
+  });
 
   if (error) {
     throw new Error(`Failed to fetch heater data: ${error}`);

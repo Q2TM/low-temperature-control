@@ -4,7 +4,75 @@
  */
 
 export interface paths {
-  "/config/target-temp": {
+  "/channels": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Channels
+     * @description List all configured channels from config.yaml.
+     *
+     *     Returns information about all channels including their configuration
+     *     and current runtime status (whether PID is active).
+     */
+    get: operations["listChannels"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/channels/{channel_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Channel Info
+     * @description Get information about a specific channel.
+     *
+     *     Returns configuration and runtime status for the specified channel.
+     */
+    get: operations["getChannelInfo"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/channels/status/all": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get All Channels Status
+     * @description Get comprehensive PID status for all enabled channels at once.
+     *
+     *     Returns detailed PID status including temperature, duty cycle, parameters,
+     *     and error statistics for each enabled channel.
+     */
+    get: operations["getAllChannelsStatus"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/config/{channel_id}/target-temp": {
     parameters: {
       query?: never;
       header?: never;
@@ -13,13 +81,13 @@ export interface paths {
     };
     /**
      * Get Target Temp
-     * @description Get the current target temperature.
+     * @description Get the current target temperature for a specific channel.
      */
     get: operations["getTargetTemp"];
     put?: never;
     /**
      * Set Target Temp
-     * @description Set a new target temperature.
+     * @description Set a new target temperature for a specific channel.
      */
     post: operations["setTargetTemp"];
     delete?: never;
@@ -28,7 +96,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/config/pid-parameters": {
+  "/config/{channel_id}/pid-parameters": {
     parameters: {
       query?: never;
       header?: never;
@@ -37,13 +105,13 @@ export interface paths {
     };
     /**
      * Get Pid Parameters
-     * @description Get the current PID parameters.
+     * @description Get the current PID parameters for a specific channel.
      */
     get: operations["getPidParameters"];
     put?: never;
     /**
      * Set Pid Parameters
-     * @description Update PID parameters.
+     * @description Update PID parameters for a specific channel.
      */
     post: operations["setPidParameters"];
     delete?: never;
@@ -52,7 +120,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/config/all": {
+  "/config/{channel_id}/all": {
     parameters: {
       query?: never;
       header?: never;
@@ -61,7 +129,7 @@ export interface paths {
     };
     /**
      * Get All Config
-     * @description Get all configuration (target temperature and PID parameters).
+     * @description Get all configuration (target temperature and PID parameters) for a specific channel.
      */
     get: operations["getAllConfig"];
     put?: never;
@@ -72,7 +140,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/pid/start": {
+  "/pid/{channel_id}/start": {
     parameters: {
       query?: never;
       header?: never;
@@ -83,7 +151,7 @@ export interface paths {
     put?: never;
     /**
      * Start Pid
-     * @description Start the PID controller.
+     * @description Start the PID controller for a specific channel.
      */
     post: operations["startPID"];
     delete?: never;
@@ -92,7 +160,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/pid/stop": {
+  "/pid/{channel_id}/stop": {
     parameters: {
       query?: never;
       header?: never;
@@ -103,7 +171,7 @@ export interface paths {
     put?: never;
     /**
      * Stop Pid
-     * @description Stop the PID controller.
+     * @description Stop the PID controller for a specific channel.
      */
     post: operations["stopPID"];
     delete?: never;
@@ -112,7 +180,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/pid/status": {
+  "/pid/{channel_id}/status": {
     parameters: {
       query?: never;
       header?: never;
@@ -121,9 +189,11 @@ export interface paths {
     };
     /**
      * Get Pid Status
-     * @description Get comprehensive PID status.
+     * @description Get comprehensive PID status for a specific channel.
      *
      *     Returns:
+     *     - channel_id: Channel identifier
+     *     - channel_name: Channel name
      *     - is_active: Whether PID controller is currently running
      *     - target: Target temperature
      *     - duty_cycle: Current PWM duty cycle
@@ -145,6 +215,44 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /**
+     * AllChannelsStatus
+     * @description Status of all channels at once.
+     */
+    AllChannelsStatus: {
+      /** Channels */
+      channels: components["schemas"]["PidStatusOut"][];
+    };
+    /**
+     * ChannelInfo
+     * @description Channel information with runtime status.
+     */
+    ChannelInfo: {
+      /** Channelid */
+      channelId: number;
+      /** Name */
+      name: string;
+      /** Gpiopin */
+      gpioPin: number;
+      /** Sensorchannel */
+      sensorChannel: number;
+      /** Enabled */
+      enabled: boolean;
+      /**
+       * Isactive
+       * @description Whether PID controller is currently active
+       * @default false
+       */
+      isActive: boolean;
+    };
+    /**
+     * ChannelListResponse
+     * @description List of all configured channels.
+     */
+    ChannelListResponse: {
+      /** Channels */
+      channels: components["schemas"]["ChannelInfo"][];
+    };
     /**
      * ConfigAll
      * @description Schema for all configuration data.
@@ -208,6 +316,10 @@ export interface components {
      *     Contains comprehensive information about PID controller state.
      */
     PidStatusOut: {
+      /** Channelid */
+      channelId: number;
+      /** Channelname */
+      channelName: string;
       /** Isactive */
       isActive: boolean;
       /** Target */
@@ -263,7 +375,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  getTargetTemp: {
+  listChannels: {
     parameters: {
       query?: never;
       header?: never;
@@ -278,7 +390,89 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
+          "application/json": components["schemas"]["ChannelListResponse"];
+        };
+      };
+    };
+  };
+  getChannelInfo: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        channel_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ChannelInfo"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  getAllChannelsStatus: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AllChannelsStatus"];
+        };
+      };
+    };
+  };
+  getTargetTemp: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        channel_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
           "application/json": components["schemas"]["TargetTemp"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
         };
       };
     };
@@ -287,7 +481,9 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        channel_id: number;
+      };
       cookie?: never;
     };
     requestBody: {
@@ -320,7 +516,9 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        channel_id: number;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -334,13 +532,24 @@ export interface operations {
           "application/json": components["schemas"]["Parameters"];
         };
       };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
     };
   };
   setPidParameters: {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        channel_id: number;
+      };
       cookie?: never;
     };
     requestBody: {
@@ -373,7 +582,9 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        channel_id: number;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -387,13 +598,24 @@ export interface operations {
           "application/json": components["schemas"]["ConfigAll"];
         };
       };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
     };
   };
   startPID: {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        channel_id: number;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -405,6 +627,15 @@ export interface operations {
         };
         content: {
           "application/json": string;
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
         };
       };
     };
@@ -413,7 +644,9 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        channel_id: number;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -427,13 +660,24 @@ export interface operations {
           "application/json": string;
         };
       };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
     };
   };
   getPidStatus: {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        channel_id: number;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -445,6 +689,15 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["PidStatusOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
         };
       };
     };

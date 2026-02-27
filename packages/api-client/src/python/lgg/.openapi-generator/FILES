@@ -15,6 +15,7 @@ docs/DeviceApi.md
 docs/HTTPValidationError.md
 docs/IdentificationResp.md
 docs/InputParameter.md
+docs/LocationInner.md
 docs/MonitorResp.md
 docs/OperationResult.md
 docs/ReadingApi.md
@@ -22,7 +23,6 @@ docs/SensorTypes.md
 docs/StatusResp.md
 docs/Units.md
 docs/ValidationError.md
-docs/ValidationErrorLocInner.md
 git_push.sh
 lgg_client/__init__.py
 lgg_client/api/__init__.py
@@ -43,13 +43,13 @@ lgg_client/models/curve_header.py
 lgg_client/models/http_validation_error.py
 lgg_client/models/identification_resp.py
 lgg_client/models/input_parameter.py
+lgg_client/models/location_inner.py
 lgg_client/models/monitor_resp.py
 lgg_client/models/operation_result.py
 lgg_client/models/sensor_types.py
 lgg_client/models/status_resp.py
 lgg_client/models/units.py
 lgg_client/models/validation_error.py
-lgg_client/models/validation_error_loc_inner.py
 lgg_client/py.typed
 lgg_client/rest.py
 pyproject.toml
@@ -69,6 +69,7 @@ test/test_device_api.py
 test/test_http_validation_error.py
 test/test_identification_resp.py
 test/test_input_parameter.py
+test/test_location_inner.py
 test/test_monitor_resp.py
 test/test_operation_result.py
 test/test_reading_api.py
@@ -76,5 +77,4 @@ test/test_sensor_types.py
 test/test_status_resp.py
 test/test_units.py
 test/test_validation_error.py
-test/test_validation_error_loc_inner.py
 tox.ini
