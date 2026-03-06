@@ -41,7 +41,7 @@ export function DashboardContent({
   initialPidParameters,
 }: DashboardContentProps) {
   const [timeEnd, setTimeEnd] = useState<number>(() => Date.now());
-  const [selectedPin, setSelectedPin] = useState<number>(18);
+  const [selectedPin, setSelectedPin] = useState<number>(1);
   const [timeRange, setTimeRange] = useState<number>(10); // minutes
   const [timeInterval, setTimeInterval] = useState<number>(1); // seconds
   const [refreshInterval, setRefreshInterval] = useState<number>(10000); // ms

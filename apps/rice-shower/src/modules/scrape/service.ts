@@ -1,8 +1,8 @@
 import { heaterMetrics, sensorMetrics } from "@repo/tsdb";
 
 import { heaterClient, lggClient } from "@/core/api";
+import { config } from "@/core/config";
 import { db } from "@/core/db";
-import { environment } from "@/core/environment";
 
 async function scrapeLGG(instance: string, channel: number) {
   const { data, error } = await lggClient.GET(
@@ -27,7 +27,7 @@ async function scrapeLGG(instance: string, channel: number) {
   });
 }
 
-async function scrapeHeater(instance: string, pin: number) {
+async function scrapeHeater(instance: string, pin: number, maxPower: number) {
   const { data, error } = await heaterClient.GET("/pid/{channel_id}/status", {
     params: {
       path: {
@@ -40,14 +40,12 @@ async function scrapeHeater(instance: string, pin: number) {
     throw new Error(`Failed to fetch heater data: ${error}`);
   }
 
-  const TEMP_MOCK_POWER = 45;
-
   await db.insert(heaterMetrics).values({
     time: new Date(),
     instance,
     pinNumber: pin,
     dutyCycle: data.dutyCycle,
-    powerWatts: (TEMP_MOCK_POWER * data.dutyCycle) / 100,
+    powerWatts: (maxPower * data.dutyCycle) / 100,
   });
 }
 
@@ -80,25 +78,26 @@ export class Scraper {
 
   private static async job() {
     // Scrape sensor data
-    for (const channel of environment.SCRAPE_CHANNELS) {
+    for (const sensor of config.scrape.sensors) {
       try {
-        await scrapeLGG("sensor-1", channel);
+        await scrapeLGG(sensor.instance, sensor.channel);
         this.sensor.successCount++;
       } catch (_) {
         this.sensor.lastError = new Date();
-        this.sensor.errorCount[channel] =
-          (this.sensor.errorCount[channel] ?? 0) + 1;
+        this.sensor.errorCount[sensor.channel] =
+          (this.sensor.errorCount[sensor.channel] ?? 0) + 1;
       }
     }
 
     // Scrape heater data
-    for (const pin of environment.SCRAPE_PINS) {
+    for (const heater of config.scrape.heaters) {
       try {
-        await scrapeHeater("heater-1", pin);
+        await scrapeHeater(heater.instance, heater.pin, heater.maxPower);
         this.heater.successCount++;
       } catch (_) {
         this.heater.lastError = new Date();
-        this.heater.errorCount[pin] = (this.heater.errorCount[pin] ?? 0) + 1;
+        this.heater.errorCount[heater.pin] =
+          (this.heater.errorCount[heater.pin] ?? 0) + 1;
       }
     }
   }

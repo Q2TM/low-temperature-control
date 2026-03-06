@@ -67,17 +67,26 @@ ORDER BY 1 ASC;
       }>,
   );
 
-  const responseData = record("map-response-data-temp", () => ({
-    dataPoints: data.length,
-    metrics: data.map((entry) => ({
-      time: entry.time,
-      channels: channels.map((channel) => ({
+  const responseData = record("map-response-data-temp", () => {
+    const metrics = data.flatMap((entry) => {
+      const channelData = channels.map((channel) => ({
         channel,
-        kelvin: entry[`kelvin_${channel}`]!,
-        resistance: entry[`resistance_${channel}`]!,
-      })),
-    })),
-  }));
+        kelvin: entry[`kelvin_${channel}`],
+        resistance: entry[`resistance_${channel}`],
+      }));
+
+      const validChannels = channelData.filter(
+        (ch): ch is { channel: number; kelvin: number; resistance: number } =>
+          ch.kelvin != null && ch.resistance != null,
+      );
+
+      if (validChannels.length === 0) return [];
+
+      return [{ time: entry.time, channels: validChannels }];
+    });
+
+    return { dataPoints: metrics.length, metrics };
+  });
 
   return responseData;
 }
@@ -123,17 +132,31 @@ ORDER BY 1 ASC;
       }>,
   );
 
-  const responseData = record("map-response-data-heater", () => ({
-    dataPoints: data.length,
-    metrics: data.map((entry) => ({
-      time: entry.time,
-      pins: pins.map((pin) => ({
+  const responseData = record("map-response-data-heater", () => {
+    const metrics = data.flatMap((entry) => {
+      const pinData = pins.map((pin) => ({
         pinNumber: pin,
-        dutyCycle: entry[`duty_cycle_${pin}`]!,
-        powerWatts: entry[`power_watts_${pin}`]!,
-      })),
-    })),
-  }));
+        dutyCycle: entry[`duty_cycle_${pin}`],
+        powerWatts: entry[`power_watts_${pin}`],
+      }));
+
+      const validPins = pinData.filter(
+        (
+          p,
+        ): p is {
+          pinNumber: number;
+          dutyCycle: number;
+          powerWatts: number;
+        } => p.dutyCycle != null && p.powerWatts != null,
+      );
+
+      if (validPins.length === 0) return [];
+
+      return [{ time: entry.time, pins: validPins }];
+    });
+
+    return { dataPoints: metrics.length, metrics };
+  });
 
   return responseData;
 }

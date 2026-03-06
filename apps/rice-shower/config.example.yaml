@@ -1,0 +1,8 @@
+scrape:
+  sensors:
+    - instance: sensor-1
+      channel: 1
+  heaters:
+    - instance: heater-1
+      pin: 1
+      maxPower: 45 # Watts
