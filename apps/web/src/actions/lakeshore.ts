@@ -120,6 +120,30 @@ export async function setCurveDataPoint(
   }
 }
 
+export async function setCurveDataPoints(
+  channel: number,
+  dataPoints: { temperature: number; sensor: number }[],
+) {
+  try {
+    const { data, error } = await lakeshoreFetchClient.PUT(
+      "/api/v1/curve/{channel}/data-points",
+      {
+        params: { path: { channel } },
+        body: { dataPoints },
+      },
+    );
+
+    if (error) {
+      return { success: false, error: "Failed to set curve data points" };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Failed to set curve data points:", error);
+    return { success: false, error: "Failed to set curve data points" };
+  }
+}
+
 export async function deleteCurve(channel: number) {
   try {
     const { data, error } = await lakeshoreFetchClient.DELETE(

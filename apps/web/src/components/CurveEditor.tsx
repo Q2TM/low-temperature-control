@@ -19,13 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/ui/molecule/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@repo/ui/molecule/select";
+import { ToggleGroup, ToggleGroupItem } from "@repo/ui/molecule/toggle-group";
 import { CurveChart } from "@repo/ui/organism/CurveChart";
 import {
   type CurveDataPoint,
@@ -40,7 +34,7 @@ import {
   deleteCurve,
   getAllCurveDataPoints,
   getCurveHeader,
-  setCurveDataPoint,
+  setCurveDataPoints,
   setCurveHeader,
 } from "@/actions/lakeshore";
 
@@ -51,9 +45,16 @@ export function CurveEditor() {
   const [curveHeader, setCurveHeaderState] =
     useState<CurveHeaderFormValues | null>(null);
   const [dataPoints, setDataPoints] = useState<CurveDataPoint[]>([]);
+  const [originalDataPoints, setOriginalDataPoints] = useState<
+    CurveDataPoint[]
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isHeaderLoading, setIsHeaderLoading] = useState(false);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [modifiedIndices, setModifiedIndices] = useState<Set<number>>(
+    new Set(),
+  );
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const loadCurveData = useCallback(async (channel: number) => {
@@ -79,13 +80,16 @@ export function CurveEditor() {
           }))
           .filter((point) => point.temperature !== 0 || point.sensor !== 0);
         setDataPoints(formattedPoints);
+        setOriginalDataPoints(formattedPoints);
       } else {
         setDataPoints([]);
+        setOriginalDataPoints([]);
       }
     } catch (error) {
       console.error("Failed to load curve data:", error);
       setCurveHeaderState(null);
       setDataPoints([]);
+      setOriginalDataPoints([]);
     } finally {
       setIsLoading(false);
     }
@@ -96,8 +100,9 @@ export function CurveEditor() {
   }, [selectedChannel, loadCurveData]);
 
   const handleChannelChange = (value: string) => {
+    if (isEditing) return;
     setSelectedChannel(parseInt(value));
-    setEditingIndex(null);
+    setModifiedIndices(new Set());
   };
 
   const handleHeaderSubmit = async (data: CurveHeaderFormValues) => {
@@ -106,8 +111,6 @@ export function CurveEditor() {
       const result = await setCurveHeader(selectedChannel, data);
       if (result.success) {
         setCurveHeaderState(data);
-        // Show success message
-        console.log("Curve header updated successfully");
       } else {
         console.error("Failed to update curve header:", result.error);
       }
@@ -128,35 +131,144 @@ export function CurveEditor() {
         point.index === index ? { ...point, [field]: value } : point,
       ),
     );
+
+    // Track modification by comparing to original
+    setModifiedIndices((prev) => {
+      const next = new Set(prev);
+      const original = originalDataPoints.find((p) => p.index === index);
+      const updated =
+        field === "temperature"
+          ? {
+              temperature: value,
+              sensor: dataPoints.find((p) => p.index === index)?.sensor ?? 0,
+            }
+          : {
+              sensor: value,
+              temperature:
+                dataPoints.find((p) => p.index === index)?.temperature ?? 0,
+            };
+
+      if (
+        original &&
+        original.temperature === updated.temperature &&
+        original.sensor === updated.sensor
+      ) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
   };
 
-  const handleSaveDataPoint = async (index: number) => {
-    const point = dataPoints.find((p) => p.index === index);
-    if (!point) return;
+  const handleEnterEditMode = () => {
+    setIsEditing(true);
+    setModifiedIndices(new Set());
+  };
 
+  const handleDiscard = () => {
+    setDataPoints(originalDataPoints);
+    setModifiedIndices(new Set());
+    setIsEditing(false);
+  };
+
+  const handleAddRow = () => {
+    const nextIndex =
+      dataPoints.length > 0
+        ? Math.max(...dataPoints.map((p) => p.index)) + 1
+        : 1;
+    if (nextIndex > 200) return;
+    const newPoint: CurveDataPoint = {
+      index: nextIndex,
+      temperature: 0,
+      sensor: 0,
+    };
+    setDataPoints((prev) => [...prev, newPoint]);
+    setModifiedIndices((prev) => new Set(prev).add(nextIndex));
+  };
+
+  const handleSave = async () => {
+    if (dataPoints.length === 0) return;
+
+    setIsSaving(true);
     try {
-      const result = await setCurveDataPoint(selectedChannel, index, {
-        temperature: point.temperature,
-        sensor: point.sensor,
-      });
+      const result = await setCurveDataPoints(
+        selectedChannel,
+        dataPoints.map((p) => ({
+          temperature: p.temperature,
+          sensor: p.sensor,
+        })),
+      );
 
       if (result.success) {
-        console.log(`Data point ${index} updated successfully`);
+        setOriginalDataPoints(dataPoints);
+        setModifiedIndices(new Set());
+        setIsEditing(false);
       } else {
-        console.error("Failed to update data point:", result.error);
+        console.error("Failed to save data points:", result.error);
       }
     } catch (error) {
-      console.error("Error updating data point:", error);
+      console.error("Error saving data points:", error);
+    } finally {
+      setIsSaving(false);
     }
+  };
+
+  const handleCsvUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result;
+      if (typeof text !== "string") return;
+
+      const lines = text
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+
+      const parsed: CurveDataPoint[] = [];
+      for (let i = 0; i < Math.min(lines.length, 200); i++) {
+        const parts = lines[i]!.split(/[,\t]/);
+        if (parts.length < 2) continue;
+        const sensor = parseFloat(parts[0]!);
+        const temperature = parseFloat(parts[1]!);
+        if (isNaN(sensor) || isNaN(temperature)) continue;
+        parsed.push({ index: i + 1, temperature, sensor });
+      }
+
+      if (parsed.length === 0) return;
+
+      setDataPoints(parsed);
+
+      // Mark all uploaded points as modified
+      const newModified = new Set<number>();
+      for (const p of parsed) {
+        const orig = originalDataPoints.find((o) => o.index === p.index);
+        if (
+          !orig ||
+          orig.temperature !== p.temperature ||
+          orig.sensor !== p.sensor
+        ) {
+          newModified.add(p.index);
+        }
+      }
+      // Points that existed before but are no longer present are also modified
+      for (const orig of originalDataPoints) {
+        if (!parsed.find((p) => p.index === orig.index)) {
+          newModified.add(orig.index);
+        }
+      }
+      setModifiedIndices(newModified);
+    };
+    reader.readAsText(file);
   };
 
   const handleDeleteCurve = async () => {
     try {
       const result = await deleteCurve(selectedChannel);
       if (result.success) {
-        console.log("Curve deleted successfully");
         setShowDeleteDialog(false);
-        // Reload the curve data
+        setIsEditing(false);
+        setModifiedIndices(new Set());
         await loadCurveData(selectedChannel);
       } else {
         console.error("Failed to delete curve:", result.error);
@@ -171,35 +283,35 @@ export function CurveEditor() {
       {/* Channel Selection and Curve Header in a grid on large screens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Channel Selection</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Channel</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4">
-              <label htmlFor="channel-select" className="font-medium">
-                Channel:
-              </label>
-              <Select
+              <ToggleGroup
+                type="single"
+                variant="outline"
                 value={selectedChannel.toString()}
-                onValueChange={handleChannelChange}
+                onValueChange={(v) => v && handleChannelChange(v)}
+                disabled={isEditing}
+                className="flex-1"
               >
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Select a channel" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CHANNELS.map((channel) => (
-                    <SelectItem key={channel} value={channel.toString()}>
-                      Channel {channel}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {curveHeader && (
+                {CHANNELS.map((channel) => (
+                  <ToggleGroupItem
+                    key={channel}
+                    value={channel.toString()}
+                    className="flex-1"
+                  >
+                    {channel}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+
+              {curveHeader && !isEditing && (
                 <Button
                   variant="destructive"
                   onClick={() => setShowDeleteDialog(true)}
                   size="sm"
-                  className="ml-auto"
                 >
                   Delete
                 </Button>
@@ -230,6 +342,7 @@ export function CurveEditor() {
               <CurveChart
                 dataPoints={dataPoints}
                 curveName={curveHeader?.curveName}
+                modifiedIndices={modifiedIndices}
               />
             </div>
 
@@ -237,10 +350,15 @@ export function CurveEditor() {
             <div className="lg:col-span-1 h-[600px] max-h-[600px]">
               <CurveDataTable
                 dataPoints={dataPoints}
+                isEditing={isEditing}
+                isSaving={isSaving}
+                modifiedIndices={modifiedIndices}
                 onDataPointChange={handleDataPointChange}
-                onSaveDataPoint={handleSaveDataPoint}
-                editingIndex={editingIndex}
-                setEditingIndex={setEditingIndex}
+                onCsvUpload={handleCsvUpload}
+                onEdit={handleEnterEditMode}
+                onSave={handleSave}
+                onDiscard={handleDiscard}
+                onAddRow={handleAddRow}
               />
             </div>
           </div>

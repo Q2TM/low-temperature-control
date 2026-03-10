@@ -26,9 +26,37 @@ export interface CurveDataPoint {
 interface CurveChartProps {
   dataPoints: CurveDataPoint[];
   curveName?: string;
+  modifiedIndices?: Set<number>;
 }
 
-export function CurveChart({ dataPoints, curveName }: CurveChartProps) {
+function CustomDot(props: {
+  cx?: number;
+  cy?: number;
+  payload?: CurveDataPoint;
+  modifiedIndices?: Set<number>;
+}) {
+  const { cx, cy, payload, modifiedIndices } = props;
+  if (cx == null || cy == null || !payload) return null;
+
+  const isModified = modifiedIndices?.has(payload.index);
+
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={isModified ? 5 : 3}
+      fill={isModified ? "hsl(45 93% 47%)" : "hsl(var(--primary))"}
+      stroke={isModified ? "hsl(45 93% 47%)" : "hsl(var(--primary))"}
+      strokeWidth={isModified ? 2 : 1}
+    />
+  );
+}
+
+export function CurveChart({
+  dataPoints,
+  curveName,
+  modifiedIndices,
+}: CurveChartProps) {
   // Sort data points by sensor value for proper line rendering
   const sortedData = [...dataPoints].sort((a, b) => a.sensor - b.sensor);
 
@@ -94,11 +122,7 @@ export function CurveChart({ dataPoints, curveName }: CurveChartProps) {
                 dataKey="temperature"
                 stroke="hsl(var(--primary))"
                 strokeWidth={2}
-                dot={{
-                  r: 4,
-                  fill: "hsl(var(--primary))",
-                  stroke: "hsl(var(--primary))",
-                }}
+                dot={<CustomDot modifiedIndices={modifiedIndices} />}
                 activeDot={{
                   r: 6,
                   fill: "hsl(var(--primary))",
