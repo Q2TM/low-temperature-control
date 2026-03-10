@@ -9,6 +9,7 @@ import { stringify } from "yaml";
 import { queryController } from "./modules/query";
 import { scrapeController } from "./modules/scrape";
 import { Scraper } from "./modules/scrape/service";
+
 const app = new Elysia()
   .use(
     cors({

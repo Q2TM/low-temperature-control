@@ -9,6 +9,7 @@ Method | HTTP request | Description
 [**get_curve_data_point**](CurveApi.md#get_curve_data_point) | **GET** /api/v1/curve/{channel}/data-point/{index} | Get Curve Data Point
 [**get_curve_header**](CurveApi.md#get_curve_header) | **GET** /api/v1/curve/{channel}/header | Get Curve Header
 [**set_curve_data_point**](CurveApi.md#set_curve_data_point) | **PUT** /api/v1/curve/{channel}/data-point/{index} | Set Curve Data Point
+[**set_curve_data_points**](CurveApi.md#set_curve_data_points) | **PUT** /api/v1/curve/{channel}/data-points | Set Curve Data Points
 [**set_curve_header**](CurveApi.md#set_curve_header) | **PUT** /api/v1/curve/{channel}/header | Set Curve Header
 
 
@@ -331,6 +332,76 @@ Name | Type | Description  | Notes
  **channel** | **int**| Channel must be between 1 and 8 | 
  **index** | **int**| Index of the data point in the curve | 
  **curve_data_point** | [**CurveDataPoint**](CurveDataPoint.md)|  | 
+
+### Return type
+
+[**OperationResult**](OperationResult.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **set_curve_data_points**
+> OperationResult set_curve_data_points(channel, set_curve_data_points_request)
+
+Set Curve Data Points
+
+### Example
+
+
+```python
+import lgg_client
+from lgg_client.models.operation_result import OperationResult
+from lgg_client.models.set_curve_data_points_request import SetCurveDataPointsRequest
+from lgg_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = lgg_client.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with lgg_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = lgg_client.CurveApi(api_client)
+    channel = 56 # int | Channel must be between 1 and 8
+    set_curve_data_points_request = lgg_client.SetCurveDataPointsRequest() # SetCurveDataPointsRequest | 
+
+    try:
+        # Set Curve Data Points
+        api_response = api_instance.set_curve_data_points(channel, set_curve_data_points_request)
+        print("The response of CurveApi->set_curve_data_points:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling CurveApi->set_curve_data_points: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **channel** | **int**| Channel must be between 1 and 8 | 
+ **set_curve_data_points_request** | [**SetCurveDataPointsRequest**](SetCurveDataPointsRequest.md)|  | 
 
 ### Return type
 

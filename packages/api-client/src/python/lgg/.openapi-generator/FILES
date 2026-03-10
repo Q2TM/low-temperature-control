@@ -20,6 +20,7 @@ docs/MonitorResp.md
 docs/OperationResult.md
 docs/ReadingApi.md
 docs/SensorTypes.md
+docs/SetCurveDataPointsRequest.md
 docs/StatusResp.md
 docs/Units.md
 docs/ValidationError.md
@@ -47,6 +48,7 @@ lgg_client/models/location_inner.py
 lgg_client/models/monitor_resp.py
 lgg_client/models/operation_result.py
 lgg_client/models/sensor_types.py
+lgg_client/models/set_curve_data_points_request.py
 lgg_client/models/status_resp.py
 lgg_client/models/units.py
 lgg_client/models/validation_error.py
@@ -74,6 +76,7 @@ test/test_monitor_resp.py
 test/test_operation_result.py
 test/test_reading_api.py
 test/test_sensor_types.py
+test/test_set_curve_data_points_request.py
 test/test_status_resp.py
 test/test_units.py
 test/test_validation_error.py

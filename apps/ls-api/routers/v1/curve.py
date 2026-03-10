@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
-from schemas.curve import CurveDataPoint, CurveHeader, IndexQueryParam
+from schemas.curve import CurveDataPoint, CurveHeader, IndexQueryParam, SetCurveDataPointsRequest
 from schemas.shared import ChannelQueryParam
 from schemas.operations import OperationResult
 from services.lakeshore import LakeshoreService
@@ -59,6 +59,17 @@ async def set_curve_data_point(
 ) -> OperationResult:
     ls.set_curve_data_point(request, data_point, channel, index)
     return OperationResult(is_success=True, message="Curve data point updated successfully")
+
+
+@router.put("/{channel}/data-points", operation_id="setCurveDataPoints")
+def set_curve_data_points(
+    request: Request,
+    body: SetCurveDataPointsRequest,
+    channel: int = ChannelQueryParam,
+    ls: LakeshoreService = Depends(get_lakeshore_service)
+) -> OperationResult:
+    ls.set_curve_data_points(request, body.data_points, channel)
+    return OperationResult(is_success=True, message="Curve data points updated successfully")
 
 
 @router.delete("/{channel}", operation_id="deleteCurve")

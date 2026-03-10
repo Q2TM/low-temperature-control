@@ -61,6 +61,13 @@ class TestCurveApi(unittest.TestCase):
         """
         pass
 
+    def test_set_curve_data_points(self) -> None:
+        """Test case for set_curve_data_points
+
+        Set Curve Data Points
+        """
+        pass
+
     def test_set_curve_header(self) -> None:
         """Test case for set_curve_header
 

@@ -687,6 +687,60 @@
             }
           }
         }
+      },
+      "put": {
+        "tags": [
+          "Curve"
+        ],
+        "summary": "Set Curve Data Points",
+        "operationId": "setCurveDataPoints",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 8,
+              "minimum": 1,
+              "description": "Channel must be between 1 and 8",
+              "title": "Channel"
+            },
+            "description": "Channel must be between 1 and 8"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetCurveDataPointsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/curve/{channel}": {
@@ -1022,6 +1076,26 @@
         ],
         "title": "SensorTypes",
         "description": "Enumerations specify types of temperature sensors."
+      },
+      "SetCurveDataPointsRequest": {
+        "properties": {
+          "dataPoints": {
+            "items": {
+              "$ref": "#/components/schemas/CurveDataPoint"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Datapoints",
+            "description": "List of curve data points to set (1 to 200). Points are written starting at index 1 in the order provided."
+          }
+        },
+        "type": "object",
+        "required": [
+          "dataPoints"
+        ],
+        "title": "SetCurveDataPointsRequest",
+        "description": "Schema for setting multiple curve data points at once.\n\nAccepts a list of data points (1 to 200). The existing curve is deleted first,\nthen the supplied points are written starting at index 1. Any remaining slots\n(up to 200) are left at the device default of (0, 0)."
       },
       "StatusResp": {
         "properties": {

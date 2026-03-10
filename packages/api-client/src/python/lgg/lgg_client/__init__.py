@@ -43,6 +43,7 @@ __all__ = [
     "MonitorResp",
     "OperationResult",
     "SensorTypes",
+    "SetCurveDataPointsRequest",
     "StatusResp",
     "Units",
     "ValidationError",
@@ -78,6 +79,7 @@ from lgg_client.models.location_inner import LocationInner as LocationInner
 from lgg_client.models.monitor_resp import MonitorResp as MonitorResp
 from lgg_client.models.operation_result import OperationResult as OperationResult
 from lgg_client.models.sensor_types import SensorTypes as SensorTypes
+from lgg_client.models.set_curve_data_points_request import SetCurveDataPointsRequest as SetCurveDataPointsRequest
 from lgg_client.models.status_resp import StatusResp as StatusResp
 from lgg_client.models.units import Units as Units
 from lgg_client.models.validation_error import ValidationError as ValidationError

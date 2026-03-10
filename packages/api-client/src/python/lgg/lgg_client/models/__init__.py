@@ -26,6 +26,7 @@ from lgg_client.models.location_inner import LocationInner
 from lgg_client.models.monitor_resp import MonitorResp
 from lgg_client.models.operation_result import OperationResult
 from lgg_client.models.sensor_types import SensorTypes
+from lgg_client.models.set_curve_data_points_request import SetCurveDataPointsRequest
 from lgg_client.models.status_resp import StatusResp
 from lgg_client.models.units import Units
 from lgg_client.models.validation_error import ValidationError

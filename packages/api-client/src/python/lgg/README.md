@@ -90,6 +90,7 @@ Class | Method | HTTP request | Description
 *CurveApi* | [**get_curve_data_point**](docs/CurveApi.md#get_curve_data_point) | **GET** /api/v1/curve/{channel}/data-point/{index} | Get Curve Data Point
 *CurveApi* | [**get_curve_header**](docs/CurveApi.md#get_curve_header) | **GET** /api/v1/curve/{channel}/header | Get Curve Header
 *CurveApi* | [**set_curve_data_point**](docs/CurveApi.md#set_curve_data_point) | **PUT** /api/v1/curve/{channel}/data-point/{index} | Set Curve Data Point
+*CurveApi* | [**set_curve_data_points**](docs/CurveApi.md#set_curve_data_points) | **PUT** /api/v1/curve/{channel}/data-points | Set Curve Data Points
 *CurveApi* | [**set_curve_header**](docs/CurveApi.md#set_curve_header) | **PUT** /api/v1/curve/{channel}/header | Set Curve Header
 *DeviceApi* | [**connect**](docs/DeviceApi.md#connect) | **POST** /api/v1/device/connect | Connect
 *DeviceApi* | [**disconnect**](docs/DeviceApi.md#disconnect) | **POST** /api/v1/device/disconnect | Disconnect
@@ -120,6 +121,7 @@ Class | Method | HTTP request | Description
  - [MonitorResp](docs/MonitorResp.md)
  - [OperationResult](docs/OperationResult.md)
  - [SensorTypes](docs/SensorTypes.md)
+ - [SetCurveDataPointsRequest](docs/SetCurveDataPointsRequest.md)
  - [StatusResp](docs/StatusResp.md)
  - [Units](docs/Units.md)
  - [ValidationError](docs/ValidationError.md)

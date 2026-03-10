@@ -14,8 +14,6 @@ class MockInputParameter:
     input_range: int
 
 
-
-
 class MockModel240:
     """Mock implementation of Lakeshore Model240 for testing."""
 
@@ -28,7 +26,7 @@ class MockModel240:
             i: f"Sensor {i}" for i in range(1, 9)}
         self._filters: dict[int, str | None] = {
             i: "No filter" for i in range(1, 9)}
-        
+
         self._input_params: dict[int, MockInputParameter] = {
             i: MockInputParameter(
                 sensor_type=Model240Enums.SensorTypes.NTC_RTD,
@@ -40,11 +38,10 @@ class MockModel240:
 
             ) for i in range(1, 9)
         }
-        
+
         self.curve = MockCurve()
         self.room_temp_sensor = MockRoomTempSensor(self.curve)
-        
-        
+
     def disconnect_usb(self):
         """Disconnect the mock device."""
         self.connected = False
@@ -157,6 +154,11 @@ class MockModel240:
         if not 1 <= index <= 200:
             raise ValueError("Index must be between 1 and 200")
         self.curve.data[channel][index-1] = (sensor, temperature)
+
+    def delete_curve(self, channel: int):
+        """Delete all curve data points for a channel (reset to 0,0)."""
+        self._validate_channel(channel)
+        self.curve.data[channel] = [(0.0, 0.0)] * 200
 
     def _validate_channel(self, channel: int):
         """Validate channel number."""

@@ -208,7 +208,8 @@ export interface paths {
     };
     /** Get Curve Data Points */
     get: operations["getAllCurveDataPoints"];
-    put?: never;
+    /** Set Curve Data Points */
+    put: operations["setCurveDataPoints"];
     post?: never;
     delete?: never;
     options?: never;
@@ -388,6 +389,21 @@ export interface components {
      * @enum {integer}
      */
     SensorTypes: 1 | 2 | 3;
+    /**
+     * SetCurveDataPointsRequest
+     * @description Schema for setting multiple curve data points at once.
+     *
+     *     Accepts a list of data points (1 to 200). The existing curve is deleted first,
+     *     then the supplied points are written starting at index 1. Any remaining slots
+     *     (up to 200) are left at the device default of (0, 0).
+     */
+    SetCurveDataPointsRequest: {
+      /**
+       * Datapoints
+       * @description List of curve data points to set (1 to 200). Points are written starting at index 1 in the order provided.
+       */
+      dataPoints: components["schemas"]["CurveDataPoint"][];
+    };
     /**
      * StatusResp
      * @description Schema for device channel status information.
@@ -912,6 +928,42 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["CurveDataPoints"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  setCurveDataPoints: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Channel must be between 1 and 8 */
+        channel: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SetCurveDataPointsRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["OperationResult"];
         };
       };
       /** @description Validation Error */

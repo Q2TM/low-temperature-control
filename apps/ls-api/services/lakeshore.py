@@ -415,6 +415,33 @@ class LakeshoreService:
             except Exception as e:
                 raise HTTPException(503, f"Update failed: {e}")
 
+    def set_curve_data_points(self, request: Request, data_points: list, channel: int) -> None:
+        """
+        Deletes the existing curve and sets all supplied data points.
+
+        Points are written starting at index 1 in the order provided.
+        Any remaining indices (up to 200) are left at the device default of (0, 0).
+
+        :param self: LakeshoreService instance
+        :param request: FastAPI request object
+        :type request: Request
+        :param data_points: List of CurveDataPoint objects to set
+        :type data_points: list
+        :param channel: Channel number
+        :type channel: int
+        """
+        if not 1 <= channel <= 8:
+            raise ChannelError(channel)
+        with request.app.state.lock:
+            try:
+                device = self.get_device()
+                device.delete_curve(channel)
+                for index, point in enumerate(data_points, start=1):
+                    device.set_curve_data_point(
+                        channel, index, point.sensor, point.temperature)
+            except Exception as e:
+                raise HTTPException(503, f"Set curve data points failed: {e}")
+
     def delete_curve(self, request: Request, channel: int) -> None:
         """
         Deletes the user curve.
