@@ -85,6 +85,10 @@ export function DashboardContent({
   });
 
   useEffect(() => {
+    if (refreshInterval <= 0) {
+      return;
+    }
+
     const interval = setInterval(() => {
       setTimeEnd(Date.now());
     }, refreshInterval);
@@ -121,6 +125,44 @@ export function DashboardContent({
       ...(heaterEntry || {}),
     };
   });
+
+  const handleDownloadCsv = () => {
+    if (combinedChartData.length === 0) return;
+
+    // Get all unique keys across all data points
+    const keys = Array.from(
+      new Set(combinedChartData.flatMap((data) => Object.keys(data))),
+    );
+
+    // Ensure 'time' is the first column
+    const headerRow = ["time", ...keys.filter((key) => key !== "time")];
+
+    const csvContent = [
+      headerRow.join(","),
+      ...combinedChartData.map((data) =>
+        headerRow
+          .map((key) => {
+            const value = data[key];
+            return value !== undefined && value !== null
+              ? value.toString()
+              : "";
+          })
+          .join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `temperature_data_${new Date().toISOString()}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <>
@@ -224,6 +266,7 @@ export function DashboardContent({
             onRefreshIntervalChange={setRefreshInterval}
             timeRange={timeRange}
             onTimeRangeChange={setTimeRange}
+            onDownloadCsv={handleDownloadCsv}
           />
         </div>
         <TemperatureChart data={combinedChartData} nMinutes={timeRange} />
