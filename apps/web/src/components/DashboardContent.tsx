@@ -1,27 +1,17 @@
 "use client";
 
-import { FileWarning, TrendingDown, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { Badge } from "@repo/ui/atom/badge";
 import { Spinner } from "@repo/ui/icon/spinner";
-import {
-  Card,
-  CardAction,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@repo/ui/molecule/card";
 
-import {
-  getHeaterConfig,
-  getHeaterStatus,
-  getPIDParameters,
-} from "@/actions/heater";
+import { getHeaterStatus, getPIDParameters } from "@/actions/heater";
 import { TemperatureChart } from "@/components/charts/TemperatureChart";
 import { DashboardControls } from "@/components/DashboardControls";
-import HeaterControl from "@/components/HeaterControl";
+import { PeriodSummaryCard } from "@/components/PeriodSummaryCard";
+import {
+  PidControllerCard,
+  type PidRuntimeState,
+} from "@/components/PidControllerCard";
 import { useHeaterMetrics } from "@/hooks/useHeaterMetrics";
 import { useTempMetrics } from "@/hooks/useTempMetrics";
 
@@ -33,12 +23,14 @@ type DashboardContentProps = {
     ki: number;
     kd: number;
   } | null;
+  initialPidRuntimeState: PidRuntimeState | null;
 };
 
 export function DashboardContent({
   initialTargetTemp,
   initialIsActive,
   initialPidParameters,
+  initialPidRuntimeState,
 }: DashboardContentProps) {
   const [timeEnd, setTimeEnd] = useState<number>(() => Date.now());
   const [selectedPin, setSelectedPin] = useState<number>(1);
@@ -48,20 +40,29 @@ export function DashboardContent({
   const [targetTemp, setTargetTemp] = useState(initialTargetTemp);
   const [isActive, setIsActive] = useState(initialIsActive);
   const [pidParameters, setPidParameters] = useState(initialPidParameters);
+  const [pidRuntimeState, setPidRuntimeState] =
+    useState<PidRuntimeState | null>(initialPidRuntimeState);
 
-  const handleStatusRefresh = async () => {
-    // Re-fetch heater status and config from server
-    const [config, status, params] = await Promise.all([
-      getHeaterConfig(1),
+  const refreshPidStatus = async () => {
+    const [status, params] = await Promise.all([
       getHeaterStatus(1),
       getPIDParameters(1),
     ]);
 
-    if (config) setTargetTemp(config.targetTemp ?? null);
-    if (status) setIsActive(status.isActive);
+    if (status) {
+      setTargetTemp(status.target);
+      setIsActive(status.isActive);
+      setPidRuntimeState({
+        dutyCycle: status.dutyCycle,
+        pidVariables: status.pidVariables,
+        errorStats: status.errorStats,
+      });
+    }
     if (params) setPidParameters(params);
+  };
 
-    // Also trigger data refresh
+  const handleStatusRefresh = async () => {
+    await refreshPidStatus();
     setTimeEnd(Date.now());
   };
 
@@ -85,8 +86,13 @@ export function DashboardContent({
   });
 
   useEffect(() => {
+    if (refreshInterval <= 0) {
+      return;
+    }
+
     const interval = setInterval(() => {
       setTimeEnd(Date.now());
+      refreshPidStatus();
     }, refreshInterval);
 
     return () => clearInterval(interval);
@@ -101,19 +107,10 @@ export function DashboardContent({
 
   const channel1Data = tempChannels[1];
   const currentTemp = channel1Data?.currentTemp ?? null;
-  const tempChange = channel1Data?.tempChange ?? null;
   const avgTemp = channel1Data?.avgTemp ?? null;
 
   const heaterPinData = heaterPins[selectedPin];
-  const heaterCardData = heaterPinData
-    ? {
-        currentPower: heaterPinData.currentPower,
-        dutyCycle: heaterPinData.currentDutyCycle,
-        totalEnergy: heaterPinData.totalEnergy,
-      }
-    : null;
 
-  // Merge temperature and heater chart data
   const combinedChartData = tempChartData.map((tempEntry) => {
     const heaterEntry = heaterChartData.find((h) => h.time === tempEntry.time);
     return {
@@ -121,6 +118,42 @@ export function DashboardContent({
       ...(heaterEntry || {}),
     };
   });
+
+  const handleDownloadCsv = () => {
+    if (combinedChartData.length === 0) return;
+
+    const keys = Array.from(
+      new Set(combinedChartData.flatMap((data) => Object.keys(data))),
+    );
+
+    const headerRow = ["time", ...keys.filter((key) => key !== "time")];
+
+    const csvContent = [
+      headerRow.join(","),
+      ...combinedChartData.map((data) =>
+        headerRow
+          .map((key) => {
+            const value = data[key];
+            return value !== undefined && value !== null
+              ? value.toString()
+              : "";
+          })
+          .join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `temperature_data_${new Date().toISOString()}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <>
@@ -133,83 +166,22 @@ export function DashboardContent({
         </div>
 
         <div className="space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold mb-3">PID Controller</h2>
-            <HeaterControl
-              targetTemp={targetTemp}
-              isActive={isActive}
-              pidParameters={pidParameters}
-              onStatusChange={handleStatusRefresh}
-            />
-          </div>
+          <PidControllerCard
+            currentTemp={currentTemp}
+            targetTemp={targetTemp}
+            isActive={isActive}
+            currentPower={heaterPinData?.currentPower ?? null}
+            pidParameters={pidParameters}
+            pidRuntimeState={pidRuntimeState}
+            onStatusChange={handleStatusRefresh}
+          />
 
-          <Card>
-            <CardHeader>
-              <CardDescription className="text-lg">
-                Current Temperature
-              </CardDescription>
-              <CardTitle className="text-2xl">
-                {currentTemp !== null ? currentTemp.toFixed(2) : "--"} °C
-              </CardTitle>
-              <CardAction>
-                <Badge variant="outline">
-                  {tempChange === null || Number.isNaN(tempChange) ? (
-                    <FileWarning />
-                  ) : tempChange >= 0 ? (
-                    <TrendingUp />
-                  ) : (
-                    <TrendingDown />
-                  )}
-                  {tempChange === null || Number.isNaN(tempChange)
-                    ? "--"
-                    : tempChange.toFixed(2)}
-                  %
-                </Badge>
-              </CardAction>
-            </CardHeader>
-            <CardFooter className="flex-col items-start gap-1.5 text-sm">
-              <div className="line-clamp-1 flex gap-2 font-medium">
-                Average Temperature Past {timeRange} Minutes
-              </div>
-              <div className="text-muted-foreground">
-                {avgTemp !== null ? avgTemp.toFixed(2) : "--"} °C
-              </div>
-            </CardFooter>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardDescription className="text-lg">
-                Current Heat Power
-              </CardDescription>
-              <CardTitle className="text-2xl">
-                {heaterCardData?.currentPower !== null &&
-                heaterCardData?.currentPower !== undefined
-                  ? heaterCardData.currentPower.toFixed(2)
-                  : "--"}{" "}
-                W
-              </CardTitle>
-              <CardAction>
-                <Badge variant="outline">
-                  {heaterCardData?.dutyCycle !== null &&
-                  heaterCardData?.dutyCycle !== undefined
-                    ? `${(heaterCardData.dutyCycle * 100).toFixed(0)}%`
-                    : "--"}
-                </Badge>
-              </CardAction>
-            </CardHeader>
-            <CardFooter className="flex-col items-start gap-1.5 text-sm">
-              <div className="line-clamp-1 flex gap-2 font-medium">
-                Total Energy Past {timeRange} Minutes
-              </div>
-              <div className="text-muted-foreground">
-                {heaterCardData?.totalEnergy !== null &&
-                heaterCardData?.totalEnergy !== undefined
-                  ? `${heaterCardData.totalEnergy.toFixed(0)} J (${(heaterCardData.totalEnergy / 3600).toFixed(2)} Wh)`
-                  : "-- J (-- Wh)"}
-              </div>
-            </CardFooter>
-          </Card>
+          <PeriodSummaryCard
+            avgTemp={avgTemp}
+            avgPower={heaterPinData?.avgPower ?? null}
+            totalEnergy={heaterPinData?.totalEnergy ?? null}
+            timeframeLabel={`Last ${timeRange} Minutes`}
+          />
         </div>
       </aside>
 
@@ -224,6 +196,7 @@ export function DashboardContent({
             onRefreshIntervalChange={setRefreshInterval}
             timeRange={timeRange}
             onTimeRangeChange={setTimeRange}
+            onDownloadCsv={handleDownloadCsv}
           />
         </div>
         <TemperatureChart data={combinedChartData} nMinutes={timeRange} />

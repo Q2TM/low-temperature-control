@@ -1,5 +1,8 @@
 "use client";
 
+import { Download } from "lucide-react";
+
+import { Button } from "@repo/ui/atom/button";
 import { Label } from "@repo/ui/atom/label";
 import {
   Select,
@@ -18,6 +21,7 @@ type DashboardControlsProps = {
   onRefreshIntervalChange: (interval: number) => void;
   timeRange: number;
   onTimeRangeChange: (range: number) => void;
+  onDownloadCsv: () => void;
 };
 
 export function DashboardControls({
@@ -29,6 +33,7 @@ export function DashboardControls({
   onRefreshIntervalChange,
   timeRange,
   onTimeRangeChange,
+  onDownloadCsv,
 }: DashboardControlsProps) {
   return (
     <div className="flex flex-wrap items-center justify-end gap-4 p-4 bg-muted/50 rounded-lg">
@@ -86,6 +91,7 @@ export function DashboardControls({
             <SelectValue placeholder="Select refresh" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="0">Off</SelectItem>
             <SelectItem value="5000">5 seconds</SelectItem>
             <SelectItem value="10000">10 seconds</SelectItem>
             <SelectItem value="30000">30 seconds</SelectItem>
@@ -93,6 +99,15 @@ export function DashboardControls({
           </SelectContent>
         </Select>
       </div>
+
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={onDownloadCsv}
+        title="Download CSV"
+      >
+        <Download className="w-4 h-4" />
+      </Button>
     </div>
   );
 }

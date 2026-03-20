@@ -1,0 +1,401 @@
+"use client";
+
+import { Check, ChevronRight, Pause, Play, X } from "lucide-react";
+import { useState, useTransition } from "react";
+
+import { Badge } from "@repo/ui/atom/badge";
+import { Button } from "@repo/ui/atom/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+} from "@repo/ui/molecule/card";
+
+import {
+  setPIDParameters,
+  setTargetTemperature,
+  startPID,
+  stopPID,
+} from "@/actions/heater";
+
+export type PidRuntimeState = {
+  dutyCycle: number;
+  pidVariables: {
+    integral: number;
+    lastError: number;
+    lastMeasurement: number | null;
+  };
+  errorStats: {
+    errorsLast1M: number;
+    errorsLast10M: number;
+    errorsSinceStart: number;
+    lastErrorMessage: string | null;
+  };
+};
+
+type PidControllerCardProps = {
+  currentTemp: number | null;
+  targetTemp: number | null;
+  isActive: boolean;
+  currentPower: number | null;
+  pidParameters: { kp: number; ki: number; kd: number } | null;
+  pidRuntimeState: PidRuntimeState | null;
+  onStatusChange?: () => void;
+};
+
+export function PidControllerCard({
+  currentTemp,
+  targetTemp,
+  isActive,
+  currentPower,
+  pidParameters,
+  pidRuntimeState,
+  onStatusChange,
+}: PidControllerCardProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingPID, setIsEditingPID] = useState(false);
+  const [newTargetTemp, setNewTargetTemp] = useState(
+    targetTemp?.toString() ?? "",
+  );
+  const [newKp, setNewKp] = useState(pidParameters?.kp.toString() ?? "");
+  const [newKi, setNewKi] = useState(pidParameters?.ki.toString() ?? "");
+  const [newKd, setNewKd] = useState(pidParameters?.kd.toString() ?? "");
+  const [isPending, startTransition] = useTransition();
+
+  const handleSetTargetTemp = async () => {
+    const temp = parseFloat(newTargetTemp);
+    if (isNaN(temp) || temp < 0 || temp > 500) {
+      alert("Please enter a valid temperature (0-500°C)");
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await setTargetTemperature(1, temp);
+      if (result.success) {
+        setIsEditing(false);
+        onStatusChange?.();
+      } else {
+        alert(result.error || "Failed to set target temperature");
+      }
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setNewTargetTemp(targetTemp?.toString() ?? "");
+  };
+
+  const handleEditPID = () => {
+    setNewKp(pidParameters?.kp.toString() ?? "");
+    setNewKi(pidParameters?.ki.toString() ?? "");
+    setNewKd(pidParameters?.kd.toString() ?? "");
+    setIsEditingPID(true);
+  };
+
+  const handleSetPIDParams = async () => {
+    const kp = parseFloat(newKp);
+    const ki = parseFloat(newKi);
+    const kd = parseFloat(newKd);
+
+    if (isNaN(kp) || isNaN(ki) || isNaN(kd)) {
+      alert("Please enter valid numbers for all PID parameters");
+      return;
+    }
+
+    if (kp < 0 || ki < 0 || kd < 0) {
+      alert("PID parameters must be non-negative");
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await setPIDParameters(1, { kp, ki, kd });
+      if (result.success) {
+        setIsEditingPID(false);
+        onStatusChange?.();
+      } else {
+        alert(result.error || "Failed to set PID parameters");
+      }
+    });
+  };
+
+  const handleCancelPIDEdit = () => {
+    setIsEditingPID(false);
+    setNewKp(pidParameters?.kp.toString() ?? "");
+    setNewKi(pidParameters?.ki.toString() ?? "");
+    setNewKd(pidParameters?.kd.toString() ?? "");
+  };
+
+  const handleTogglePID = async () => {
+    startTransition(async () => {
+      const result = isActive ? await stopPID(1) : await startPID(1);
+      if (result.success) {
+        onStatusChange?.();
+      } else {
+        alert(result.error || "Failed to toggle PID controller");
+      }
+    });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardDescription className="text-lg">PID Controller</CardDescription>
+        <CardAction>
+          <Badge variant={isActive ? "default" : "secondary"}>
+            {isActive ? "Running" : "Stopped"}
+          </Badge>
+        </CardAction>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        {/* Temperature → Target with animated arrow */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-center min-w-0">
+            <div className="text-2xl font-bold tabular-nums">
+              {currentTemp !== null ? currentTemp.toFixed(2) : "--"}
+            </div>
+            <div className="text-xs text-muted-foreground">°C current</div>
+          </div>
+
+          <div className="flex flex-col items-center shrink-0">
+            {isActive && currentPower !== null && (
+              <div className="text-xs font-semibold text-orange-500 dark:text-orange-400 mb-0.5">
+                {currentPower.toFixed(1)} W
+              </div>
+            )}
+            <div className="flex items-center -space-x-1.5">
+              <ChevronRight
+                className={`h-5 w-5 transition-colors ${isActive ? "animate-flow-1 text-primary" : "text-muted-foreground/40"}`}
+              />
+              <ChevronRight
+                className={`h-5 w-5 transition-colors ${isActive ? "animate-flow-2 text-primary" : "text-muted-foreground/40"}`}
+              />
+              <ChevronRight
+                className={`h-5 w-5 transition-colors ${isActive ? "animate-flow-3 text-primary" : "text-muted-foreground/40"}`}
+              />
+            </div>
+          </div>
+
+          <div className="text-center min-w-0">
+            {isEditing ? (
+              <div className="flex flex-col items-center gap-1">
+                <input
+                  type="number"
+                  step="0.1"
+                  value={newTargetTemp}
+                  onChange={(e) => setNewTargetTemp(e.target.value)}
+                  className="text-xl font-bold bg-transparent border-b-2 border-primary outline-none w-20 text-center tabular-nums"
+                  placeholder="0.0"
+                  autoFocus
+                />
+                <div className="text-xs text-muted-foreground">°C target</div>
+                <div className="flex gap-1 mt-0.5">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6"
+                    onClick={handleSetTargetTemp}
+                    disabled={isPending}
+                  >
+                    <Check className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6"
+                    onClick={handleCancelEdit}
+                    disabled={isPending}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold tabular-nums">
+                  {targetTemp !== null ? targetTemp.toFixed(1) : "--"}
+                </div>
+                <div className="text-xs text-muted-foreground">°C target</div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* PID Parameters */}
+        {pidParameters && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium">PID Parameters</div>
+            {isEditingPID ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground w-8">Kp</span>
+                  <input
+                    type="number"
+                    step="0.001"
+                    value={newKp}
+                    onChange={(e) => setNewKp(e.target.value)}
+                    className="flex-1 px-2 py-1 text-sm font-mono bg-transparent border rounded outline-none border-primary"
+                    placeholder="0.0"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground w-8">Ki</span>
+                  <input
+                    type="number"
+                    step="0.001"
+                    value={newKi}
+                    onChange={(e) => setNewKi(e.target.value)}
+                    className="flex-1 px-2 py-1 text-sm font-mono bg-transparent border rounded outline-none border-primary"
+                    placeholder="0.0"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground w-8">Kd</span>
+                  <input
+                    type="number"
+                    step="0.001"
+                    value={newKd}
+                    onChange={(e) => setNewKd(e.target.value)}
+                    className="flex-1 px-2 py-1 text-sm font-mono bg-transparent border rounded outline-none border-primary"
+                    placeholder="0.0"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={handleSetPIDParams}
+                    disabled={isPending}
+                    className="flex-1"
+                  >
+                    <Check className="mr-1 h-3 w-3" />
+                    Save
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCancelPIDEdit}
+                    disabled={isPending}
+                    className="flex-1"
+                  >
+                    <X className="mr-1 h-3 w-3" />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-2 text-sm">
+                <div>
+                  <div className="text-muted-foreground">Kp</div>
+                  <div className="font-mono">{pidParameters.kp.toFixed(3)}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">Ki</div>
+                  <div className="font-mono">{pidParameters.ki.toFixed(3)}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">Kd</div>
+                  <div className="font-mono">{pidParameters.kd.toFixed(3)}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* PID State (visible when active) */}
+        {isActive && pidRuntimeState && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium">PID State</div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+              <div className="text-muted-foreground">Duty Cycle</div>
+              <div className="font-mono text-right">
+                {pidRuntimeState.dutyCycle.toFixed(1)}%
+              </div>
+              <div className="text-muted-foreground">Error</div>
+              <div className="font-mono text-right">
+                {pidRuntimeState.pidVariables.lastError.toFixed(3)}
+              </div>
+              <div className="text-muted-foreground">Integral</div>
+              <div className="font-mono text-right">
+                {pidRuntimeState.pidVariables.integral.toFixed(3)}
+              </div>
+              {pidRuntimeState.pidVariables.lastMeasurement !== null && (
+                <>
+                  <div className="text-muted-foreground">Last Reading</div>
+                  <div className="font-mono text-right">
+                    {pidRuntimeState.pidVariables.lastMeasurement.toFixed(2)} °C
+                  </div>
+                </>
+              )}
+            </div>
+            {pidRuntimeState.errorStats.errorsSinceStart > 0 && (
+              <div className="mt-1 rounded-md bg-destructive/10 px-2 py-1.5 text-xs text-destructive">
+                <span className="font-medium">
+                  Errors: {pidRuntimeState.errorStats.errorsLast1M}/
+                  {pidRuntimeState.errorStats.errorsLast10M}/
+                  {pidRuntimeState.errorStats.errorsSinceStart}
+                </span>
+                <span className="text-muted-foreground ml-1">
+                  (1m / 10m / total)
+                </span>
+                {pidRuntimeState.errorStats.lastErrorMessage && (
+                  <div className="mt-0.5 truncate">
+                    {pidRuntimeState.errorStats.lastErrorMessage}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+
+      <CardFooter className="flex-col gap-2">
+        {!isEditing && !isEditingPID && (
+          <div className="flex w-full gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setIsEditing(true)}
+              disabled={isPending}
+            >
+              Edit Target
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={handleEditPID}
+              disabled={isPending}
+            >
+              Edit PID
+            </Button>
+          </div>
+        )}
+        {!isEditingPID && (
+          <Button
+            onClick={handleTogglePID}
+            disabled={isPending}
+            variant={isActive ? "destructive" : "default"}
+            className="w-full"
+          >
+            {isPending ? (
+              "..."
+            ) : isActive ? (
+              <>
+                <Pause className="mr-2 h-4 w-4" />
+                Stop
+              </>
+            ) : (
+              <>
+                <Play className="mr-2 h-4 w-4" />
+                Start
+              </>
+            )}
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
+  );
+}

@@ -133,6 +133,16 @@
   }
 }
 
+@keyframes flow-chevron {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 @layer utilities {
   .dashboard-layout {
     @apply grid gap-6 max-w-[1600px] mx-auto;
@@ -146,5 +156,17 @@
 
   .dashboard-content {
     @apply min-w-0;
+  }
+
+  .animate-flow-1 {
+    animation: flow-chevron 1.5s ease-in-out infinite;
+  }
+
+  .animate-flow-2 {
+    animation: flow-chevron 1.5s ease-in-out 0.3s infinite;
+  }
+
+  .animate-flow-3 {
+    animation: flow-chevron 1.5s ease-in-out 0.6s infinite;
   }
 }
