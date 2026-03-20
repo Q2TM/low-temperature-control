@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import { RootLayout } from "@/components/layout/RootLayout";
 
 export const metadata: Metadata = {
-  title: "Almond Dashboard",
+  title: "LT Capstone Dashboard",
   description: "Dashboard for Low Temperature Control System",
 };
 

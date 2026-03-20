@@ -1,25 +1,27 @@
-import {
-  getHeaterConfig,
-  getHeaterStatus,
-  getPIDParameters,
-} from "@/actions/heater";
+import { getHeaterStatus, getPIDParameters } from "@/actions/heater";
 import { DashboardContent } from "@/components/DashboardContent";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  // Fetch heater data on the server
-  const [heaterConfig, heaterStatus, pidParameters] = await Promise.all([
-    getHeaterConfig(1),
+  const [heaterStatus, pidParameters] = await Promise.all([
     getHeaterStatus(1),
     getPIDParameters(1),
   ]);
 
-  const targetTemp = heaterConfig?.targetTemp ?? null;
+  const targetTemp = heaterStatus?.target ?? null;
   const isActive = heaterStatus?.isActive ?? false;
 
+  const pidRuntimeState = heaterStatus
+    ? {
+        dutyCycle: heaterStatus.dutyCycle,
+        pidVariables: heaterStatus.pidVariables,
+        errorStats: heaterStatus.errorStats,
+      }
+    : null;
+
   return (
-    <main className="p-4">
+    <main className="p-4 max-w-7xl mx-auto">
       <header className="text-center my-8 lg:hidden">
         <h1 className="text-3xl font-bold">
           Lab 20-05 (20th Floor, Building 4)
@@ -31,6 +33,7 @@ export default async function Home() {
           initialTargetTemp={targetTemp}
           initialIsActive={isActive}
           initialPidParameters={pidParameters}
+          initialPidRuntimeState={pidRuntimeState}
         />
       </div>
     </main>
