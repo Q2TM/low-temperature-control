@@ -78,7 +78,7 @@ class PidStatusOut(CamelModel):
     channel_name: str
     is_active: bool
     target: float
-    duty_cycle: float
+    current: float
     current_temp: Optional[float]
     pid_parameters: Parameters
     pid_variables: PidVariables

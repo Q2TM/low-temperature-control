@@ -1,13 +1,16 @@
+import os
 import threading
 import time
-import os
 from collections import deque
 from typing import Optional
 
-from mocks.gpio_mock import GPIORepositoryMock
-from repositories.gpio import GPIORepository, RPiGPIORepository
+# serial import is for flow detection only; if module lacks tools we fallback to env var
+import serial
+# from mocks.gpio_mock import GPIORepositoryMock
+# from repositories.gpio import GPIORepository, RPiGPIORepository
 from schemas.temp_control import Parameters, StatusOut, PidVariables, ErrorStats, PidStatusOut
 from .PID import PIDController
+from repositories.psu import ProgrammablePowerSupplyRepository
 from .lgg_client import readingApi
 
 
@@ -16,13 +19,11 @@ class TempService:
         self,
         channel_id: int,
         channel_name: str,
-        gpio_pin: int,
         sensor_channel: int
     ):
         """Initialize temperature service for a specific channel."""
         self.channel_id = channel_id
         self.channel_name = channel_name
-        self.pin = gpio_pin
         self.sensor_channel = sensor_channel
 
         self._target = 30.0
@@ -35,23 +36,9 @@ class TempService:
             setpoint=self._target,
         )
 
-        # Mock GPIO for development
-        mode = os.getenv("GPIO_MODE")
-
-        if mode == "MOCK":
-            self.gpio: GPIORepository = GPIORepositoryMock(
-                pin=self.pin, frequency=0.2, duty_cycle=0.0)
-
-        # Real GPIO
-        elif mode == "REAL":
-            import RPi.GPIO as GPIO
-            self.gpio: GPIORepository = RPiGPIORepository(
-                GPIO, pin=self.pin, frequency=0.2, duty_cycle=0.0)
-        else:
-            raise RuntimeError(
-                "GPIO_MODE environment variable not set correctly. Use 'MOCK' or 'REAL'.")
-
-        self.gpio.setup_pwm()
+        self.psu = ProgrammablePowerSupplyRepository(
+            port=self._detect_serial_port(),
+        )
 
         self._running = False
         self._thread: threading.Thread | None = None
@@ -63,6 +50,36 @@ class TempService:
         self._current_temp: Optional[float] = None
         self._error_lock = threading.Lock()
 
+    def _detect_serial_port(self) -> str:
+        # Priority: explicit environment override
+        env_port = os.getenv("PSU_SERIAL_PORT") or os.getenv("POWER_SUPPLY_SERIAL_PORT")
+        if env_port:
+            return env_port
+
+        # Try PySerial list_ports if available
+        try:
+            from serial.tools import list_ports
+        except Exception as exc:
+            raise RuntimeError(
+                "serial.tools is not available. Install pyserial and/or set PSU_SERIAL_PORT. "
+                f"Error: {type(exc).__name__}: {exc}"
+            )
+
+        ports = list(list_ports.comports())
+        if not ports:
+            raise RuntimeError(
+                "No serial ports detected. Connect CP2102 device or set PSU_SERIAL_PORT env var."
+            )
+
+        # Prefer CP2102/USB-UART on Raspberry Pi
+        for p in ports:
+            desc = (p.description or "").upper()
+            if "CP210" in desc or "USB-TO-UART" in desc or "USB SERIAL" in desc:
+                return p.device
+
+        # Fallback to first detected port
+        return ports[0].device
+
     def get_target(self):
         return self._target
 
@@ -71,8 +88,8 @@ class TempService:
         self._pid.set_setpoint(value)
 
     def get_status(self):
-        duty_cycle = self.gpio.get_duty_cycle()
-        return StatusOut(target=self._target, duty_cycle=duty_cycle)
+        current = self.psu.get_current()
+        return StatusOut(target=self._target, current=current)  
 
     def get_parameters(self):
         return self._params
@@ -121,7 +138,7 @@ class TempService:
 
     def get_pid_status(self) -> PidStatusOut:
         """Get comprehensive PID status including all internal variables."""
-        duty_cycle = self.gpio.get_duty_cycle()
+        current = self.psu.get_current()
 
         # Get PID internal state
         pid_state = self._pid.get_state()
@@ -145,7 +162,7 @@ class TempService:
             channel_name=self.channel_name,
             is_active=self._running,
             target=self._target,
-            duty_cycle=duty_cycle,
+            current=current,
             current_temp=self._current_temp,
             pid_parameters=pid_parameters,
             pid_variables=pid_variables,
@@ -158,6 +175,11 @@ class TempService:
             return "Control loop already running."
 
         self._running = True
+        self.psu.pc_connect()
+        self.psu.power_on()
+        self.psu.set_voltage(12.0)  # Set a default voltage, can be adjusted as needed
+        self.psu.set_current(0.0)
+
         self._thread = threading.Thread(target=self._control_loop, daemon=True)
         self._thread.start()
         return "Temperature control loop started."
@@ -171,7 +193,10 @@ class TempService:
         self._running = False
         if self._thread:
             self._thread.join(timeout=2.0)
-        self.gpio.set_duty_cycle(duty_cycle=0.0)
+        self.psu.set_current(0.0)
+        self.psu.set_voltage(0.0)
+        self.psu.power_off()
+        self.psu.pc_disconnect()
         return "Temperature control loop stopped and heater turned off."
 
     def _control_loop(self):
@@ -192,20 +217,25 @@ class TempService:
                 self._current_temp = current_temp
 
                 duty = self._pid.update(measurement=current_temp, dt=dt)
-                self.gpio.set_duty_cycle(duty_cycle=duty)
+                current = round((duty / 100.0) * 5, 3)  # 0–100% → 0–5A with 3 decimal precision
+                self.psu.set_current(current)
 
                 print(
                     f"[{self.channel_id}] T={current_temp:.2f}°C | "
-                    f"Target={self._target:.1f}°C | Duty={duty:.1f}%"
+                    f"Target={self._target:.1f}°C | Current={current:.2f}A"
                 )
             except Exception as e:
                 error_msg = f"Error in PID control loop: {type(e).__name__}: {str(e)}"
                 print(f"[{self.channel_id}] {error_msg}")
                 self._record_error(error_msg)
+                try:
+                    self.psu.set_current(0.0)  # HARD STOP
+                except Exception:
+                    pass
                 # Continue running despite errors
 
             last_time = loop_start
             time.sleep(5)
 
     def cleanup(self):
-        self.gpio.cleanup()
+        self.psu.cleanup()

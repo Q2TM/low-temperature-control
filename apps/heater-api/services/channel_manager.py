@@ -29,7 +29,6 @@ class ChannelManager:
                 service = TempService(
                     channel_id=config.channel_id,
                     channel_name=config.name,
-                    gpio_pin=config.gpio_pin,
                     sensor_channel=config.sensor_channel
                 )
                 self._channels[config.channel_id] = service
