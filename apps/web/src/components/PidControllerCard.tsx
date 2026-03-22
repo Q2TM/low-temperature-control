@@ -40,7 +40,6 @@ type PidControllerCardProps = {
   currentTemp: number | null;
   targetTemp: number | null;
   isActive: boolean;
-  currentPower: number | null;
   pidParameters: { kp: number; ki: number; kd: number } | null;
   pidRuntimeState: PidRuntimeState | null;
   onStatusChange?: () => void;
@@ -50,7 +49,6 @@ export function PidControllerCard({
   currentTemp,
   targetTemp,
   isActive,
-  currentPower,
   pidParameters,
   pidRuntimeState,
   onStatusChange,
@@ -161,9 +159,9 @@ export function PidControllerCard({
           </div>
 
           <div className="flex flex-col items-center shrink-0">
-            {isActive && currentPower !== null && (
+            {isActive && pidRuntimeState && (
               <div className="text-xs font-semibold text-orange-500 dark:text-orange-400 mb-0.5">
-                {currentPower.toFixed(1)} W
+                {(pidRuntimeState.power * 100).toFixed(1)}%
               </div>
             )}
             <div className="flex items-center -space-x-1.5">

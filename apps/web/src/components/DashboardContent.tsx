@@ -22,6 +22,7 @@ import {
 } from "@/libs/timeConfig";
 
 type DashboardContentProps = {
+  initialCurrentTemp: number | null;
   initialTargetTemp: number | null;
   initialIsActive: boolean;
   initialPidParameters: {
@@ -33,6 +34,7 @@ type DashboardContentProps = {
 };
 
 export function DashboardContent({
+  initialCurrentTemp,
   initialTargetTemp,
   initialIsActive,
   initialPidParameters,
@@ -46,6 +48,7 @@ export function DashboardContent({
   });
   const [timeInterval, setTimeInterval] = useState<number>(1); // seconds
   const [refreshInterval, setRefreshInterval] = useState<number>(10000); // ms
+  const [currentTemp, setCurrentTemp] = useState(initialCurrentTemp);
   const [targetTemp, setTargetTemp] = useState(initialTargetTemp);
   const [isActive, setIsActive] = useState(initialIsActive);
   const [pidParameters, setPidParameters] = useState(initialPidParameters);
@@ -71,6 +74,7 @@ export function DashboardContent({
     ]);
 
     if (status) {
+      setCurrentTemp(status.currentTemp);
       setTargetTemp(status.target);
       setIsActive(status.isActive);
       setPidRuntimeState({
@@ -133,7 +137,6 @@ export function DashboardContent({
   const { pins: heaterPins, chartData: heaterChartData } = heaterMetrics;
 
   const channel1Data = tempChannels[1];
-  const currentTemp = channel1Data?.currentTemp ?? null;
   const avgTemp = channel1Data?.avgTemp ?? null;
 
   const heaterPinData = heaterPins[selectedPin];
@@ -199,7 +202,6 @@ export function DashboardContent({
             currentTemp={currentTemp}
             targetTemp={targetTemp}
             isActive={isActive}
-            currentPower={heaterPinData?.currentPower ?? null}
             pidParameters={pidParameters}
             pidRuntimeState={pidRuntimeState}
             onStatusChange={handleStatusRefresh}

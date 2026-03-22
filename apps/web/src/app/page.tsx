@@ -11,6 +11,7 @@ export default async function Home() {
 
   const targetTemp = heaterStatus?.target ?? null;
   const isActive = heaterStatus?.isActive ?? false;
+  const currentTemp = heaterStatus?.currentTemp ?? null;
 
   const pidRuntimeState = heaterStatus
     ? {
@@ -30,6 +31,7 @@ export default async function Home() {
 
       <div className="dashboard-layout">
         <DashboardContent
+          initialCurrentTemp={currentTemp}
           initialTargetTemp={targetTemp}
           initialIsActive={isActive}
           initialPidParameters={pidParameters}
