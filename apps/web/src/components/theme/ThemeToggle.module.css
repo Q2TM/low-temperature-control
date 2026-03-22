@@ -1,0 +1,118 @@
+.wrapper {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0;
+  padding: 4px 6px 4px 4px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background-color: var(--muted);
+}
+
+.toggleSegment {
+  display: flex;
+  align-items: center;
+}
+
+.divider {
+  align-self: stretch;
+  width: 1px;
+  min-height: 28px;
+  margin: 0 6px;
+  background-color: var(--border);
+  flex-shrink: 0;
+}
+
+.systemControl {
+  display: flex;
+  align-items: center;
+}
+
+.toggleButton {
+  display: flex;
+  align-items: center;
+  border-radius: 14px;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.toggleButton:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.toggle {
+  cursor: pointer;
+  width: 56px;
+  height: 28px;
+  display: block;
+}
+
+/* Shared transition for all animated SVG parts */
+.toggleBg,
+.slider,
+.sunIcon,
+.moonIcon,
+.moonGlow,
+.stars,
+.clouds {
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== Light state (default) ========== */
+.toggleBg {
+  fill: #7dd3fc;
+}
+.slider {
+  transform: translateX(0px);
+}
+.sunIcon {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+  transform-origin: 40px 40px;
+}
+.moonIcon {
+  opacity: 0;
+  transform: scale(0.5) rotate(-60deg);
+  transform-origin: 40px 40px;
+}
+.moonGlow {
+  opacity: 0;
+}
+.stars {
+  opacity: 0;
+  transform: translateY(15px);
+}
+.clouds {
+  opacity: 1;
+  transform: translateY(0px);
+}
+
+/* ========== Dark state — next-themes applies .dark on <html> ========== */
+:global(.dark) .toggleBg {
+  fill: #1e293b;
+}
+:global(.dark) .slider {
+  transform: translateX(80px);
+}
+:global(.dark) .sunIcon {
+  opacity: 0;
+  transform: scale(0.5) rotate(60deg);
+  transform-origin: 40px 40px;
+}
+:global(.dark) .moonIcon {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+  transform-origin: 40px 40px;
+}
+:global(.dark) .moonGlow {
+  opacity: 0.6;
+}
+:global(.dark) .stars {
+  opacity: 1;
+  transform: translateY(0px);
+}
+:global(.dark) .clouds {
+  opacity: 0;
+  transform: translateY(15px);
+}
