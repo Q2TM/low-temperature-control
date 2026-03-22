@@ -47,10 +47,15 @@ type TemperatureChartProps = {
     time: string;
     [key: string]: number | string | Date;
   }>;
-  nMinutes: number;
+  timeframeLabel: string;
+  spanMs: number;
 };
 
-export function TemperatureChart({ data, nMinutes }: TemperatureChartProps) {
+export function TemperatureChart({
+  data,
+  timeframeLabel,
+  spanMs,
+}: TemperatureChartProps) {
   // Get all channel keys (exclude 'time')
   const channelKeys =
     data.length > 0
@@ -96,7 +101,7 @@ export function TemperatureChart({ data, nMinutes }: TemperatureChartProps) {
     <Card>
       <CardHeader>
         <CardTitle>Temperature Chart</CardTitle>
-        <CardDescription>Past {nMinutes} Minutes</CardDescription>
+        <CardDescription>{timeframeLabel}</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -116,12 +121,21 @@ export function TemperatureChart({ data, nMinutes }: TemperatureChartProps) {
               tickMargin={8}
               minTickGap={32}
               tickFormatter={(value) => {
-                // Format time to show HH:MM:SS
                 const date = new Date(value);
+                const showDate = spanMs > 24 * 60 * 60 * 1000;
+                if (showDate) {
+                  return date.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  });
+                }
                 return date.toLocaleTimeString("en-US", {
                   hour: "2-digit",
                   minute: "2-digit",
-                  second: "2-digit",
+                  second: spanMs <= 60 * 60 * 1000 ? "2-digit" : undefined,
                   hour12: false,
                 });
               }}

@@ -22,7 +22,7 @@ import {
 } from "@/actions/heater";
 
 export type PidRuntimeState = {
-  dutyCycle: number;
+  power: number;
   pidVariables: {
     integral: number;
     lastError: number;
@@ -310,9 +310,9 @@ export function PidControllerCard({
           <div className="space-y-2">
             <div className="text-sm font-medium">PID State</div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-              <div className="text-muted-foreground">Duty Cycle</div>
+              <div className="text-muted-foreground">Power</div>
               <div className="font-mono text-right">
-                {pidRuntimeState.dutyCycle.toFixed(1)}%
+                {(pidRuntimeState.power * 100).toFixed(1)}%
               </div>
               <div className="text-muted-foreground">Error</div>
               <div className="font-mono text-right">

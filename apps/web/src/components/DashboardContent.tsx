@@ -14,6 +14,12 @@ import {
 } from "@/components/PidControllerCard";
 import { useHeaterMetrics } from "@/hooks/useHeaterMetrics";
 import { useTempMetrics } from "@/hooks/useTempMetrics";
+import {
+  formatTimeframeLabel,
+  getAvailableResolutions,
+  getTimeSpanMs,
+  type TimeRange,
+} from "@/libs/timeConfig";
 
 type DashboardContentProps = {
   initialTargetTemp: number | null;
@@ -34,7 +40,10 @@ export function DashboardContent({
 }: DashboardContentProps) {
   const [timeEnd, setTimeEnd] = useState<number>(() => Date.now());
   const [selectedPin, setSelectedPin] = useState<number>(1);
-  const [timeRange, setTimeRange] = useState<number>(10); // minutes
+  const [timeRange, setTimeRange] = useState<TimeRange>({
+    mode: "relative",
+    minutes: 10,
+  });
   const [timeInterval, setTimeInterval] = useState<number>(1); // seconds
   const [refreshInterval, setRefreshInterval] = useState<number>(10000); // ms
   const [targetTemp, setTargetTemp] = useState(initialTargetTemp);
@@ -42,6 +51,18 @@ export function DashboardContent({
   const [pidParameters, setPidParameters] = useState(initialPidParameters);
   const [pidRuntimeState, setPidRuntimeState] =
     useState<PidRuntimeState | null>(initialPidRuntimeState);
+
+  const spanMs = getTimeSpanMs(timeRange);
+
+  const handleTimeRangeChange = (newRange: TimeRange) => {
+    setTimeRange(newRange);
+    const newSpanMs = getTimeSpanMs(newRange);
+    const { available, defaultResolution } = getAvailableResolutions(newSpanMs);
+    setTimeInterval((prev) => {
+      const isValid = available.some((r) => r.value === prev);
+      return isValid ? prev : defaultResolution.value;
+    });
+  };
 
   const refreshPidStatus = async () => {
     const [status, params] = await Promise.all([
@@ -53,7 +74,7 @@ export function DashboardContent({
       setTargetTemp(status.target);
       setIsActive(status.isActive);
       setPidRuntimeState({
-        dutyCycle: status.dutyCycle,
+        power: status.power,
         pidVariables: status.pidVariables,
         errorStats: status.errorStats,
       });
@@ -66,22 +87,26 @@ export function DashboardContent({
     setTimeEnd(Date.now());
   };
 
-  const timeStart = useMemo(
-    () => timeEnd - timeRange * 60 * 1000,
-    [timeEnd, timeRange],
+  const effectiveEnd = useMemo(
+    () => (timeRange.mode === "relative" ? timeEnd : timeRange.end),
+    [timeRange, timeEnd],
+  );
+  const effectiveStart = useMemo(
+    () => effectiveEnd - spanMs,
+    [effectiveEnd, spanMs],
   );
 
   const tempMetrics = useTempMetrics({
     interval: timeInterval,
-    timeStart,
-    timeRange: timeRange * 60 * 1000,
+    timeStart: effectiveStart,
+    timeRange: spanMs,
     channels: [1],
   });
 
   const heaterMetrics = useHeaterMetrics({
     interval: timeInterval,
-    timeStart,
-    timeRange: timeRange * 60 * 1000,
+    timeStart: effectiveStart,
+    timeRange: spanMs,
     pins: [selectedPin],
   });
 
@@ -91,12 +116,14 @@ export function DashboardContent({
     }
 
     const interval = setInterval(() => {
-      setTimeEnd(Date.now());
+      if (timeRange.mode === "relative") {
+        setTimeEnd(Date.now());
+      }
       refreshPidStatus();
     }, refreshInterval);
 
     return () => clearInterval(interval);
-  }, [refreshInterval]);
+  }, [refreshInterval, timeRange.mode]);
 
   if (!tempMetrics || !heaterMetrics) {
     return <Spinner />;
@@ -155,6 +182,8 @@ export function DashboardContent({
     document.body.removeChild(link);
   };
 
+  const timeframeLabel = formatTimeframeLabel(timeRange);
+
   return (
     <>
       <aside className="dashboard-sidebar">
@@ -180,7 +209,7 @@ export function DashboardContent({
             avgTemp={avgTemp}
             avgPower={heaterPinData?.avgPower ?? null}
             totalEnergy={heaterPinData?.totalEnergy ?? null}
-            timeframeLabel={`Last ${timeRange} Minutes`}
+            timeframeLabel={timeframeLabel}
           />
         </div>
       </aside>
@@ -190,16 +219,20 @@ export function DashboardContent({
           <DashboardControls
             selectedPin={selectedPin}
             onPinChange={setSelectedPin}
+            timeRange={timeRange}
+            onTimeRangeChange={handleTimeRangeChange}
             timeInterval={timeInterval}
             onTimeIntervalChange={setTimeInterval}
             refreshInterval={refreshInterval}
             onRefreshIntervalChange={setRefreshInterval}
-            timeRange={timeRange}
-            onTimeRangeChange={setTimeRange}
             onDownloadCsv={handleDownloadCsv}
           />
         </div>
-        <TemperatureChart data={combinedChartData} nMinutes={timeRange} />
+        <TemperatureChart
+          data={combinedChartData}
+          timeframeLabel={timeframeLabel}
+          spanMs={spanMs}
+        />
       </div>
     </>
   );

@@ -44,8 +44,8 @@ async function scrapeHeater(instance: string, pin: number, maxPower: number) {
     time: new Date(),
     instance,
     pinNumber: pin,
-    dutyCycle: data.dutyCycle,
-    powerWatts: (maxPower * data.dutyCycle) / 100,
+    dutyCycle: data.power * 100,
+    powerWatts: maxPower * data.power,
   });
 }
 
