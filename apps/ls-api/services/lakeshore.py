@@ -1,5 +1,8 @@
 from lakeshore import Model240, Model240InputParameter, Model240CurveHeader
 import os
+import time
+
+from opentelemetry import metrics
 
 from constants.env import SIMULATOR_API_URL
 from mocks.model240 import MockModel240
@@ -12,6 +15,17 @@ from schemas.reading import InputParameter, MonitorResp
 from schemas.device import IdentificationResp, StatusResp, Brightness
 
 from fastapi import Request, HTTPException
+
+_meter = metrics.get_meter("lingangu-api")
+_read_duration = _meter.create_histogram(
+    "lakeshore.read.duration",
+    description="Time to read from the physical device",
+    unit="ms",
+)
+_connected_gauge = _meter.create_up_down_counter(
+    "lakeshore.connected",
+    description="1 if device is connected, 0 otherwise",
+)
 
 
 class LakeshoreService:
@@ -58,6 +72,7 @@ class LakeshoreService:
                 else:
                     print("Initializing Lakeshore Connection")
                     LakeshoreService.device = Model240()
+                _connected_gauge.add(1)
         except Exception as e:
             raise HTTPException(503, f"Connection failed: {e}")
 
@@ -73,6 +88,7 @@ class LakeshoreService:
             try:
                 LakeshoreService.device.disconnect_usb()
                 LakeshoreService.device = None
+                _connected_gauge.add(-1)
             except Exception as e:
                 raise HTTPException(503, f"Connection failed: {e}")
 
@@ -277,8 +293,10 @@ class LakeshoreService:
         with request.app.state.lock:
             device = self.get_device()
 
+            start = time.monotonic()
             sensor = device.get_sensor_reading(channel)
             kelvin = device.get_kelvin_reading(channel)
+            _read_duration.record((time.monotonic() - start) * 1000, {"channel": channel})
 
             if kelvin == 0 or sensor == 0:
                 raise HTTPException(503, "Reading error: received zero value")

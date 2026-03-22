@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack --port 3100",
-    "build": "next build && powershell Copy-Item -Recurse -Force public .next/standalone/apps/web && powershell Copy-Item -Recurse -Force .next/static .next/standalone/apps/web/.next/static",
+    "build": "next build && cp -r public .next/standalone/apps/web && cp -r .next/static .next/standalone/apps/web/.next/",
     "lab:laptop": "cd .next/standalone/apps/web && dotenv -e ../../../../.env -v PORT=3100 -- node server.js",
     "start": "next start",
     "lint": "eslint .",

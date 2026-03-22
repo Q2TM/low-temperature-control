@@ -4,11 +4,25 @@ import time
 from collections import deque
 from typing import Optional
 
+from opentelemetry import metrics
+
 from schemas.temp_control import Parameters, PidVariables, ErrorStats, PidStatusOut
 from .PID import PIDController
 from repositories.heater import HeaterRepository
 from .heater_factory import create_heater
 from .lgg_client import readingApi
+
+_meter = metrics.get_meter("heater-api")
+_pid_loop_duration = _meter.create_histogram(
+    "pid.loop.duration",
+    description="Time per PID loop iteration",
+    unit="ms",
+)
+_thermo_api_read_duration = _meter.create_histogram(
+    "thermo_api.read_temp.duration",
+    description="Duration of temperature reading API call to ls-api",
+    unit="ms",
+)
 
 
 class TempService:
@@ -162,13 +176,23 @@ class TempService:
                 elif dt > 15.0:
                     dt = 15.0
 
+                read_start = time.monotonic()
                 current_temp = readingApi.get_monitor(
                     self.sensor_channel).kelvin - 273.15
+                _thermo_api_read_duration.record(
+                    (time.monotonic() - read_start) * 1000,
+                    {"channel_id": self.channel_id},
+                )
                 self._current_temp = current_temp
 
                 duty = self._pid.update(measurement=current_temp, dt=dt)
                 power = max(0.0, min(1.0, duty / 100.0))
                 self.heater.set_power(power)
+
+                _pid_loop_duration.record(
+                    (time.monotonic() - loop_start) * 1000,
+                    {"channel_id": self.channel_id},
+                )
 
                 print(
                     f"[{self.channel_id}] T={current_temp:.2f}°C | "

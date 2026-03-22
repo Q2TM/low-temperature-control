@@ -1,6 +1,8 @@
 import { openapi } from "@elysiajs/openapi";
 import { opentelemetry } from "@elysiajs/opentelemetry";
+import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-proto";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
+import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-node";
 import { Elysia } from "elysia";
 import { stringify } from "yaml";
@@ -31,6 +33,10 @@ const app = new Elysia()
     opentelemetry({
       serviceName: "simulator",
       spanProcessors: [new BatchSpanProcessor(new OTLPTraceExporter())],
+      metricReader: new PeriodicExportingMetricReader({
+        exporter: new OTLPMetricExporter(),
+        exportIntervalMillis: 15000,
+      }),
     }),
   )
   .use(simulatorController)

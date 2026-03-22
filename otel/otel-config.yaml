@@ -11,9 +11,16 @@ exporters:
     endpoint: rice-tempo:4317
     tls:
       insecure: true
+  prometheusremotewrite:
+    endpoint: http://rice-prometheus:9090/api/v1/write
+    tls:
+      insecure: true
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
       exporters: [otlp/tempo]
+    metrics:
+      receivers: [otlp]
+      exporters: [prometheusremotewrite]

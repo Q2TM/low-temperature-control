@@ -1,8 +1,21 @@
+import { metrics } from "@opentelemetry/api";
 import { heaterMetrics, sensorMetrics } from "@repo/tsdb";
 
 import { heaterClient, lggClient } from "@/core/api";
 import { config } from "@/core/config";
 import { db } from "@/core/db";
+
+const meter = metrics.getMeter("rice-shower");
+const scrapeDuration = meter.createHistogram("scrape.duration", {
+  description: "Time per scrape cycle",
+  unit: "ms",
+});
+const scrapeSuccessCounter = meter.createCounter("scrape.success.total", {
+  description: "Successful scrapes",
+});
+const scrapeErrorCounter = meter.createCounter("scrape.errors.total", {
+  description: "Failed scrapes",
+});
 
 async function scrapeLGG(instance: string, channel: number) {
   const { data, error } = await lggClient.GET(
@@ -77,28 +90,34 @@ export class Scraper {
   };
 
   private static async job() {
-    // Scrape sensor data
+    const jobStart = performance.now();
+
     for (const sensor of config.scrape.sensors) {
       try {
         await scrapeLGG(sensor.instance, sensor.channel);
         this.sensor.successCount++;
+        scrapeSuccessCounter.add(1, { type: "sensor" });
       } catch (_) {
         this.sensor.lastError = new Date();
         this.sensor.errorCount[sensor.channel] =
           (this.sensor.errorCount[sensor.channel] ?? 0) + 1;
+        scrapeErrorCounter.add(1, { type: "sensor" });
       }
     }
 
-    // Scrape heater data
     for (const heater of config.scrape.heaters) {
       try {
         await scrapeHeater(heater.instance, heater.pin, heater.maxPower);
         this.heater.successCount++;
+        scrapeSuccessCounter.add(1, { type: "heater" });
       } catch (_) {
         this.heater.lastError = new Date();
         this.heater.errorCount[heater.pin] =
           (this.heater.errorCount[heater.pin] ?? 0) + 1;
+        scrapeErrorCounter.add(1, { type: "heater" });
       }
     }
+
+    scrapeDuration.record(performance.now() - jobStart);
   }
 }

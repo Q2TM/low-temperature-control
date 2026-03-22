@@ -4,16 +4,19 @@ from fastapi.responses import HTMLResponse
 from routers import channels, config, pid
 from services.lifespan import lifespan
 
-from opentelemetry import trace
+from opentelemetry import trace, metrics
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 
-trace.set_tracer_provider(
-    TracerProvider(resource=Resource.create({SERVICE_NAME: "heater-api"}))
-)
+otel_resource = Resource.create({SERVICE_NAME: "heater-api"})
+
+trace.set_tracer_provider(TracerProvider(resource=otel_resource))
 
 otlp_exporter = OTLPSpanExporter(
     endpoint="http://localhost:4317",
@@ -22,6 +25,12 @@ otlp_exporter = OTLPSpanExporter(
 
 tracer_provider = cast(TracerProvider, trace.get_tracer_provider())
 tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+
+metric_reader = PeriodicExportingMetricReader(
+    OTLPMetricExporter(endpoint="http://localhost:4317", insecure=True),
+    export_interval_millis=15000,
+)
+metrics.set_meter_provider(MeterProvider(resource=otel_resource, metric_readers=[metric_reader]))
 
 app = FastAPI(
     title="Heater API (LT Capstone)",
