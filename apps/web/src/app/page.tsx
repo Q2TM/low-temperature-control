@@ -1,17 +1,22 @@
 import { getHeaterStatus, getPIDParameters } from "@/actions/heater";
+import { getLakeshoreTemperatureCelsius } from "@/actions/lakeshore";
 import { DashboardContent } from "@/components/DashboardContent";
 
 export const dynamic = "force-dynamic";
 
+/** Lakeshore sensor channel for heater channel 1 (see heater-api config). */
+const LAKESHORE_SENSOR_CHANNEL = 1;
+
 export default async function Home() {
-  const [heaterStatus, pidParameters] = await Promise.all([
+  const [heaterStatus, pidParameters, lakeshoreTemp] = await Promise.all([
     getHeaterStatus(1),
     getPIDParameters(1),
+    getLakeshoreTemperatureCelsius(LAKESHORE_SENSOR_CHANNEL),
   ]);
 
   const targetTemp = heaterStatus?.target ?? null;
   const isActive = heaterStatus?.isActive ?? false;
-  const currentTemp = heaterStatus?.currentTemp ?? null;
+  const currentTemp = lakeshoreTemp ?? heaterStatus?.currentTemp ?? null;
 
   const pidRuntimeState = heaterStatus
     ? {

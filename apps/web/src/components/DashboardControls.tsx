@@ -156,14 +156,14 @@ export function DashboardControls({
 
         <div className="flex items-center gap-2">
           <Label htmlFor="refresh-select" className="whitespace-nowrap">
-            Refresh
+            Chart refresh
           </Label>
           <Select
             value={refreshInterval.toString()}
             onValueChange={(value) => onRefreshIntervalChange(Number(value))}
           >
             <SelectTrigger id="refresh-select" className="w-[130px]">
-              <SelectValue placeholder="Select refresh" />
+              <SelectValue placeholder="Chart refresh interval" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="0">Off</SelectItem>

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Spinner } from "@repo/ui/icon/spinner";
 
 import { getHeaterStatus, getPIDParameters } from "@/actions/heater";
+import { getLakeshoreTemperatureCelsius } from "@/actions/lakeshore";
 import { TemperatureChart } from "@/components/charts/TemperatureChart";
 import { DashboardControls } from "@/components/DashboardControls";
 import { PeriodSummaryCard } from "@/components/PeriodSummaryCard";
@@ -20,6 +21,8 @@ import {
   getTimeSpanMs,
   type TimeRange,
 } from "@/libs/timeConfig";
+
+const PID_STATUS_REFRESH_MS = 1000;
 
 type DashboardContentProps = {
   initialCurrentTemp: number | null;
@@ -67,14 +70,15 @@ export function DashboardContent({
     });
   };
 
-  const refreshPidStatus = async () => {
-    const [status, params] = await Promise.all([
+  const refreshPidStatus = useCallback(async () => {
+    const [status, params, lakeshoreTemp] = await Promise.all([
       getHeaterStatus(1),
       getPIDParameters(1),
+      getLakeshoreTemperatureCelsius(1),
     ]);
 
     if (status) {
-      setCurrentTemp(status.currentTemp);
+      setCurrentTemp(lakeshoreTemp ?? status.currentTemp ?? null);
       setTargetTemp(status.target);
       setIsActive(status.isActive);
       setPidRuntimeState({
@@ -84,7 +88,7 @@ export function DashboardContent({
       });
     }
     if (params) setPidParameters(params);
-  };
+  }, []);
 
   const handleStatusRefresh = async () => {
     await refreshPidStatus();
@@ -115,6 +119,13 @@ export function DashboardContent({
   });
 
   useEffect(() => {
+    const id = setInterval(() => {
+      void refreshPidStatus();
+    }, PID_STATUS_REFRESH_MS);
+    return () => clearInterval(id);
+  }, [refreshPidStatus]);
+
+  useEffect(() => {
     if (refreshInterval <= 0) {
       return;
     }
@@ -123,7 +134,6 @@ export function DashboardContent({
       if (timeRange.mode === "relative") {
         setTimeEnd(Date.now());
       }
-      refreshPidStatus();
     }, refreshInterval);
 
     return () => clearInterval(interval);

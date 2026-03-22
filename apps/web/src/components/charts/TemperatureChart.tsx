@@ -214,8 +214,10 @@ export function TemperatureChart({
           </LineChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        Footer Text
+      <CardFooter className="flex-col items-start gap-2 text-sm text-muted-foreground">
+        {heaterChannels.length > 0
+          ? "Solid lines: sensor temperature (°C). Dashed line: heater power (W), right axis."
+          : "Sensor temperature from Lakeshore (°C)."}
       </CardFooter>
     </Card>
   );

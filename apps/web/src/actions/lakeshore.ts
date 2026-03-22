@@ -2,6 +2,29 @@
 
 import { lakeshoreFetchClient } from "@/libs/serverApi";
 
+/** Live temperature from Lakeshore (independent of heater PID loop). */
+export async function getLakeshoreTemperatureCelsius(
+  channel: number,
+): Promise<number | null> {
+  try {
+    const { data, error } = await lakeshoreFetchClient.GET(
+      "/api/v1/reading/monitor/{channel}",
+      {
+        params: { path: { channel } },
+      },
+    );
+
+    if (error || !data) {
+      return null;
+    }
+
+    return data.kelvin - 273.15;
+  } catch (error) {
+    console.error("Failed to fetch Lakeshore monitor reading:", error);
+    return null;
+  }
+}
+
 export async function getCurveHeader(channel: number) {
   try {
     const { data, error } = await lakeshoreFetchClient.GET(
