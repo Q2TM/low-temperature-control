@@ -416,7 +416,7 @@
           "PID"
         ],
         "summary": "Get Pid Status",
-        "description": "Get comprehensive PID status for a specific channel.\n\nReturns:\n- channel_id: Channel identifier\n- channel_name: Channel name\n- is_active: Whether PID controller is currently running\n- target: Target temperature\n- duty_cycle: Current PWM duty cycle\n- current_temp: Current temperature reading\n- pid_parameters: Current PID coefficients (Kp, Ki, Kd)\n- pid_variables: Internal PID variables (integral, last_error, last_measurement)\n- error_stats: Error statistics including counts for last 1m, 10m, and since start",
+        "description": "Get comprehensive PID status for a specific channel.\n\nReturns:\n- channel_id: Channel identifier\n- channel_name: Channel name\n- is_active: Whether PID controller is currently running\n- target: Target temperature\n- power: Current heater output power (0.0 to 1.0)\n- current_temp: Current temperature reading\n- pid_parameters: Current PID coefficients (Kp, Ki, Kd)\n- pid_variables: Internal PID variables (integral, last_error, last_measurement)\n- error_stats: Error statistics including counts for last 1m, 10m, and since start",
         "operationId": "getPidStatus",
         "parameters": [
           {
@@ -637,9 +637,9 @@
             "type": "number",
             "title": "Target"
           },
-          "dutyCycle": {
+          "power": {
             "type": "number",
-            "title": "Dutycycle"
+            "title": "Power"
           },
           "currentTemp": {
             "anyOf": [
@@ -668,7 +668,7 @@
           "channelName",
           "isActive",
           "target",
-          "dutyCycle",
+          "power",
           "currentTemp",
           "pidParameters",
           "pidVariables",

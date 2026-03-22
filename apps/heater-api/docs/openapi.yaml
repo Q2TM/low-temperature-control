@@ -291,7 +291,7 @@ paths:
 
         - target: Target temperature
 
-        - duty_cycle: Current PWM duty cycle
+        - power: Current heater output power (0.0 to 1.0)
 
         - current_temp: Current temperature reading
 
@@ -467,9 +467,9 @@ components:
         target:
           type: number
           title: Target
-        dutyCycle:
+        power:
           type: number
-          title: Dutycycle
+          title: Power
         currentTemp:
           anyOf:
           - type: number
@@ -487,7 +487,7 @@ components:
       - channelName
       - isActive
       - target
-      - dutyCycle
+      - power
       - currentTemp
       - pidParameters
       - pidVariables

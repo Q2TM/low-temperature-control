@@ -20,7 +20,7 @@ class StatusOut(CamelModel):
     to retrieve or update temperature status.
     """
     target: float
-    duty_cycle: float
+    power: float
 
 
 class Parameters(CamelModel):
@@ -78,7 +78,7 @@ class PidStatusOut(CamelModel):
     channel_name: str
     is_active: bool
     target: float
-    current: float
+    power: float
     current_temp: Optional[float]
     pid_parameters: Parameters
     pid_variables: PidVariables

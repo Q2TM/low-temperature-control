@@ -196,7 +196,7 @@ export interface paths {
      *     - channel_name: Channel name
      *     - is_active: Whether PID controller is currently running
      *     - target: Target temperature
-     *     - duty_cycle: Current PWM duty cycle
+     *     - power: Current heater output power (0.0 to 1.0)
      *     - current_temp: Current temperature reading
      *     - pid_parameters: Current PID coefficients (Kp, Ki, Kd)
      *     - pid_variables: Internal PID variables (integral, last_error, last_measurement)
@@ -324,8 +324,8 @@ export interface components {
       isActive: boolean;
       /** Target */
       target: number;
-      /** Dutycycle */
-      dutyCycle: number;
+      /** Power */
+      power: number;
       /** Currenttemp */
       currentTemp: number | null;
       pidParameters: components["schemas"]["Parameters"];

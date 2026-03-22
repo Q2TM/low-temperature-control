@@ -3,6 +3,7 @@ import serial
 from typing import Optional
 import time
 
+
 class PowerSupplyRepository():
     def send_frame(self, frame: str): ...
     def read_frame(self): ...
@@ -14,6 +15,7 @@ class PowerSupplyRepository():
     def power_off(self): ...
     def pc_connect(self): ...
     def pc_disconnect(self): ...
+
 
 class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
     def __init__(self, port: str, baudrate: int = 9600):
@@ -39,7 +41,7 @@ class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
         except (serial.SerialException, PermissionError) as e:
             # Keep running; outer layer handles error and stops output if necessary
             raise RuntimeError(f"PSU write failed: {type(e).__name__}: {e}")
-        
+
     def read_frame(self):
         buf = ""
         while True:
@@ -49,13 +51,14 @@ class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
             buf += ch
             if ch == '>':
                 return buf
-            
+
     def set_voltage(self, v):
         if v < 0 or v > 31:
             raise ValueError("Voltage must be between 0 and 31 V")
         value_split = str(v).split('.')
         if len(value_split[0]) > 3 or len(value_split[1]) > 3:
-            raise ValueError("Voltage must have at most 3 digits before and after the decimal point")
+            raise ValueError(
+                "Voltage must have at most 3 digits before and after the decimal point")
         value_str = f"{int(float(v) * 1000):06d}"
         frame = f"<01{value_str}000>"
         self.send_frame(frame)
@@ -74,7 +77,8 @@ class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
             raise ValueError("Current must be between 0 and 10 A")
         value_split = str(i).split('.')
         if len(value_split[0]) > 3 or len(value_split[1]) > 3:
-            raise ValueError("Current must have at most 3 digits before and after the decimal point")
+            raise ValueError(
+                "Current must have at most 3 digits before and after the decimal point")
         value_str = f"{int(float(i) * 1000):06d}"
         frame = f"<03{value_str}000>"
         self.send_frame(frame)
