@@ -1,6 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { riceShower } from "@/libs/api";
+import { getHeaterMetrics } from "@/actions/riceShower";
 
 type UseHeaterMetricsProps = {
   interval: number;
@@ -44,26 +45,25 @@ export function useHeaterMetrics({
 }: UseHeaterMetricsProps): HeaterMetricsResult | undefined {
   const timeEnd = timeStart + timeRange;
 
-  const { data: rawData } = riceShower.useQuery(
-    "get",
-    "/query/heater/{instance_name}",
-    {
-      params: {
-        path: {
-          instance_name: instanceName,
-        },
-        query: {
-          pins,
-          time_start: timeStart,
-          time_end: timeEnd,
-          interval,
-        },
-      },
-    },
-    {
-      placeholderData: (previousData) => previousData,
-    },
-  );
+  const { data: rawData } = useQuery({
+    queryKey: [
+      "heaterMetrics",
+      instanceName,
+      pins,
+      timeStart,
+      timeEnd,
+      interval,
+    ],
+    queryFn: () =>
+      getHeaterMetrics({
+        instanceName,
+        pins,
+        timeStart,
+        timeEnd,
+        interval,
+      }),
+    placeholderData: (previousData) => previousData,
+  });
 
   return useMemo(() => {
     if (!rawData) {

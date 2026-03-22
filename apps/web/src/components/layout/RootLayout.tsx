@@ -12,12 +12,7 @@ type RootLayoutProps = {
 export function RootLayout({ children }: RootLayoutProps) {
   return (
     <Providers>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <NavBar />
         {children}
       </ThemeProvider>{" "}

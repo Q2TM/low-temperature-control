@@ -1,6 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { riceShower } from "@/libs/api";
+import { getTempMetrics } from "@/actions/riceShower";
 
 type UseTempMetricsProps = {
   interval: number;
@@ -19,9 +20,7 @@ type ChannelData = {
 
 type TempMetricsResult = {
   isLoading: boolean;
-  error: {
-    error: string;
-  } | null;
+  error: Error | null;
   channels: Record<number, ChannelData>;
   chartData: Array<{ time: string; [key: string]: string | number }>;
 };
@@ -47,26 +46,25 @@ export function useTempMetrics({
     data: rawData,
     isLoading,
     error,
-  } = riceShower.useQuery(
-    "get",
-    "/query/temp/{instance_name}",
-    {
-      params: {
-        path: {
-          instance_name: instanceName,
-        },
-        query: {
-          channels,
-          time_start: timeStart,
-          time_end: timeEnd,
-          interval,
-        },
-      },
-    },
-    {
-      placeholderData: (previousData) => previousData,
-    },
-  );
+  } = useQuery({
+    queryKey: [
+      "tempMetrics",
+      instanceName,
+      channels,
+      timeStart,
+      timeEnd,
+      interval,
+    ],
+    queryFn: () =>
+      getTempMetrics({
+        instanceName,
+        channels,
+        timeStart,
+        timeEnd,
+        interval,
+      }),
+    placeholderData: (previousData) => previousData,
+  });
 
   return useMemo(() => {
     if (!rawData) {
