@@ -15,6 +15,9 @@ class ChannelConfig(CamelModel):
                                 description="Lakeshore sensor channel")
     enabled: bool = Field(
         default=True, description="Whether channel is enabled")
+    max_heater_power_watts: float = Field(
+        default=45.0, gt=0,
+        description="Maximum heater power in watts")
 
 
 class ChannelInfo(CamelModel):
@@ -24,6 +27,8 @@ class ChannelInfo(CamelModel):
     gpio_pin: int
     sensor_channel: int
     enabled: bool
+    max_heater_power_watts: float = Field(
+        description="Maximum heater power in watts")
     is_active: bool = Field(
         default=False, description="Whether PID controller is currently active")
 

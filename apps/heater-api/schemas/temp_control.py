@@ -79,6 +79,7 @@ class PidStatusOut(CamelModel):
     is_active: bool
     target: float
     power: float
+    max_heater_power_watts: float
     current_temp: Optional[float]
     pid_parameters: Parameters
     pid_variables: PidVariables

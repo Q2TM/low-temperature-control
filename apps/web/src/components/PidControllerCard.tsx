@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronRight, Pause, Play, X } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { Badge } from "@repo/ui/atom/badge";
 import { Button } from "@repo/ui/atom/button";
@@ -21,8 +21,56 @@ import {
   stopPID,
 } from "@/actions/heater";
 
+function ArrowPowerReadout({
+  powerNorm,
+  maxWatts,
+}: {
+  powerNorm: number;
+  maxWatts: number;
+}) {
+  const [showWatts, setShowWatts] = useState(false);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setShowWatts((v) => !v);
+    }, 3200);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const pct = powerNorm * 100;
+  const watts = powerNorm * maxWatts;
+
+  return (
+    <div
+      className="relative mb-0.5 flex h-4 min-w-[4.25rem] items-center justify-center"
+      title={`${pct.toFixed(1)}% · ${watts.toFixed(1)} W`}
+    >
+      <span className="sr-only">
+        {pct.toFixed(1)} percent, {watts.toFixed(1)} watts
+      </span>
+      <span
+        className={`absolute text-xs font-semibold tabular-nums text-orange-500 transition-opacity duration-700 ease-in-out dark:text-orange-400 ${
+          showWatts ? "opacity-0" : "opacity-100"
+        }`}
+        aria-hidden={showWatts}
+      >
+        {pct.toFixed(1)}%
+      </span>
+      <span
+        className={`absolute text-xs font-semibold tabular-nums text-orange-500 transition-opacity duration-700 ease-in-out dark:text-orange-400 ${
+          showWatts ? "opacity-100" : "opacity-0"
+        }`}
+        aria-hidden={!showWatts}
+      >
+        {watts.toFixed(1)} W
+      </span>
+    </div>
+  );
+}
+
 export type PidRuntimeState = {
   power: number;
+  maxHeaterPowerWatts: number;
   pidVariables: {
     integral: number;
     lastError: number;
@@ -160,9 +208,10 @@ export function PidControllerCard({
 
           <div className="flex flex-col items-center shrink-0">
             {isActive && pidRuntimeState && (
-              <div className="text-xs font-semibold text-orange-500 dark:text-orange-400 mb-0.5">
-                {(pidRuntimeState.power * 100).toFixed(1)}%
-              </div>
+              <ArrowPowerReadout
+                powerNorm={pidRuntimeState.power}
+                maxWatts={pidRuntimeState.maxHeaterPowerWatts}
+              />
             )}
             <div className="flex items-center -space-x-1.5">
               <ChevronRight

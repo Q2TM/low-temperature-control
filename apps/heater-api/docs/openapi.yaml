@@ -293,6 +293,8 @@ paths:
 
         - power: Current heater output power (0.0 to 1.0)
 
+        - max_heater_power_watts: Maximum heater power rating in watts
+
         - current_temp: Current temperature reading
 
         - pid_parameters: Current PID coefficients (Kp, Ki, Kd)
@@ -353,6 +355,10 @@ components:
         enabled:
           type: boolean
           title: Enabled
+        maxHeaterPowerWatts:
+          type: number
+          title: Maxheaterpowerwatts
+          description: Maximum heater power in watts
         isActive:
           type: boolean
           title: Isactive
@@ -365,6 +371,7 @@ components:
       - gpioPin
       - sensorChannel
       - enabled
+      - maxHeaterPowerWatts
       title: ChannelInfo
       description: Channel information with runtime status.
     ChannelListResponse:
@@ -470,6 +477,9 @@ components:
         power:
           type: number
           title: Power
+        maxHeaterPowerWatts:
+          type: number
+          title: Maxheaterpowerwatts
         currentTemp:
           anyOf:
           - type: number
@@ -488,6 +498,7 @@ components:
       - isActive
       - target
       - power
+      - maxHeaterPowerWatts
       - currentTemp
       - pidParameters
       - pidVariables

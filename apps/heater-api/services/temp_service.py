@@ -32,11 +32,13 @@ class TempService:
         channel_name: str,
         sensor_channel: int,
         gpio_pin: int,
+        max_heater_power_watts: float = 45.0,
     ):
         """Initialize temperature service for a specific channel."""
         self.channel_id = channel_id
         self.channel_name = channel_name
         self.sensor_channel = sensor_channel
+        self.max_heater_power_watts = max_heater_power_watts
 
         self._target = 30.0
         self._params = Parameters()
@@ -135,6 +137,7 @@ class TempService:
             is_active=self._running,
             target=self._target,
             power=power,
+            max_heater_power_watts=self.max_heater_power_watts,
             current_temp=self._current_temp,
             pid_parameters=pid_parameters,
             pid_variables=pid_variables,

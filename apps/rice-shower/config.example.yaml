@@ -5,4 +5,3 @@ scrape:
   heaters:
     - instance: heater-1
       pin: 1
-      maxPower: 45 # Watts

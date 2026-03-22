@@ -8,6 +8,7 @@ channels:
     name: "Primary Heater"
     gpio_pin: 18 # GPIO BCM pin number
     sensor_channel: 1 # Lakeshore Model 240 sensor channel number
+    max_heater_power_watts: 45 # Maximum heater power in watts
     enabled: true
 
   # Example: Additional channels can be added below

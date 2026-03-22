@@ -21,6 +21,7 @@ export default async function Home() {
   const pidRuntimeState = heaterStatus
     ? {
         power: heaterStatus.power,
+        maxHeaterPowerWatts: heaterStatus.maxHeaterPowerWatts,
         pidVariables: heaterStatus.pidVariables,
         errorStats: heaterStatus.errorStats,
       }

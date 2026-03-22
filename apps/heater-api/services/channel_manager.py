@@ -31,6 +31,7 @@ class ChannelManager:
                     channel_name=config.name,
                     sensor_channel=config.sensor_channel,
                     gpio_pin=config.gpio_pin,
+                    max_heater_power_watts=config.max_heater_power_watts,
                 )
                 self._channels[config.channel_id] = service
                 print(
@@ -81,6 +82,7 @@ class ChannelManager:
                 gpio_pin=config.gpio_pin,
                 sensor_channel=config.sensor_channel,
                 enabled=config.enabled,
+                max_heater_power_watts=config.max_heater_power_watts,
                 is_active=is_active
             ))
         return result
@@ -112,6 +114,7 @@ class ChannelManager:
             gpio_pin=config.gpio_pin,
             sensor_channel=config.sensor_channel,
             enabled=config.enabled,
+            max_heater_power_watts=config.max_heater_power_watts,
             is_active=is_active
         )
 

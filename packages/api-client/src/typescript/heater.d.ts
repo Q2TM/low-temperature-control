@@ -197,6 +197,7 @@ export interface paths {
      *     - is_active: Whether PID controller is currently running
      *     - target: Target temperature
      *     - power: Current heater output power (0.0 to 1.0)
+     *     - max_heater_power_watts: Maximum heater power rating in watts
      *     - current_temp: Current temperature reading
      *     - pid_parameters: Current PID coefficients (Kp, Ki, Kd)
      *     - pid_variables: Internal PID variables (integral, last_error, last_measurement)
@@ -238,6 +239,11 @@ export interface components {
       sensorChannel: number;
       /** Enabled */
       enabled: boolean;
+      /**
+       * Maxheaterpowerwatts
+       * @description Maximum heater power in watts
+       */
+      maxHeaterPowerWatts: number;
       /**
        * Isactive
        * @description Whether PID controller is currently active
@@ -326,6 +332,8 @@ export interface components {
       target: number;
       /** Power */
       power: number;
+      /** Maxheaterpowerwatts */
+      maxHeaterPowerWatts: number;
       /** Currenttemp */
       currentTemp: number | null;
       pidParameters: components["schemas"]["Parameters"];

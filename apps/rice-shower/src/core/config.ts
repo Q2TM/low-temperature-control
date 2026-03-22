@@ -11,7 +11,6 @@ const sensorSchema = z.object({
 const heaterSchema = z.object({
   instance: z.string(),
   pin: z.number(),
-  maxPower: z.number().describe("Maximum power in watts"),
 });
 
 export const configSchema = z.object({

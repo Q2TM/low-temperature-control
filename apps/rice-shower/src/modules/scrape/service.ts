@@ -41,7 +41,7 @@ async function scrapeLGG(instance: string, channel: number) {
   });
 }
 
-async function scrapeHeater(instance: string, pin: number, maxPower: number) {
+async function scrapeHeater(instance: string, pin: number) {
   const { data, error } = await heaterClient.GET("/pid/{channel_id}/status", {
     params: {
       path: {
@@ -59,7 +59,7 @@ async function scrapeHeater(instance: string, pin: number, maxPower: number) {
     instance,
     pinNumber: pin,
     dutyCycle: data.power * 100,
-    powerWatts: maxPower * data.power,
+    powerWatts: data.maxHeaterPowerWatts * data.power,
   });
 }
 
@@ -108,7 +108,7 @@ export class Scraper {
 
     for (const heater of config.scrape.heaters) {
       try {
-        await scrapeHeater(heater.instance, heater.pin, heater.maxPower);
+        await scrapeHeater(heater.instance, heater.pin);
         this.heater.successCount++;
         scrapeSuccessCounter.add(1, { type: "heater" });
       } catch (_) {

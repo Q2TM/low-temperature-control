@@ -47,6 +47,7 @@ def get_pid_status(
     - is_active: Whether PID controller is currently running
     - target: Target temperature
     - power: Current heater output power (0.0 to 1.0)
+    - max_heater_power_watts: Maximum heater power rating in watts
     - current_temp: Current temperature reading
     - pid_parameters: Current PID coefficients (Kp, Ki, Kd)
     - pid_variables: Internal PID variables (integral, last_error, last_measurement)
