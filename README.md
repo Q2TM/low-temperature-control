@@ -86,7 +86,7 @@ Lab Mode is when you are using the real devices (Lakeshore 240 and Heater)
 
 To run Lab Mode, make sure you filled in neccessary IPs in `.env.lab` files in each apps that requires it.
 
-Then on laptop, run `pnpm run lab:laptop` and on Pi, run `pnpm run lab:pi` to start the services in Lab Mode.
+Then run `pnpm run lab` to start the services in Lab Mode as Configuration A (run all services on one device).
 
 To make uv work correctly on Raspberry Pi, you have to add `RPi.GPIO` to the `.venv`
 by using command: (I forgot)

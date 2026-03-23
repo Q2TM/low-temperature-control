@@ -27,11 +27,7 @@
       "cache": false,
       "persistent": true
     },
-    "lab:laptop": {
-      "cache": false,
-      "persistent": true
-    },
-    "lab:pi": {
+    "lab": {
       "cache": false,
       "persistent": true
     },
