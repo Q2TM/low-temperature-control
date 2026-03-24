@@ -1,9 +1,11 @@
-# Heater API Channel Configuration
-# This file defines the heater channels to be controlled by the API.
-# Each channel represents a heater connected to a specific GPIO pin and associated with a Lakeshore sensor.
+# Heater API Configuration
+# All sections except 'channels' are optional and will use sensible defaults if omitted.
+
+# ── Channel Configuration ──────────────────────────────────────────────
+# Each channel represents a heater connected to a specific GPIO pin
+# and associated with a Lakeshore sensor.
 
 channels:
-  # Primary heater channel (current default configuration)
   - channel_id: 1
     name: "Primary Heater"
     gpio_pin: 18 # GPIO BCM pin number
@@ -11,15 +13,51 @@ channels:
     max_heater_power_watts: 45 # Maximum heater power in watts
     enabled: true
 
-  # Example: Additional channels can be added below
   # - channel_id: 2
   #   name: "Secondary Heater"
   #   gpio_pin: 23
   #   sensor_channel: 2
   #   enabled: true
 
-  # - channel_id: 3
-  #   name: "Backup Heater"
-  #   gpio_pin: 24
-  #   sensor_channel: 3
-  #   enabled: false  # Can be disabled without removing from config
+# ── PID Controller Settings ────────────────────────────────────────────
+
+pid:
+  default_target: 30.0 # Initial target temperature in °C
+  loop_interval_seconds: 5.0 # Sleep between PID loop iterations
+  dt_min: 1.0 # Minimum dt clamp for PID update (seconds)
+  dt_max: 15.0 # Maximum dt clamp for PID update (seconds)
+  output_min: 0.0 # Minimum PID output (duty percent)
+  output_max: 100.0 # Maximum PID output (duty percent)
+  anti_windup_min: -100.0 # Anti-windup integral lower bound
+  anti_windup_max: 100.0 # Anti-windup integral upper bound
+
+# ── Programmable Power Supply Settings ─────────────────────────────────
+# Only used when HEATER_MODE=PSU
+
+psu:
+  max_current: 5.0 # Maximum output current in amps
+  default_voltage: 12.0 # Default voltage in volts
+  baudrate: 9600 # Serial baud rate
+
+# ── GPIO PWM Settings ─────────────────────────────────────────────────
+# Only used when HEATER_MODE=GPIO
+
+gpio:
+  default_frequency: 0.2 # PWM frequency in Hz
+
+# ── Server Settings ────────────────────────────────────────────────────
+# Can also be overridden by env vars: HOST, PORT, WORKERS
+
+# server:
+#   host: "0.0.0.0"
+#   port: 8001
+#   workers: 1
+
+# ── OpenTelemetry Settings ─────────────────────────────────────────────
+# Can also be overridden by env vars:
+#   OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_INSECURE, OTEL_METRIC_EXPORT_INTERVAL
+
+# otel:
+#   endpoint: "http://localhost:4317"
+#   insecure: true
+#   metric_export_interval_millis: 15000

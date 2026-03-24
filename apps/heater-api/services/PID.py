@@ -3,11 +3,26 @@ from typing import Optional
 
 
 class PIDController:
-    def __init__(self, kp: float, ki: float, kd: float, setpoint: float = 0.0):
+    def __init__(
+        self,
+        kp: float,
+        ki: float,
+        kd: float,
+        setpoint: float = 0.0,
+        output_min: float = 0.0,
+        output_max: float = 100.0,
+        anti_windup_min: float = -100.0,
+        anti_windup_max: float = 100.0,
+    ):
         self.kp = float(kp)
         self.ki = float(ki)
         self.kd = float(kd)
         self.setpoint = float(setpoint)
+
+        self._output_min = output_min
+        self._output_max = output_max
+        self._anti_windup_min = anti_windup_min
+        self._anti_windup_max = anti_windup_max
 
         self._integral = 0.0
         self._last_error = 0.0
@@ -21,9 +36,7 @@ class PIDController:
         with self._lock:
             error = self.setpoint - measurement
             new_integral = self._integral + error * dt
-            # derivative = 0.0 if self._last_measurement is None else (
-            #     (error - self._last_error) / dt)
-            
+
             # Using measurement derivative to avoid derivative kick
             derivative = 0.0 if self._last_measurement is None else -(measurement - self._last_measurement) / dt
 
@@ -36,12 +49,11 @@ class PIDController:
             self._last_error = error
             self._last_measurement = measurement
 
-            # Anti-windup
-            if 0.0 <= output <= 100.0:
+            if self._output_min <= output <= self._output_max:
                 self._integral = new_integral
             else:
-                output = max(0.0, min(100.0, output))
-                self._integral = max(min(new_integral, 100.0), -100.0)
+                output = max(self._output_min, min(self._output_max, output))
+                self._integral = max(min(new_integral, self._anti_windup_max), self._anti_windup_min)
 
             return output
 

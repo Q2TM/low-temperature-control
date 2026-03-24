@@ -6,6 +6,7 @@ from typing import Optional
 
 from opentelemetry import metrics
 
+from schemas.app_config import AppConfig, PidConfig
 from schemas.temp_control import Parameters, PidVariables, ErrorStats, PidStatusOut
 from .PID import PIDController
 from repositories.heater import HeaterRepository
@@ -33,6 +34,7 @@ class TempService:
         sensor_channel: int,
         gpio_pin: int,
         max_heater_power_watts: float = 45.0,
+        app_config: AppConfig | None = None,
     ):
         """Initialize temperature service for a specific channel."""
         self.channel_id = channel_id
@@ -40,7 +42,10 @@ class TempService:
         self.sensor_channel = sensor_channel
         self.max_heater_power_watts = max_heater_power_watts
 
-        self._target = 30.0
+        pid_cfg = app_config.pid if app_config else PidConfig()
+        self._pid_cfg = pid_cfg
+
+        self._target = pid_cfg.default_target
         self._params = Parameters()
 
         self._pid = PIDController(
@@ -48,15 +53,19 @@ class TempService:
             ki=self._params.ki,
             kd=self._params.kd,
             setpoint=self._target,
+            output_min=pid_cfg.output_min,
+            output_max=pid_cfg.output_max,
+            anti_windup_min=pid_cfg.anti_windup_min,
+            anti_windup_max=pid_cfg.anti_windup_max,
         )
 
         heater_mode = os.getenv("HEATER_MODE", "PSU")
-        self.heater: HeaterRepository = create_heater(mode=heater_mode, gpio_pin=gpio_pin)
+        self.heater: HeaterRepository = create_heater(
+            mode=heater_mode, gpio_pin=gpio_pin, app_config=app_config)
 
         self._running = False
         self._thread: threading.Thread | None = None
 
-        # Error tracking
         self._error_timestamps: deque = deque()
         self._total_errors = 0
         self._last_error_message: Optional[str] = None
@@ -170,15 +179,18 @@ class TempService:
 
     def _control_loop(self):
         """Internal method that runs in background to control temperature."""
+        pid_cfg = self._pid_cfg
+        output_range = pid_cfg.output_max - pid_cfg.output_min
+
         last_time = time.monotonic()
         while self._running:
             try:
                 loop_start = time.monotonic()
                 dt = loop_start - last_time
-                if dt < 1.0:
-                    dt = 1.0
-                elif dt > 15.0:
-                    dt = 15.0
+                if dt < pid_cfg.dt_min:
+                    dt = pid_cfg.dt_min
+                elif dt > pid_cfg.dt_max:
+                    dt = pid_cfg.dt_max
 
                 read_start = time.monotonic()
                 current_temp = readingApi.get_monitor(
@@ -190,7 +202,7 @@ class TempService:
                 self._current_temp = current_temp
 
                 duty = self._pid.update(measurement=current_temp, dt=dt)
-                power = max(0.0, min(1.0, duty / 100.0))
+                power = max(0.0, min(1.0, (duty - pid_cfg.output_min) / output_range))
                 self.heater.set_power(power)
 
                 _pid_loop_duration.record(
@@ -212,7 +224,7 @@ class TempService:
                     pass
 
             last_time = loop_start
-            time.sleep(5)
+            time.sleep(pid_cfg.loop_interval_seconds)
 
     def cleanup(self):
         self.heater.disconnect()

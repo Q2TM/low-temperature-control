@@ -1,5 +1,6 @@
 from typing import Dict
 from schemas.channel import ChannelConfig, ChannelInfo, AllChannelsStatus
+from schemas.app_config import AppConfig
 from services.temp_service import TempService
 from services.config_loader import ConfigLoader
 
@@ -16,22 +17,21 @@ class ChannelManager:
         """
         self._channels: Dict[int, TempService] = {}
         self._configs: Dict[int, ChannelConfig] = {}
-        self._initialize_channels(config_path)
+        self.app_config: AppConfig = ConfigLoader.load(config_path)
+        self._initialize_channels()
 
-    def _initialize_channels(self, config_path: str):
-        """Load and initialize all channels from YAML configuration."""
-        configs = ConfigLoader.load_channels(config_path)
-
-        for config in configs:
+    def _initialize_channels(self):
+        """Initialize all channels from loaded configuration."""
+        for config in self.app_config.channels:
             self._configs[config.channel_id] = config
             if config.enabled:
-                # Only initialize enabled channels
                 service = TempService(
                     channel_id=config.channel_id,
                     channel_name=config.name,
                     sensor_channel=config.sensor_channel,
                     gpio_pin=config.gpio_pin,
                     max_heater_power_watts=config.max_heater_power_watts,
+                    app_config=self.app_config,
                 )
                 self._channels[config.channel_id] = service
                 print(

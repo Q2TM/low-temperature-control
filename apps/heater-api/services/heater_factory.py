@@ -1,9 +1,15 @@
+from __future__ import annotations
+
 import os
+from typing import TYPE_CHECKING
 
 from repositories.heater import HeaterRepository
 
+if TYPE_CHECKING:
+    from schemas.app_config import AppConfig
 
-def create_heater(mode: str, gpio_pin: int) -> HeaterRepository:
+
+def create_heater(mode: str, gpio_pin: int, app_config: AppConfig | None = None) -> HeaterRepository:
     """Create a HeaterRepository based on the given mode."""
     mode = mode.upper()
 
@@ -14,11 +20,20 @@ def create_heater(mode: str, gpio_pin: int) -> HeaterRepository:
     if mode == "GPIO":
         import RPi.GPIO as GPIO  # type: ignore[import-untyped]
         from repositories.gpio_heater import GPIOHeater
-        return GPIOHeater(gpio=GPIO, pin=gpio_pin)
+        frequency = app_config.gpio.default_frequency if app_config else 0.2
+        return GPIOHeater(gpio=GPIO, pin=gpio_pin, frequency=frequency)
 
     if mode == "PSU":
         from repositories.psu_heater import PSUHeater
-        return PSUHeater(port=_detect_serial_port())
+        port = _detect_serial_port()
+        if app_config:
+            return PSUHeater(
+                port=port,
+                voltage=app_config.psu.default_voltage,
+                max_current=app_config.psu.max_current,
+                baudrate=app_config.psu.baudrate,
+            )
+        return PSUHeater(port=port)
 
     raise ValueError(
         f"Unknown HEATER_MODE: '{mode}'. Expected one of: MOCK, GPIO, PSU"

@@ -1,3 +1,4 @@
+import os
 from typing import cast
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
@@ -14,21 +15,25 @@ from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 
+_otel_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
+_otel_insecure = os.getenv("OTEL_EXPORTER_OTLP_INSECURE", "true").lower() == "true"
+_otel_metric_interval = int(os.getenv("OTEL_METRIC_EXPORT_INTERVAL", "15000"))
+
 otel_resource = Resource.create({SERVICE_NAME: "heater-api"})
 
 trace.set_tracer_provider(TracerProvider(resource=otel_resource))
 
 otlp_exporter = OTLPSpanExporter(
-    endpoint="http://localhost:4317",
-    insecure=True,
+    endpoint=_otel_endpoint,
+    insecure=_otel_insecure,
 )
 
 tracer_provider = cast(TracerProvider, trace.get_tracer_provider())
 tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
 
 metric_reader = PeriodicExportingMetricReader(
-    OTLPMetricExporter(endpoint="http://localhost:4317", insecure=True),
-    export_interval_millis=15000,
+    OTLPMetricExporter(endpoint=_otel_endpoint, insecure=_otel_insecure),
+    export_interval_millis=_otel_metric_interval,
 )
 metrics.set_meter_provider(MeterProvider(resource=otel_resource, metric_readers=[metric_reader]))
 

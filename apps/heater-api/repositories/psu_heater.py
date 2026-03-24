@@ -2,15 +2,19 @@ from repositories.heater import HeaterRepository
 from repositories.psu import ProgrammablePowerSupplyRepository
 
 
-MAX_CURRENT = 5.0
-
-
 class PSUHeater(HeaterRepository):
     """HeaterRepository adapter that wraps ProgrammablePowerSupplyRepository (serial PSU)."""
 
-    def __init__(self, port: str, voltage: float = 12.0):
-        self._psu = ProgrammablePowerSupplyRepository(port=port)
+    def __init__(
+        self,
+        port: str,
+        voltage: float = 12.0,
+        max_current: float = 5.0,
+        baudrate: int = 9600,
+    ):
+        self._psu = ProgrammablePowerSupplyRepository(port=port, baudrate=baudrate)
         self._voltage = voltage
+        self._max_current = max_current
         self._power = 0.0
 
     def connect(self) -> None:
@@ -21,7 +25,7 @@ class PSUHeater(HeaterRepository):
 
     def set_power(self, power: float) -> None:
         self._power = max(0.0, min(1.0, power))
-        current = round(self._power * MAX_CURRENT, 3)
+        current = round(self._power * self._max_current, 3)
         self._psu.set_current(current)
 
     def get_power(self) -> float:
