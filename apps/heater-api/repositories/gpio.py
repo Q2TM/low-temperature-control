@@ -59,6 +59,7 @@ class RPiGPIORepository(GPIORepository):
 
     def cleanup(self) -> None:
         with self._lock:
+            self.duty_cycle = 0.0
             if self.pwm is not None:
                 try:
                     self.pwm.stop()

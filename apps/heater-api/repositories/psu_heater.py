@@ -28,6 +28,7 @@ class PSUHeater(HeaterRepository):
         return self._power
 
     def disconnect(self) -> None:
+        self._power = 0.0
         self._psu.set_current(0.0)
         self._psu.set_voltage(0.0)
         self._psu.power_off()

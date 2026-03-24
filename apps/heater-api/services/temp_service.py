@@ -164,6 +164,7 @@ class TempService:
         self._running = False
         if self._thread:
             self._thread.join(timeout=2.0)
+        self.heater.set_power(0.0)
         self.heater.disconnect()
         return "Temperature control loop stopped and heater turned off."
 
