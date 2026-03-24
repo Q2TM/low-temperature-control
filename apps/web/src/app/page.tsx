@@ -22,6 +22,8 @@ export default async function Home() {
     ? {
         power: heaterStatus.power,
         maxHeaterPowerWatts: heaterStatus.maxHeaterPowerWatts,
+        startedAt: heaterStatus.startedAt,
+        runningForSeconds: heaterStatus.runningForSeconds,
         pidVariables: heaterStatus.pidVariables,
         errorStats: heaterStatus.errorStats,
       }

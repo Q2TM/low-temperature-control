@@ -336,6 +336,10 @@ export interface components {
       maxHeaterPowerWatts: number;
       /** Currenttemp */
       currentTemp: number | null;
+      /** Startedat */
+      startedAt: string | null;
+      /** Runningforseconds */
+      runningForSeconds: number | null;
       pidParameters: components["schemas"]["Parameters"];
       pidVariables: components["schemas"]["PidVariables"];
       errorStats: components["schemas"]["ErrorStats"];

@@ -84,6 +84,8 @@ export function DashboardContent({
       setPidRuntimeState({
         power: status.power,
         maxHeaterPowerWatts: status.maxHeaterPowerWatts,
+        startedAt: status.startedAt,
+        runningForSeconds: status.runningForSeconds,
         pidVariables: status.pidVariables,
         errorStats: status.errorStats,
       });

@@ -2,6 +2,7 @@ import os
 import threading
 import time
 from collections import deque
+from datetime import datetime, timezone
 from typing import Optional
 
 from opentelemetry import metrics
@@ -64,6 +65,7 @@ class TempService:
             mode=heater_mode, gpio_pin=gpio_pin, app_config=app_config)
 
         self._running = False
+        self._started_at: Optional[datetime] = None
         self._thread: threading.Thread | None = None
 
         self._error_timestamps: deque = deque()
@@ -140,6 +142,11 @@ class TempService:
 
         error_stats = self._get_error_stats()
 
+        started_at = self._started_at
+        running_for_seconds = None
+        if started_at is not None:
+            running_for_seconds = (datetime.now(timezone.utc) - started_at).total_seconds()
+
         return PidStatusOut(
             channel_id=self.channel_id,
             channel_name=self.channel_name,
@@ -148,6 +155,8 @@ class TempService:
             power=power,
             max_heater_power_watts=self.max_heater_power_watts,
             current_temp=self._current_temp,
+            started_at=started_at,
+            running_for_seconds=running_for_seconds,
             pid_parameters=pid_parameters,
             pid_variables=pid_variables,
             error_stats=error_stats
@@ -159,6 +168,7 @@ class TempService:
             return "Control loop already running."
 
         self._running = True
+        self._started_at = datetime.now(timezone.utc)
         self.heater.connect()
 
         self._thread = threading.Thread(target=self._control_loop, daemon=True)
@@ -171,6 +181,7 @@ class TempService:
             return "Control loop is not running."
 
         self._running = False
+        self._started_at = None
         if self._thread:
             self._thread.join(timeout=2.0)
         self.heater.set_power(0.0)

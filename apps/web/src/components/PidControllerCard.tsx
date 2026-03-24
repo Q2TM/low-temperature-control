@@ -21,6 +21,19 @@ import {
   stopPID,
 } from "@/actions/heater";
 
+function formatPidRunningDuration(totalSeconds: number): string {
+  const s = Math.floor(totalSeconds % 60);
+  const m = Math.floor((totalSeconds / 60) % 60);
+  const h = Math.floor(totalSeconds / 3600);
+  if (h > 0) {
+    return `${h}h ${m}m ${s}s`;
+  }
+  if (m > 0) {
+    return `${m}m ${s}s`;
+  }
+  return `${s}s`;
+}
+
 function ArrowPowerReadout({
   powerNorm,
   maxWatts,
@@ -71,6 +84,8 @@ function ArrowPowerReadout({
 export type PidRuntimeState = {
   power: number;
   maxHeaterPowerWatts: number;
+  startedAt: string | null;
+  runningForSeconds: number | null;
   pidVariables: {
     integral: number;
     lastError: number;
@@ -361,6 +376,31 @@ export function PidControllerCard({
           <div className="space-y-2">
             <div className="text-sm font-medium">PID State</div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+              {pidRuntimeState.runningForSeconds !== null && (
+                <>
+                  <div className="text-muted-foreground">Running for</div>
+                  <div
+                    className="font-mono text-right tabular-nums"
+                    title={
+                      pidRuntimeState.startedAt
+                        ? `Started ${new Date(pidRuntimeState.startedAt).toLocaleString()}`
+                        : undefined
+                    }
+                  >
+                    {formatPidRunningDuration(
+                      pidRuntimeState.runningForSeconds,
+                    )}
+                  </div>
+                </>
+              )}
+              {pidRuntimeState.startedAt && (
+                <>
+                  <div className="text-muted-foreground">Started at</div>
+                  <div className="font-mono text-right text-xs leading-5">
+                    {new Date(pidRuntimeState.startedAt).toLocaleString()}
+                  </div>
+                </>
+              )}
               <div className="text-muted-foreground">Power</div>
               <div className="font-mono text-right">
                 {(pidRuntimeState.power * 100).toFixed(1)}%
@@ -395,9 +435,7 @@ export function PidControllerCard({
                 {pidRuntimeState.errorStats.lastErrorMessage && (
                   <div className="mt-0.5">
                     <div
-                      className={
-                        isErrorExpanded ? "break-words" : "truncate"
-                      }
+                      className={isErrorExpanded ? "break-words" : "truncate"}
                     >
                       {pidRuntimeState.errorStats.lastErrorMessage}
                     </div>

@@ -662,6 +662,29 @@
             ],
             "title": "Currenttemp"
           },
+          "startedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Startedat"
+          },
+          "runningForSeconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Runningforseconds"
+          },
           "pidParameters": {
             "$ref": "#/components/schemas/Parameters"
           },
@@ -681,6 +704,8 @@
           "power",
           "maxHeaterPowerWatts",
           "currentTemp",
+          "startedAt",
+          "runningForSeconds",
           "pidParameters",
           "pidVariables",
           "errorStats"

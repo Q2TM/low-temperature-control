@@ -1,5 +1,7 @@
-from fastapi_camelcase import CamelModel
+from datetime import datetime
 from typing import Optional
+
+from fastapi_camelcase import CamelModel
 
 
 class TargetTemp(CamelModel):
@@ -81,6 +83,8 @@ class PidStatusOut(CamelModel):
     power: float
     max_heater_power_watts: float
     current_temp: Optional[float]
+    started_at: Optional[datetime]
+    running_for_seconds: Optional[float]
     pid_parameters: Parameters
     pid_variables: PidVariables
     error_stats: ErrorStats
