@@ -105,12 +105,12 @@ export function useTempMetrics({
           ? ((currentTemp - firstTemp) / Math.abs(firstTemp)) * 100
           : null;
 
+      const validTemps = data
+        .map((entry) => getChannelTemp(entry, channelNum))
+        .filter((t): t is number => t !== null);
       const avgTemp =
-        data.length > 0
-          ? data.reduce((sum, entry) => {
-              const temp = getChannelTemp(entry, channelNum);
-              return sum + (temp ?? 0);
-            }, 0) / data.length
+        validTemps.length > 0
+          ? validTemps.reduce((sum, t) => sum + t, 0) / validTemps.length
           : null;
 
       channelsData[channelNum] = {

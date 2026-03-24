@@ -245,6 +245,7 @@ export function DashboardContent({
           data={combinedChartData}
           timeframeLabel={timeframeLabel}
           spanMs={spanMs}
+          interval={timeInterval}
         />
       </div>
     </>

@@ -110,6 +110,7 @@ export function PidControllerCard({
   const [newKi, setNewKi] = useState(pidParameters?.ki.toString() ?? "");
   const [newKd, setNewKd] = useState(pidParameters?.kd.toString() ?? "");
   const [isPending, startTransition] = useTransition();
+  const [isErrorExpanded, setIsErrorExpanded] = useState(false);
 
   const handleSetTargetTemp = async () => {
     const temp = parseFloat(newTargetTemp);
@@ -184,6 +185,9 @@ export function PidControllerCard({
       }
     });
   };
+
+  const hasLongErrorMessage =
+    (pidRuntimeState?.errorStats.lastErrorMessage?.length ?? 0) > 120;
 
   return (
     <Card>
@@ -389,8 +393,23 @@ export function PidControllerCard({
                   (1m / 10m / total)
                 </span>
                 {pidRuntimeState.errorStats.lastErrorMessage && (
-                  <div className="mt-0.5 truncate">
-                    {pidRuntimeState.errorStats.lastErrorMessage}
+                  <div className="mt-0.5">
+                    <div
+                      className={
+                        isErrorExpanded ? "break-words" : "truncate"
+                      }
+                    >
+                      {pidRuntimeState.errorStats.lastErrorMessage}
+                    </div>
+                    {hasLongErrorMessage && (
+                      <button
+                        type="button"
+                        className="mt-1 underline underline-offset-2 text-destructive"
+                        onClick={() => setIsErrorExpanded((v) => !v)}
+                      >
+                        {isErrorExpanded ? "Show less" : "Show more"}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

@@ -49,12 +49,14 @@ type TemperatureChartProps = {
   }>;
   timeframeLabel: string;
   spanMs: number;
+  interval: number;
 };
 
 export function TemperatureChart({
   data,
   timeframeLabel,
   spanMs,
+  interval,
 }: TemperatureChartProps) {
   // Get all channel keys (exclude 'time')
   const channelKeys =
@@ -94,8 +96,28 @@ export function TemperatureChart({
   const padding = (maxTemp - minTemp) * 0.1 || 1; // 10% padding or 1 degree minimum
   const yDomain = [minTemp - padding, maxTemp + padding];
 
-  // Calculate interval for X-axis to show ~10 ticks max
-  // const tickInterval = Math.ceil(mappedData.length / 10);
+  // Insert null-value markers at time gaps so Recharts breaks the line
+  const gapThresholdMs = interval * 1000 * 1.5;
+  const dataWithGaps: Array<Record<string, string | number | Date | null>> = [];
+
+  for (let i = 0; i < mappedData.length; i++) {
+    dataWithGaps.push(mappedData[i]!);
+
+    if (i < mappedData.length - 1) {
+      const currentTime = new Date(mappedData[i]!.time as string).getTime();
+      const nextTime = new Date(mappedData[i + 1]!.time as string).getTime();
+
+      if (nextTime - currentTime > gapThresholdMs) {
+        const gapMarker: Record<string, string | number | Date | null> = {
+          time: new Date(currentTime + interval * 1000).toISOString(),
+        };
+        channelKeys.forEach((key) => {
+          gapMarker[key] = null;
+        });
+        dataWithGaps.push(gapMarker);
+      }
+    }
+  }
 
   return (
     <Card>
@@ -107,7 +129,7 @@ export function TemperatureChart({
         <ChartContainer config={chartConfig}>
           <LineChart
             accessibilityLayer
-            data={mappedData}
+            data={dataWithGaps}
             margin={{
               left: 12,
               right: 12,
@@ -146,7 +168,7 @@ export function TemperatureChart({
               axisLine={false}
               tickMargin={8}
               domain={yDomain}
-              tickFormatter={(value) => `${value.toFixed(1)}°C`}
+              tickFormatter={(value) => `${value.toFixed(2)} °C`}
             />
             {heaterChannels.length > 0 && (
               <YAxis
@@ -155,7 +177,7 @@ export function TemperatureChart({
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                tickFormatter={(value) => `${value.toFixed(0)}W`}
+                tickFormatter={(value) => `${value.toFixed(1)} W`}
               />
             )}
             <ChartTooltip
@@ -192,6 +214,7 @@ export function TemperatureChart({
                   stroke={`var(--chart-${(channelIndex % 5) + 1})`}
                   strokeWidth={2}
                   dot={false}
+                  connectNulls={false}
                   unit="°C"
                 />
               );
@@ -206,6 +229,7 @@ export function TemperatureChart({
                   stroke="var(--chart-5)"
                   strokeWidth={2}
                   dot={false}
+                  connectNulls={false}
                   strokeDasharray="5 5"
                   unit="W"
                 />
@@ -214,10 +238,15 @@ export function TemperatureChart({
           </LineChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm text-muted-foreground">
-        {heaterChannels.length > 0
-          ? "Solid lines: sensor temperature (°C). Dashed line: heater power (W), right axis."
-          : "Sensor temperature from Lakeshore (°C)."}
+      <CardFooter className="flex-col items-start text-sm text-muted-foreground">
+        {heaterChannels.length > 0 ? (
+          <>
+            <span>Solid lines: sensor temperature (°C).</span>
+            <span>Dashed line: heater power (W), right axis.</span>
+          </>
+        ) : (
+          "Sensor temperature from Lakeshore (°C)."
+        )}
       </CardFooter>
     </Card>
   );

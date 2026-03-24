@@ -112,12 +112,13 @@ export function useHeaterMetrics({
             100
           : null;
 
+      const validDutyCycles = data
+        .map((entry) => getPinDutyCycle(entry, pinNum))
+        .filter((d): d is number => d !== null);
       const avgDutyCycle =
-        data.length > 0
-          ? data.reduce((sum, entry) => {
-              const dutyCycle = getPinDutyCycle(entry, pinNum);
-              return sum + (dutyCycle ?? 0);
-            }, 0) / data.length
+        validDutyCycles.length > 0
+          ? validDutyCycles.reduce((sum, d) => sum + d, 0) /
+            validDutyCycles.length
           : null;
 
       const currentPower = lastEntry ? getPinPower(lastEntry, pinNum) : null;
@@ -128,18 +129,31 @@ export function useHeaterMetrics({
           ? ((currentPower - firstPower) / Math.abs(firstPower)) * 100
           : null;
 
+      const validPowers = data
+        .map((entry) => getPinPower(entry, pinNum))
+        .filter((p): p is number => p !== null);
       const avgPower =
-        data.length > 0
-          ? data.reduce((sum, entry) => {
-              const power = getPinPower(entry, pinNum);
-              return sum + (power ?? 0);
-            }, 0) / data.length
+        validPowers.length > 0
+          ? validPowers.reduce((sum, p) => sum + p, 0) / validPowers.length
           : null;
 
-      // Calculate total energy (integral of power over time)
-      // Energy = average power * time duration (in seconds)
-      const totalEnergy =
-        avgPower !== null ? avgPower * (timeRange / 1000) : null;
+      // Trapezoidal integration of power over time, skipping gaps
+      const gapThresholdMs = interval * 1000 * 1.5;
+      let totalEnergyJoules = 0;
+      let hasEnergyData = false;
+      for (let i = 1; i < data.length; i++) {
+        const dtMs =
+          new Date(data[i]!.time).getTime() -
+          new Date(data[i - 1]!.time).getTime();
+        if (dtMs > gapThresholdMs) continue;
+        const p1 = getPinPower(data[i - 1]!, pinNum);
+        const p2 = getPinPower(data[i]!, pinNum);
+        if (p1 !== null && p2 !== null) {
+          totalEnergyJoules += ((p1 + p2) / 2) * (dtMs / 1000);
+          hasEnergyData = true;
+        }
+      }
+      const totalEnergy = hasEnergyData ? totalEnergyJoules : null;
 
       pinsData[pinNum] = {
         currentDutyCycle,
@@ -172,5 +186,5 @@ export function useHeaterMetrics({
       pins: pinsData,
       chartData,
     };
-  }, [rawData, timeRange, pins]);
+  }, [rawData, pins, interval]);
 }
