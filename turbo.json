@@ -17,7 +17,7 @@
         "RICE_SHOWER_URL",
         "HEATER_URL",
         "LAKESHORE_URL",
-        "LAKESHORE_SENSOR_CHANNEL_TEMP"
+        "NEXT_PUBLIC_LAKESHORE_SENSOR_CHANNEL_TEMP"
       ]
     },
     "lint": {

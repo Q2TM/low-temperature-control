@@ -1,3 +1,3 @@
 export const LAKESHORE_SENSOR_CHANNEL_TEMP = Number.parseInt(
-  process.env.LAKESHORE_SENSOR_CHANNEL_TEMP ?? "1",
+  process.env.NEXT_PUBLIC_LAKESHORE_SENSOR_CHANNEL_TEMP ?? "1",
 );
