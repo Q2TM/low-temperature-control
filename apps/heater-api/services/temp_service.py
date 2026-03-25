@@ -145,7 +145,8 @@ class TempService:
         started_at = self._started_at
         running_for_seconds = None
         if started_at is not None:
-            running_for_seconds = (datetime.now(timezone.utc) - started_at).total_seconds()
+            running_for_seconds = (datetime.now(
+                timezone.utc) - started_at).total_seconds()
 
         return PidStatusOut(
             channel_id=self.channel_id,
@@ -195,25 +196,36 @@ class TempService:
 
         last_time = time.monotonic()
         while self._running:
+            loop_start = time.monotonic()
             try:
-                loop_start = time.monotonic()
                 dt = loop_start - last_time
                 if dt < pid_cfg.dt_min:
                     dt = pid_cfg.dt_min
                 elif dt > pid_cfg.dt_max:
                     dt = pid_cfg.dt_max
 
-                read_start = time.monotonic()
-                current_temp = readingApi.get_monitor(
-                    self.sensor_channel).kelvin - 273.15
-                _thermo_api_read_duration.record(
-                    (time.monotonic() - read_start) * 1000,
-                    {"channel_id": self.channel_id},
-                )
-                self._current_temp = current_temp
+                # Read temperature from thermometer API
+                try:
+                    read_start = time.monotonic()
+                    current_temp = readingApi.get_monitor(
+                        self.sensor_channel).kelvin - 273.15
+                    _thermo_api_read_duration.record(
+                        (time.monotonic() - read_start) * 1000,
+                        {"channel_id": self.channel_id},
+                    )
+                    self._current_temp = current_temp
+                except Exception as e:
+                    error_msg = f"Thermometer API read error: {type(e).__name__}: {str(e)}"
+                    print(f"[{self.channel_id}] {error_msg}")
+                    self._record_error(error_msg)
+                    # Skip this PID iteration; maintain current heater power
+                    last_time = loop_start
+                    time.sleep(pid_cfg.loop_interval_seconds)
+                    continue
 
                 duty = self._pid.update(measurement=current_temp, dt=dt)
-                power = max(0.0, min(1.0, (duty - pid_cfg.output_min) / output_range))
+                power = max(
+                    0.0, min(1.0, (duty - pid_cfg.output_min) / output_range))
                 self.heater.set_power(power)
 
                 _pid_loop_duration.record(
