@@ -5,7 +5,9 @@ import { DashboardContent } from "@/components/DashboardContent";
 export const dynamic = "force-dynamic";
 
 /** Lakeshore sensor channel for heater channel 1 (see heater-api config). */
-const LAKESHORE_SENSOR_CHANNEL = 1;
+const LAKESHORE_SENSOR_CHANNEL = Number.parseInt(
+  process.env.LAKESHORE_SENSOR_CHANNEL_TEMP ?? "1",
+);
 
 export default async function Home() {
   const [heaterStatus, pidParameters, lakeshoreTemp] = await Promise.all([

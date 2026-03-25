@@ -12,7 +12,13 @@
         "build/**",
         "out/**"
       ],
-      "env": ["DATABASE_URL", "RICE_SHOWER_URL", "HEATER_URL", "LAKESHORE_URL"]
+      "env": [
+        "DATABASE_URL",
+        "RICE_SHOWER_URL",
+        "HEATER_URL",
+        "LAKESHORE_URL",
+        "LAKESHORE_SENSOR_CHANNEL_TEMP"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]
