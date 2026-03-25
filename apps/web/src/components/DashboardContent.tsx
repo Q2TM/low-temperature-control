@@ -15,6 +15,7 @@ import {
 } from "@/components/PidControllerCard";
 import { useHeaterMetrics } from "@/hooks/useHeaterMetrics";
 import { useTempMetrics } from "@/hooks/useTempMetrics";
+import { LAKESHORE_SENSOR_CHANNEL_TEMP } from "@/libs/tempConfig";
 import {
   formatTimeframeLabel,
   getAvailableResolutions,
@@ -74,7 +75,7 @@ export function DashboardContent({
     const [status, params, lakeshoreTemp] = await Promise.all([
       getHeaterStatus(1),
       getPIDParameters(1),
-      getLakeshoreTemperatureCelsius(1),
+      getLakeshoreTemperatureCelsius(LAKESHORE_SENSOR_CHANNEL_TEMP),
     ]);
 
     if (status) {
@@ -111,7 +112,7 @@ export function DashboardContent({
     interval: timeInterval,
     timeStart: effectiveStart,
     timeRange: spanMs,
-    channels: [1],
+    channels: [LAKESHORE_SENSOR_CHANNEL_TEMP],
   });
 
   const heaterMetrics = useHeaterMetrics({
@@ -149,7 +150,7 @@ export function DashboardContent({
   const { channels: tempChannels, chartData: tempChartData } = tempMetrics;
   const { pins: heaterPins, chartData: heaterChartData } = heaterMetrics;
 
-  const channel1Data = tempChannels[1];
+  const channel1Data = tempChannels[LAKESHORE_SENSOR_CHANNEL_TEMP];
   const avgTemp = channel1Data?.avgTemp ?? null;
 
   const heaterPinData = heaterPins[selectedPin];
