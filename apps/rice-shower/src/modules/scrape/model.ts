@@ -24,12 +24,12 @@ export const ScrapeMetricsModel = t.Object({
 });
 
 export const ScrapeMetricsResponse = t.Object({
-  sensor: t.Object(
+  thermo: t.Object(
     {
       ...ScrapeMetricsModel.properties,
     },
     {
-      description: "Scraping metrics for sensor data (LGG)",
+      description: "Scraping metrics for thermometer data",
     },
   ),
   heater: t.Object(
@@ -41,3 +41,12 @@ export const ScrapeMetricsResponse = t.Object({
     },
   ),
 });
+
+export const SystemScrapeMetricsResponse = t.Object({
+  systemId: t.String({ description: "System identifier" }),
+  ...ScrapeMetricsResponse.properties,
+});
+
+export const AllSystemsScrapeMetricsResponse = t.Array(
+  SystemScrapeMetricsResponse,
+);

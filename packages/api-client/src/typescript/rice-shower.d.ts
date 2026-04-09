@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-  "/query/temp/{instance_name}": {
+  "/query/thermo/{system_id}": {
     parameters: {
       query?: never;
       header?: never;
@@ -12,10 +12,10 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Get Temperature Metrics
-     * @description Query temperature metrics data from time series database
+     * Get Thermometer Metrics
+     * @description Query thermometer metrics data from time series database
      */
-    get: operations["getTempMetrics"];
+    get: operations["getThermoMetrics"];
     put?: never;
     post?: never;
     delete?: never;
@@ -24,7 +24,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/query/heater/{instance_name}": {
+  "/query/heater/{system_id}": {
     parameters: {
       query?: never;
       header?: never;
@@ -52,13 +52,85 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Get Scrape Metrics
-     * @description Retrieve metrics about the scraping process for both sensor and heater data, including last error time, error counts, and total successful scrapes
+     * Get All Scrape Metrics
+     * @description Retrieve scraping metrics for all active systems, including per-system error counts and success totals
      */
-    get: operations["getScrapeMetrics"];
+    get: operations["getAllScrapeMetrics"];
     put?: never;
     post?: never;
     delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/scrape/metrics/{systemId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get System Scrape Metrics
+     * @description Retrieve scraping metrics for a specific system by its ID
+     */
+    get: operations["getSystemScrapeMetrics"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/systems/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Systems
+     * @description List all registered systems with their thermometers and heaters
+     */
+    get: operations["listSystems"];
+    put?: never;
+    /**
+     * Create System
+     * @description Register a new system with thermometers and heaters
+     */
+    post: operations["createSystem"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/systems/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get System
+     * @description Get a single system by ID with its thermometers and heaters
+     */
+    get: operations["getSystem"];
+    /**
+     * Update System
+     * @description Update an existing system. Thermos/heaters are replaced if provided.
+     */
+    put: operations["updateSystem"];
+    post?: never;
+    /**
+     * Delete System
+     * @description Delete a system and all its associated thermometers and heaters
+     */
+    delete: operations["deleteSystem"];
     options?: never;
     head?: never;
     patch?: never;
@@ -76,7 +148,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  getTempMetrics: {
+  getThermoMetrics: {
     parameters: {
       query: {
         channels: number[];
@@ -86,7 +158,7 @@ export interface operations {
       };
       header?: never;
       path: {
-        instance_name: string;
+        system_id: string;
       };
       cookie?: never;
     };
@@ -112,8 +184,6 @@ export interface operations {
                 channel: number;
                 /** @description Temperature in Kelvin */
                 kelvin: number;
-                /** @description Resistance in Ohms */
-                resistance: number;
               }[];
             }[];
           };
@@ -135,14 +205,14 @@ export interface operations {
   getHeaterMetrics: {
     parameters: {
       query: {
-        pins: number[];
+        channels: number[];
         time_start: Record<string, never> | string | number;
         time_end: Record<string, never> | string | number;
         interval: number;
       };
       header?: never;
       path: {
-        instance_name: string;
+        system_id: string;
       };
       cookie?: never;
     };
@@ -163,11 +233,9 @@ export interface operations {
                * @description Timestamp of the metric
                */
               time: string;
-              pins: {
-                /** @description Pin number */
-                pinNumber: number;
-                /** @description Duty cycle (0-1) */
-                dutyCycle: number;
+              channels: {
+                /** @description Channel number */
+                channel: number;
                 /** @description Power in Watts */
                 powerWatts: number;
               }[];
@@ -188,7 +256,7 @@ export interface operations {
       };
     };
   };
-  getScrapeMetrics: {
+  getAllScrapeMetrics: {
     parameters: {
       query?: never;
       header?: never;
@@ -204,8 +272,10 @@ export interface operations {
         };
         content: {
           "application/json": {
-            /** @description Scraping metrics for sensor data (LGG) */
-            sensor: {
+            /** @description System identifier */
+            systemId: string;
+            /** @description Scraping metrics for thermometer data */
+            thermo: {
               lastError: (string | null) | null;
               errorCount: {
                 /** @description Channel number or pin number */
@@ -228,6 +298,392 @@ export interface operations {
               /** @description Total number of successful scrapes */
               successCount: number;
             };
+          }[];
+        };
+      };
+    };
+  };
+  getSystemScrapeMetrics: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        systemId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** @description System identifier */
+            systemId: string;
+            /** @description Scraping metrics for thermometer data */
+            thermo: {
+              lastError: (string | null) | null;
+              errorCount: {
+                /** @description Channel number or pin number */
+                id: number;
+                /** @description Number of errors for this channel/pin */
+                count: number;
+              }[];
+              /** @description Total number of successful scrapes */
+              successCount: number;
+            };
+            /** @description Scraping metrics for heater data */
+            heater: {
+              lastError: (string | null) | null;
+              errorCount: {
+                /** @description Channel number or pin number */
+                id: number;
+                /** @description Number of errors for this channel/pin */
+                count: number;
+              }[];
+              /** @description Total number of successful scrapes */
+              successCount: number;
+            };
+          };
+        };
+      };
+      /** @description Response for status 404 */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+    };
+  };
+  listSystems: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** @description Unique system slug, e.g. lab-2005 */
+            id: string;
+            /** @description Human-readable system name */
+            displayName: string;
+            location: (string | null) | null;
+            /** @description Base URL to thermo/ls-api instance */
+            thermoUrl: string;
+            /** @description Base URL to heater-api instance */
+            heaterUrl: string;
+            /** @description Whether scraping is enabled */
+            enabled: boolean;
+            thermos: {
+              /** @description Thermometer channel number */
+              channel: number;
+              label: (string | null) | null;
+            }[];
+            heaters: {
+              /** @description Heater channel number */
+              channel: number;
+              label: (string | null) | null;
+            }[];
+            /**
+             * Format: date-time
+             * @description Creation timestamp
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description Last update timestamp
+             */
+            updatedAt: string;
+          }[];
+        };
+      };
+    };
+  };
+  createSystem: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": {
+          /** @description Unique system slug */
+          id: string;
+          /** @description Human-readable name */
+          displayName: string;
+          location?: (string | null) | null;
+          /** @description Base URL to thermo/ls-api */
+          thermoUrl: string;
+          /** @description Base URL to heater-api */
+          heaterUrl: string;
+          /** @default true */
+          enabled?: boolean;
+          thermos: {
+            /** @description Thermometer channel number */
+            channel: number;
+            label: (string | null) | null;
+          }[];
+          heaters: {
+            /** @description Heater channel number */
+            channel: number;
+            label: (string | null) | null;
+          }[];
+        };
+      };
+    };
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** @description Unique system slug, e.g. lab-2005 */
+            id: string;
+            /** @description Human-readable system name */
+            displayName: string;
+            location: (string | null) | null;
+            /** @description Base URL to thermo/ls-api instance */
+            thermoUrl: string;
+            /** @description Base URL to heater-api instance */
+            heaterUrl: string;
+            /** @description Whether scraping is enabled */
+            enabled: boolean;
+            thermos: {
+              /** @description Thermometer channel number */
+              channel: number;
+              label: (string | null) | null;
+            }[];
+            heaters: {
+              /** @description Heater channel number */
+              channel: number;
+              label: (string | null) | null;
+            }[];
+            /**
+             * Format: date-time
+             * @description Creation timestamp
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description Last update timestamp
+             */
+            updatedAt: string;
+          };
+        };
+      };
+      /** @description Response for status 409 */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+    };
+  };
+  getSystem: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** @description Unique system slug, e.g. lab-2005 */
+            id: string;
+            /** @description Human-readable system name */
+            displayName: string;
+            location: (string | null) | null;
+            /** @description Base URL to thermo/ls-api instance */
+            thermoUrl: string;
+            /** @description Base URL to heater-api instance */
+            heaterUrl: string;
+            /** @description Whether scraping is enabled */
+            enabled: boolean;
+            thermos: {
+              /** @description Thermometer channel number */
+              channel: number;
+              label: (string | null) | null;
+            }[];
+            heaters: {
+              /** @description Heater channel number */
+              channel: number;
+              label: (string | null) | null;
+            }[];
+            /**
+             * Format: date-time
+             * @description Creation timestamp
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description Last update timestamp
+             */
+            updatedAt: string;
+          };
+        };
+      };
+      /** @description Response for status 404 */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+    };
+  };
+  updateSystem: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": {
+          displayName?: string;
+          location?: (string | null) | null;
+          thermoUrl?: string;
+          heaterUrl?: string;
+          enabled?: boolean;
+          thermos?: {
+            /** @description Thermometer channel number */
+            channel: number;
+            label: (string | null) | null;
+          }[];
+          heaters?: {
+            /** @description Heater channel number */
+            channel: number;
+            label: (string | null) | null;
+          }[];
+        };
+      };
+    };
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** @description Unique system slug, e.g. lab-2005 */
+            id: string;
+            /** @description Human-readable system name */
+            displayName: string;
+            location: (string | null) | null;
+            /** @description Base URL to thermo/ls-api instance */
+            thermoUrl: string;
+            /** @description Base URL to heater-api instance */
+            heaterUrl: string;
+            /** @description Whether scraping is enabled */
+            enabled: boolean;
+            thermos: {
+              /** @description Thermometer channel number */
+              channel: number;
+              label: (string | null) | null;
+            }[];
+            heaters: {
+              /** @description Heater channel number */
+              channel: number;
+              label: (string | null) | null;
+            }[];
+            /**
+             * Format: date-time
+             * @description Creation timestamp
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description Last update timestamp
+             */
+            updatedAt: string;
+          };
+        };
+      };
+      /** @description Response for status 404 */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+    };
+  };
+  deleteSystem: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            success: boolean;
+          };
+        };
+      };
+      /** @description Response for status 404 */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
           };
         };
       };

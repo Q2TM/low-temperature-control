@@ -1,17 +1,17 @@
 import { record } from "@elysiajs/opentelemetry";
 import { sql } from "drizzle-orm";
 
-import { heaterMetrics, sensorMetrics } from "@repo/tsdb";
+import { heaterMetrics, thermoMetrics } from "@repo/tsdb";
 
 import { db } from "@/core/db";
 
 import {
   QueryHeaterMetricsResponseType,
-  QueryTempMetricsResponseType,
+  QueryThermoMetricsResponseType,
 } from "./model";
 
-type GetTemperatureDataParams = {
-  instanceName: string;
+type GetThermoDataParams = {
+  systemId: string;
   interval: number;
   channels: number[];
   timeStart: Date;
@@ -19,65 +19,56 @@ type GetTemperatureDataParams = {
 };
 
 type GetHeaterDataParams = {
-  instanceName: string;
+  systemId: string;
   interval: number;
-  pins: number[];
+  channels: number[];
   timeStart: Date;
   timeEnd: Date;
 };
 
-export async function getTemperatureData({
-  instanceName,
+export async function getThermoData({
+  systemId,
   interval,
   channels,
   timeStart,
   timeEnd,
-}: GetTemperatureDataParams): Promise<QueryTempMetricsResponseType> {
+}: GetThermoDataParams): Promise<QueryThermoMetricsResponseType> {
   const intervalSql = sql.raw(`'${interval}s'`);
   const kelvinSql = channels.map(
     (channel) =>
-      sql`avg(${sensorMetrics.tempKelvin}) FILTER (WHERE ${sensorMetrics.channel} = ${channel}) AS "kelvin_${sql.raw(`${channel}`)}"`,
+      sql`avg(${thermoMetrics.tempKelvin}) FILTER (WHERE ${thermoMetrics.channel} = ${channel}) AS "kelvin_${sql.raw(`${channel}`)}"`,
   );
-  const resistanceSql = channels.map(
-    (channel) =>
-      sql`avg(${sensorMetrics.resistanceOhms}) FILTER (WHERE ${sensorMetrics.channel} = ${channel}) AS "resistance_${sql.raw(`${channel}`)}"`,
-  );
-  const kelvinAndResistanceSql = [...kelvinSql, ...resistanceSql];
 
-  // Fetch temperature data from the database
   const sqlQuery = record(
-    "prepare-sql-query-temp",
+    "prepare-sql-query-thermo",
     () => sql`
-SELECT time_bucket(interval ${intervalSql}, ${sensorMetrics.time}) AS "time",
-${sql.join(kelvinAndResistanceSql, sql`, `)}
-FROM ${sensorMetrics}
-WHERE ${sensorMetrics.time} >= ${timeStart.toISOString()} AND ${sensorMetrics.time} < ${timeEnd.toISOString()} AND ${sensorMetrics.instance} = ${instanceName}
+SELECT time_bucket(interval ${intervalSql}, ${thermoMetrics.time}) AS "time",
+${sql.join(kelvinSql, sql`, `)}
+FROM ${thermoMetrics}
+WHERE ${thermoMetrics.time} >= ${timeStart.toISOString()} AND ${thermoMetrics.time} < ${timeEnd.toISOString()} AND ${thermoMetrics.systemId} = ${systemId}
 GROUP BY 1
 ORDER BY 1 ASC;
 `,
   );
 
   const data = await record(
-    "sql-query-temp",
+    "sql-query-thermo",
     async () =>
       (await db.execute(sqlQuery)) as Array<{
         time: string;
         [key: `kelvin_${number}`]: number;
-        [key: `resistance_${number}`]: number;
       }>,
   );
 
-  const responseData = record("map-response-data-temp", () => {
+  const responseData = record("map-response-data-thermo", () => {
     const metrics = data.flatMap((entry) => {
       const channelData = channels.map((channel) => ({
         channel,
         kelvin: entry[`kelvin_${channel}`],
-        resistance: entry[`resistance_${channel}`],
       }));
 
       const validChannels = channelData.filter(
-        (ch): ch is { channel: number; kelvin: number; resistance: number } =>
-          ch.kelvin != null && ch.resistance != null,
+        (ch): ch is { channel: number; kelvin: number } => ch.kelvin != null,
       );
 
       if (validChannels.length === 0) return [];
@@ -92,31 +83,25 @@ ORDER BY 1 ASC;
 }
 
 export async function getHeaterData({
-  instanceName,
+  systemId,
   interval,
-  pins,
+  channels,
   timeStart,
   timeEnd,
 }: GetHeaterDataParams): Promise<QueryHeaterMetricsResponseType> {
   const intervalSql = sql.raw(`'${interval}s'`);
-  const dutyCycleSql = pins.map(
-    (pin) =>
-      sql`avg(${heaterMetrics.dutyCycle}) FILTER (WHERE ${heaterMetrics.pinNumber} = ${pin}) AS "duty_cycle_${sql.raw(`${pin}`)}"`,
+  const powerWattsSql = channels.map(
+    (channel) =>
+      sql`avg(${heaterMetrics.powerWatts}) FILTER (WHERE ${heaterMetrics.channel} = ${channel}) AS "power_watts_${sql.raw(`${channel}`)}"`,
   );
-  const powerWattsSql = pins.map(
-    (pin) =>
-      sql`avg(${heaterMetrics.powerWatts}) FILTER (WHERE ${heaterMetrics.pinNumber} = ${pin}) AS "power_watts_${sql.raw(`${pin}`)}"`,
-  );
-  const dutyCycleAndPowerSql = [...dutyCycleSql, ...powerWattsSql];
 
-  // Fetch heater data from the database
   const sqlQuery = record(
     "prepare-sql-query-heater",
     () => sql`
 SELECT time_bucket(interval ${intervalSql}, ${heaterMetrics.time}) AS "time",
-${sql.join(dutyCycleAndPowerSql, sql`, `)}
+${sql.join(powerWattsSql, sql`, `)}
 FROM ${heaterMetrics}
-WHERE ${heaterMetrics.time} >= ${timeStart.toISOString()} AND ${heaterMetrics.time} < ${timeEnd.toISOString()} AND ${heaterMetrics.instance} = ${instanceName}
+WHERE ${heaterMetrics.time} >= ${timeStart.toISOString()} AND ${heaterMetrics.time} < ${timeEnd.toISOString()} AND ${heaterMetrics.systemId} = ${systemId}
 GROUP BY 1
 ORDER BY 1 ASC;
 `,
@@ -127,32 +112,25 @@ ORDER BY 1 ASC;
     async () =>
       (await db.execute(sqlQuery)) as Array<{
         time: string;
-        [key: `duty_cycle_${number}`]: number;
         [key: `power_watts_${number}`]: number;
       }>,
   );
 
   const responseData = record("map-response-data-heater", () => {
     const metrics = data.flatMap((entry) => {
-      const pinData = pins.map((pin) => ({
-        pinNumber: pin,
-        dutyCycle: entry[`duty_cycle_${pin}`],
-        powerWatts: entry[`power_watts_${pin}`],
+      const channelData = channels.map((channel) => ({
+        channel,
+        powerWatts: entry[`power_watts_${channel}`],
       }));
 
-      const validPins = pinData.filter(
-        (
-          p,
-        ): p is {
-          pinNumber: number;
-          dutyCycle: number;
-          powerWatts: number;
-        } => p.dutyCycle != null && p.powerWatts != null,
+      const validChannels = channelData.filter(
+        (ch): ch is { channel: number; powerWatts: number } =>
+          ch.powerWatts != null,
       );
 
-      if (validPins.length === 0) return [];
+      if (validChannels.length === 0) return [];
 
-      return [{ time: entry.time, pins: validPins }];
+      return [{ time: entry.time, channels: validChannels }];
     });
 
     return { dataPoints: metrics.length, metrics };

@@ -5,29 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1757431556880,
-      "tag": "0000_simple_loa",
+      "when": 1775751569825,
+      "tag": "0000_initial-schema",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1762451394909,
-      "tag": "0001_heater-metrics",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1762451410887,
-      "tag": "0002_heater-hypertable",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1775202455676,
-      "tag": "0003_system-config",
+      "when": 1775751851217,
+      "tag": "0001_create-hypertables",
       "breakpoints": true
     }
   ]

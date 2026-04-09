@@ -1,46 +1,83 @@
-import Elysia from "elysia";
+import Elysia, { t } from "elysia";
 
-import { ScrapeMetricsResponse } from "./model";
-import { Scraper } from "./service";
+import {
+  AllSystemsScrapeMetricsResponse,
+  SystemScrapeMetricsResponse,
+} from "./model";
+import { type Scraper, ScraperManager } from "./service";
+
+function serializeScraperMetrics(scraper: Scraper) {
+  return {
+    systemId: scraper.systemId,
+    thermo: {
+      lastError: scraper.thermo.lastError?.toISOString() ?? null,
+      errorCount: Object.entries(scraper.thermo.errorCount).map(
+        ([channel, count]) => ({
+          id: Number(channel),
+          count,
+        }),
+      ),
+      successCount: scraper.thermo.successCount,
+    },
+    heater: {
+      lastError: scraper.heater.lastError?.toISOString() ?? null,
+      errorCount: Object.entries(scraper.heater.errorCount).map(
+        ([channel, count]) => ({
+          id: Number(channel),
+          count,
+        }),
+      ),
+      successCount: scraper.heater.successCount,
+    },
+  };
+}
 
 export const scrapeController = new Elysia({
   prefix: "/scrape",
   detail: {
     tags: ["Scrape"],
   },
-}).get(
-  "/metrics",
-  () => ({
-    sensor: {
-      lastError: Scraper.sensor.lastError?.toISOString() ?? null,
-      errorCount: Object.entries(Scraper.sensor.errorCount).map(
-        ([channel, count]) => ({
-          id: Number(channel),
-          count,
-        }),
-      ),
-      successCount: Scraper.sensor.successCount,
+})
+  .get(
+    "/metrics",
+    () => {
+      return [...ScraperManager.getAllScrapers().values()].map(
+        serializeScraperMetrics,
+      );
     },
-    heater: {
-      lastError: Scraper.heater.lastError?.toISOString() ?? null,
-      errorCount: Object.entries(Scraper.heater.errorCount).map(
-        ([pin, count]) => ({
-          id: Number(pin),
-          count,
-        }),
-      ),
-      successCount: Scraper.heater.successCount,
+    {
+      detail: {
+        operationId: "getAllScrapeMetrics",
+        summary: "Get All Scrape Metrics",
+        description:
+          "Retrieve scraping metrics for all active systems, including per-system error counts and success totals",
+      },
+      response: {
+        200: AllSystemsScrapeMetricsResponse,
+      },
     },
-  }),
-  {
-    detail: {
-      operationId: "getScrapeMetrics",
-      summary: "Get Scrape Metrics",
-      description:
-        "Retrieve metrics about the scraping process for both sensor and heater data, including last error time, error counts, and total successful scrapes",
+  )
+  .get(
+    "/metrics/:systemId",
+    ({ params: { systemId }, status }) => {
+      const scraper = ScraperManager.getScraper(systemId);
+      if (!scraper) {
+        throw status(404, {
+          error: `No active scraper for system '${systemId}'`,
+        });
+      }
+      return serializeScraperMetrics(scraper);
     },
-    response: {
-      200: ScrapeMetricsResponse,
+    {
+      detail: {
+        operationId: "getSystemScrapeMetrics",
+        summary: "Get System Scrape Metrics",
+        description:
+          "Retrieve scraping metrics for a specific system by its ID",
+      },
+      response: {
+        200: SystemScrapeMetricsResponse,
+        404: t.Object({ error: t.String() }),
+      },
     },
-  },
-);
+  );

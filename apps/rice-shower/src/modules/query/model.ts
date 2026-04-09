@@ -1,7 +1,7 @@
 import { Static, t } from "elysia";
 
 // Temperature metrics query request
-export const QueryTempMetricsRequest = t.Object({
+export const QueryThermoMetricsRequest = t.Object({
   channels: t.Array(t.Number(), {
     description: "List of channel numbers to retrieve",
   }),
@@ -19,8 +19,8 @@ export const QueryTempMetricsRequest = t.Object({
 
 // Heater metrics query request
 export const QueryHeaterMetricsRequest = t.Object({
-  pins: t.Array(t.Number(), {
-    description: "List of pin numbers to retrieve",
+  channels: t.Array(t.Number(), {
+    description: "List of heater channel numbers to retrieve",
   }),
   time_start: t.Date({
     description: "Start time for the query in ISO format",
@@ -35,7 +35,7 @@ export const QueryHeaterMetricsRequest = t.Object({
 });
 
 // Temperature metrics response
-export const QueryTempMetricsResponse = t.Object({
+export const QueryThermoMetricsResponse = t.Object({
   dataPoints: t.Number({
     description: "Total number of data points returned",
   }),
@@ -52,9 +52,6 @@ export const QueryTempMetricsResponse = t.Object({
           }),
           kelvin: t.Number({
             description: "Temperature in Kelvin",
-          }),
-          resistance: t.Number({
-            description: "Resistance in Ohms",
           }),
         }),
       ),
@@ -73,13 +70,10 @@ export const QueryHeaterMetricsResponse = t.Object({
         description: "Timestamp of the metric",
         format: "date-time",
       }),
-      pins: t.Array(
+      channels: t.Array(
         t.Object({
-          pinNumber: t.Number({
-            description: "Pin number",
-          }),
-          dutyCycle: t.Number({
-            description: "Duty cycle (0-1)",
+          channel: t.Number({
+            description: "Channel number",
           }),
           powerWatts: t.Number({
             description: "Power in Watts",
@@ -90,8 +84,8 @@ export const QueryHeaterMetricsResponse = t.Object({
   ),
 });
 
-export type QueryTempMetricsResponseType = Static<
-  typeof QueryTempMetricsResponse
+export type QueryThermoMetricsResponseType = Static<
+  typeof QueryThermoMetricsResponse
 >;
 export type QueryHeaterMetricsResponseType = Static<
   typeof QueryHeaterMetricsResponse

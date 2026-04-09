@@ -10,7 +10,8 @@ import { stringify } from "yaml";
 
 import { queryController } from "./modules/query";
 import { scrapeController } from "./modules/scrape";
-import { Scraper } from "./modules/scrape/service";
+import { ScraperManager } from "./modules/scrape/service";
+import { systemsController } from "./modules/systems";
 
 const app = new Elysia()
   .use(
@@ -38,6 +39,11 @@ const app = new Elysia()
             description:
               "Endpoints for getting metrics/status from the scraper",
           },
+          {
+            name: "Systems",
+            description:
+              "Endpoints for managing system configuration (registry)",
+          },
         ],
       },
     }),
@@ -54,6 +60,7 @@ const app = new Elysia()
   )
   .use(queryController)
   .use(scrapeController)
+  .use(systemsController)
   .listen(8100);
 
 const appUrl = `http://${app.server?.hostname}:${app.server?.port}`;
@@ -77,4 +84,4 @@ if (app.server?.development) {
   );
 }
 
-Scraper.initialize();
+await ScraperManager.initialize();

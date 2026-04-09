@@ -9,16 +9,18 @@ tags:
     description: Endpoints for querying collected data from time-series database
   - name: Scrape
     description: Endpoints for getting metrics/status from the scraper
+  - name: Systems
+    description: Endpoints for managing system configuration (registry)
 paths:
-  /query/temp/{instance_name}:
+  /query/thermo/{system_id}:
     get:
       tags:
         - Query
-      operationId: getTempMetrics
-      summary: Get Temperature Metrics
-      description: Query temperature metrics data from time series database
+      operationId: getThermoMetrics
+      summary: Get Thermometer Metrics
+      description: Query thermometer metrics data from time series database
       parameters:
-        - name: instance_name
+        - name: system_id
           in: path
           required: true
           schema:
@@ -97,16 +99,12 @@ paths:
                             required:
                               - channel
                               - kelvin
-                              - resistance
                             properties:
                               channel:
                                 description: Channel number
                                 type: number
                               kelvin:
                                 description: Temperature in Kelvin
-                                type: number
-                              resistance:
-                                description: Resistance in Ohms
                                 type: number
         "500":
           description: Response for status 500
@@ -119,7 +117,7 @@ paths:
                 properties:
                   error:
                     type: string
-  /query/heater/{instance_name}:
+  /query/heater/{system_id}:
     get:
       tags:
         - Query
@@ -127,16 +125,16 @@ paths:
       summary: Get Heater Metrics
       description: Query heater metrics data from time series database
       parameters:
-        - name: instance_name
+        - name: system_id
           in: path
           required: true
           schema:
             type: string
-        - name: pins
+        - name: channels
           in: query
           required: true
           schema:
-            description: List of pin numbers to retrieve
+            description: List of heater channel numbers to retrieve
             type: array
             items:
               type: number
@@ -193,26 +191,22 @@ paths:
                       type: object
                       required:
                         - time
-                        - pins
+                        - channels
                       properties:
                         time:
                           description: Timestamp of the metric
                           format: date-time
                           type: string
-                        pins:
+                        channels:
                           type: array
                           items:
                             type: object
                             required:
-                              - pinNumber
-                              - dutyCycle
+                              - channel
                               - powerWatts
                             properties:
-                              pinNumber:
-                                description: Pin number
-                                type: number
-                              dutyCycle:
-                                description: Duty cycle (0-1)
+                              channel:
+                                description: Channel number
                                 type: number
                               powerWatts:
                                 description: Power in Watts
@@ -232,11 +226,104 @@ paths:
     get:
       tags:
         - Scrape
-      operationId: getScrapeMetrics
-      summary: Get Scrape Metrics
-      description: Retrieve metrics about the scraping process for both sensor and
-        heater data, including last error time, error counts, and total
-        successful scrapes
+      operationId: getAllScrapeMetrics
+      summary: Get All Scrape Metrics
+      description: Retrieve scraping metrics for all active systems, including
+        per-system error counts and success totals
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - systemId
+                    - thermo
+                    - heater
+                  properties:
+                    systemId:
+                      description: System identifier
+                      type: string
+                    thermo:
+                      description: Scraping metrics for thermometer data
+                      type: object
+                      required:
+                        - lastError
+                        - errorCount
+                        - successCount
+                      properties:
+                        lastError:
+                          nullable: true
+                          anyOf:
+                            - description: Timestamp of the last error, or null if no errors have occurred
+                              format: date-time
+                              type: string
+                            - type: "null"
+                        errorCount:
+                          type: array
+                          items:
+                            type: object
+                            required:
+                              - id
+                              - count
+                            properties:
+                              id:
+                                description: Channel number or pin number
+                                type: number
+                              count:
+                                description: Number of errors for this channel/pin
+                                type: number
+                        successCount:
+                          description: Total number of successful scrapes
+                          type: number
+                    heater:
+                      description: Scraping metrics for heater data
+                      type: object
+                      required:
+                        - lastError
+                        - errorCount
+                        - successCount
+                      properties:
+                        lastError:
+                          nullable: true
+                          anyOf:
+                            - description: Timestamp of the last error, or null if no errors have occurred
+                              format: date-time
+                              type: string
+                            - type: "null"
+                        errorCount:
+                          type: array
+                          items:
+                            type: object
+                            required:
+                              - id
+                              - count
+                            properties:
+                              id:
+                                description: Channel number or pin number
+                                type: number
+                              count:
+                                description: Number of errors for this channel/pin
+                                type: number
+                        successCount:
+                          description: Total number of successful scrapes
+                          type: number
+  /scrape/metrics/{systemId}:
+    get:
+      tags:
+        - Scrape
+      operationId: getSystemScrapeMetrics
+      summary: Get System Scrape Metrics
+      description: Retrieve scraping metrics for a specific system by its ID
+      parameters:
+        - name: systemId
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: Response for status 200
@@ -245,11 +332,15 @@ paths:
               schema:
                 type: object
                 required:
-                  - sensor
+                  - systemId
+                  - thermo
                   - heater
                 properties:
-                  sensor:
-                    description: Scraping metrics for sensor data (LGG)
+                  systemId:
+                    description: System identifier
+                    type: string
+                  thermo:
+                    description: Scraping metrics for thermometer data
                     type: object
                     required:
                       - lastError
@@ -312,5 +403,575 @@ paths:
                       successCount:
                         description: Total number of successful scrapes
                         type: number
+        "404":
+          description: Response for status 404
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+  /systems/:
+    get:
+      tags:
+        - Systems
+      operationId: listSystems
+      summary: List Systems
+      description: List all registered systems with their thermometers and heaters
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - displayName
+                    - location
+                    - thermoUrl
+                    - heaterUrl
+                    - enabled
+                    - thermos
+                    - heaters
+                    - createdAt
+                    - updatedAt
+                  properties:
+                    id:
+                      description: Unique system slug, e.g. lab-2005
+                      type: string
+                    displayName:
+                      description: Human-readable system name
+                      type: string
+                    location:
+                      nullable: true
+                      anyOf:
+                        - description: Physical location description
+                          type: string
+                        - type: "null"
+                    thermoUrl:
+                      description: Base URL to thermo/ls-api instance
+                      type: string
+                    heaterUrl:
+                      description: Base URL to heater-api instance
+                      type: string
+                    enabled:
+                      description: Whether scraping is enabled
+                      type: boolean
+                    thermos:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - channel
+                          - label
+                        properties:
+                          channel:
+                            description: Thermometer channel number
+                            type: number
+                          label:
+                            nullable: true
+                            anyOf:
+                              - description: Display label for this thermometer
+                                type: string
+                              - type: "null"
+                    heaters:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - channel
+                          - label
+                        properties:
+                          channel:
+                            description: Heater channel number
+                            type: number
+                          label:
+                            nullable: true
+                            anyOf:
+                              - description: Display label for this heater
+                                type: string
+                              - type: "null"
+                    createdAt:
+                      description: Creation timestamp
+                      format: date-time
+                      type: string
+                    updatedAt:
+                      description: Last update timestamp
+                      format: date-time
+                      type: string
+    post:
+      tags:
+        - Systems
+      operationId: createSystem
+      summary: Create System
+      description: Register a new system with thermometers and heaters
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - displayName
+                - thermoUrl
+                - heaterUrl
+                - thermos
+                - heaters
+              properties:
+                id:
+                  description: Unique system slug
+                  type: string
+                displayName:
+                  description: Human-readable name
+                  type: string
+                location:
+                  nullable: true
+                  anyOf:
+                    - description: Physical location
+                      type: string
+                    - type: "null"
+                thermoUrl:
+                  description: Base URL to thermo/ls-api
+                  type: string
+                heaterUrl:
+                  description: Base URL to heater-api
+                  type: string
+                enabled:
+                  default: true
+                  type: boolean
+                thermos:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - channel
+                      - label
+                    properties:
+                      channel:
+                        description: Thermometer channel number
+                        type: number
+                      label:
+                        nullable: true
+                        anyOf:
+                          - description: Display label for this thermometer
+                            type: string
+                          - type: "null"
+                heaters:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - channel
+                      - label
+                    properties:
+                      channel:
+                        description: Heater channel number
+                        type: number
+                      label:
+                        nullable: true
+                        anyOf:
+                          - description: Display label for this heater
+                            type: string
+                          - type: "null"
+        required: true
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - displayName
+                  - location
+                  - thermoUrl
+                  - heaterUrl
+                  - enabled
+                  - thermos
+                  - heaters
+                  - createdAt
+                  - updatedAt
+                properties:
+                  id:
+                    description: Unique system slug, e.g. lab-2005
+                    type: string
+                  displayName:
+                    description: Human-readable system name
+                    type: string
+                  location:
+                    nullable: true
+                    anyOf:
+                      - description: Physical location description
+                        type: string
+                      - type: "null"
+                  thermoUrl:
+                    description: Base URL to thermo/ls-api instance
+                    type: string
+                  heaterUrl:
+                    description: Base URL to heater-api instance
+                    type: string
+                  enabled:
+                    description: Whether scraping is enabled
+                    type: boolean
+                  thermos:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - channel
+                        - label
+                      properties:
+                        channel:
+                          description: Thermometer channel number
+                          type: number
+                        label:
+                          nullable: true
+                          anyOf:
+                            - description: Display label for this thermometer
+                              type: string
+                            - type: "null"
+                  heaters:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - channel
+                        - label
+                      properties:
+                        channel:
+                          description: Heater channel number
+                          type: number
+                        label:
+                          nullable: true
+                          anyOf:
+                            - description: Display label for this heater
+                              type: string
+                            - type: "null"
+                  createdAt:
+                    description: Creation timestamp
+                    format: date-time
+                    type: string
+                  updatedAt:
+                    description: Last update timestamp
+                    format: date-time
+                    type: string
+        "409":
+          description: Response for status 409
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+  /systems/{id}:
+    get:
+      tags:
+        - Systems
+      operationId: getSystem
+      summary: Get System
+      description: Get a single system by ID with its thermometers and heaters
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - displayName
+                  - location
+                  - thermoUrl
+                  - heaterUrl
+                  - enabled
+                  - thermos
+                  - heaters
+                  - createdAt
+                  - updatedAt
+                properties:
+                  id:
+                    description: Unique system slug, e.g. lab-2005
+                    type: string
+                  displayName:
+                    description: Human-readable system name
+                    type: string
+                  location:
+                    nullable: true
+                    anyOf:
+                      - description: Physical location description
+                        type: string
+                      - type: "null"
+                  thermoUrl:
+                    description: Base URL to thermo/ls-api instance
+                    type: string
+                  heaterUrl:
+                    description: Base URL to heater-api instance
+                    type: string
+                  enabled:
+                    description: Whether scraping is enabled
+                    type: boolean
+                  thermos:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - channel
+                        - label
+                      properties:
+                        channel:
+                          description: Thermometer channel number
+                          type: number
+                        label:
+                          nullable: true
+                          anyOf:
+                            - description: Display label for this thermometer
+                              type: string
+                            - type: "null"
+                  heaters:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - channel
+                        - label
+                      properties:
+                        channel:
+                          description: Heater channel number
+                          type: number
+                        label:
+                          nullable: true
+                          anyOf:
+                            - description: Display label for this heater
+                              type: string
+                            - type: "null"
+                  createdAt:
+                    description: Creation timestamp
+                    format: date-time
+                    type: string
+                  updatedAt:
+                    description: Last update timestamp
+                    format: date-time
+                    type: string
+        "404":
+          description: Response for status 404
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+    put:
+      tags:
+        - Systems
+      operationId: updateSystem
+      summary: Update System
+      description: Update an existing system. Thermos/heaters are replaced if provided.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                displayName:
+                  type: string
+                location:
+                  nullable: true
+                  anyOf:
+                    - type: string
+                    - type: "null"
+                thermoUrl:
+                  type: string
+                heaterUrl:
+                  type: string
+                enabled:
+                  type: boolean
+                thermos:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - channel
+                      - label
+                    properties:
+                      channel:
+                        description: Thermometer channel number
+                        type: number
+                      label:
+                        nullable: true
+                        anyOf:
+                          - description: Display label for this thermometer
+                            type: string
+                          - type: "null"
+                heaters:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - channel
+                      - label
+                    properties:
+                      channel:
+                        description: Heater channel number
+                        type: number
+                      label:
+                        nullable: true
+                        anyOf:
+                          - description: Display label for this heater
+                            type: string
+                          - type: "null"
+        required: true
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - displayName
+                  - location
+                  - thermoUrl
+                  - heaterUrl
+                  - enabled
+                  - thermos
+                  - heaters
+                  - createdAt
+                  - updatedAt
+                properties:
+                  id:
+                    description: Unique system slug, e.g. lab-2005
+                    type: string
+                  displayName:
+                    description: Human-readable system name
+                    type: string
+                  location:
+                    nullable: true
+                    anyOf:
+                      - description: Physical location description
+                        type: string
+                      - type: "null"
+                  thermoUrl:
+                    description: Base URL to thermo/ls-api instance
+                    type: string
+                  heaterUrl:
+                    description: Base URL to heater-api instance
+                    type: string
+                  enabled:
+                    description: Whether scraping is enabled
+                    type: boolean
+                  thermos:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - channel
+                        - label
+                      properties:
+                        channel:
+                          description: Thermometer channel number
+                          type: number
+                        label:
+                          nullable: true
+                          anyOf:
+                            - description: Display label for this thermometer
+                              type: string
+                            - type: "null"
+                  heaters:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - channel
+                        - label
+                      properties:
+                        channel:
+                          description: Heater channel number
+                          type: number
+                        label:
+                          nullable: true
+                          anyOf:
+                            - description: Display label for this heater
+                              type: string
+                            - type: "null"
+                  createdAt:
+                    description: Creation timestamp
+                    format: date-time
+                    type: string
+                  updatedAt:
+                    description: Last update timestamp
+                    format: date-time
+                    type: string
+        "404":
+          description: Response for status 404
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+    delete:
+      tags:
+        - Systems
+      operationId: deleteSystem
+      summary: Delete System
+      description: Delete a system and all its associated thermometers and heaters
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                properties:
+                  success:
+                    type: boolean
+        "404":
+          description: Response for status 404
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
 components:
   schemas: {}

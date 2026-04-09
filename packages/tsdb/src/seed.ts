@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-import { systemHeaters, systems, systemSensors } from "./schema";
+import { systemHeaters, systems, systemThermos } from "./schema";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
@@ -38,21 +38,16 @@ async function seed() {
       },
     });
 
-  // Upsert sensor
+  // Upsert thermometer
   await db
-    .insert(systemSensors)
+    .insert(systemThermos)
     .values({
       systemId: "default",
-      instance: "sensor-1",
       channel: 1,
       label: "Main Thermometer",
     })
     .onConflictDoUpdate({
-      target: [
-        systemSensors.systemId,
-        systemSensors.instance,
-        systemSensors.channel,
-      ],
+      target: [systemThermos.systemId, systemThermos.channel],
       set: {
         label: "Main Thermometer",
       },
@@ -63,16 +58,11 @@ async function seed() {
     .insert(systemHeaters)
     .values({
       systemId: "default",
-      instance: "heater-1",
-      channelId: 1,
+      channel: 1,
       label: "Primary Heater",
     })
     .onConflictDoUpdate({
-      target: [
-        systemHeaters.systemId,
-        systemHeaters.instance,
-        systemHeaters.channelId,
-      ],
+      target: [systemHeaters.systemId, systemHeaters.channel],
       set: {
         label: "Primary Heater",
       },

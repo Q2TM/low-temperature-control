@@ -2,6 +2,7 @@ import {
   boolean,
   doublePrecision,
   integer,
+  jsonb,
   pgTable,
   primaryKey,
   text,
@@ -25,19 +26,16 @@ export const systems = pgTable("systems", {
     .defaultNow(),
 });
 
-export const systemSensors = pgTable(
-  "system_sensors",
+export const systemThermos = pgTable(
+  "system_thermos",
   {
     systemId: text("system_id")
       .notNull()
       .references(() => systems.id, { onDelete: "cascade" }),
-    instance: text("instance").notNull(),
     channel: integer("channel").notNull(),
     label: text("label"),
   },
-  (table) => [
-    primaryKey({ columns: [table.systemId, table.instance, table.channel] }),
-  ],
+  (table) => [primaryKey({ columns: [table.systemId, table.channel] })],
 );
 
 export const systemHeaters = pgTable(
@@ -46,28 +44,27 @@ export const systemHeaters = pgTable(
     systemId: text("system_id")
       .notNull()
       .references(() => systems.id, { onDelete: "cascade" }),
-    instance: text("instance").notNull(),
-    channelId: integer("channel_id").notNull(),
+    channel: integer("channel").notNull(),
     label: text("label"),
   },
-  (table) => [
-    primaryKey({ columns: [table.systemId, table.instance, table.channelId] }),
-  ],
+  (table) => [primaryKey({ columns: [table.systemId, table.channel] })],
 );
 
-// ─── Time-Series Metrics Tables ─────────────────────────────────
+// ─── Time-Series Metrics Hypertables ────────────────────────────
 
-export const sensorMetrics = pgTable(
-  "sensor_metrics",
+export const thermoMetrics = pgTable(
+  "thermo_metrics",
   {
     time: timestamp("time", { withTimezone: true }).notNull(),
-    instance: text("instance").notNull(),
+    systemId: text("system_id")
+      .notNull()
+      .references(() => systems.id),
     channel: integer("channel").notNull(),
     tempKelvin: doublePrecision("temp_kelvin"),
-    resistanceOhms: doublePrecision("resistance_ohms"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>(),
   },
   (table) => [
-    primaryKey({ columns: [table.time, table.instance, table.channel] }),
+    primaryKey({ columns: [table.time, table.systemId, table.channel] }),
   ],
 );
 
@@ -75,12 +72,14 @@ export const heaterMetrics = pgTable(
   "heater_metrics",
   {
     time: timestamp("time", { withTimezone: true }).notNull(),
-    instance: text("instance").notNull(),
-    pinNumber: integer("pin_number").notNull(),
-    dutyCycle: doublePrecision("duty_cycle"),
+    systemId: text("system_id")
+      .notNull()
+      .references(() => systems.id),
+    channel: integer("channel").notNull(),
     powerWatts: doublePrecision("power_watts"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>(),
   },
   (table) => [
-    primaryKey({ columns: [table.time, table.instance, table.pinNumber] }),
+    primaryKey({ columns: [table.time, table.systemId, table.channel] }),
   ],
 );
