@@ -1,13 +1,22 @@
 "use server";
 
-import { lakeshoreFetchClient } from "@/libs/serverApi";
+import { createLakeshoreClient } from "@/libs/serverApi";
+import { resolveSystem } from "@/libs/systemRegistry";
+
+async function getClient(systemId: string) {
+  const system = await resolveSystem(systemId);
+  if (!system) throw new Error(`System '${systemId}' not found`);
+  return createLakeshoreClient(system.thermoUrl);
+}
 
 /** Live temperature from Lakeshore (independent of heater PID loop). */
 export async function getLakeshoreTemperatureCelsius(
   channel: number,
+  systemId: string,
 ): Promise<number | null> {
   try {
-    const { data, error } = await lakeshoreFetchClient.GET(
+    const client = await getClient(systemId);
+    const { data, error } = await client.GET(
       "/api/v1/reading/monitor/{channel}",
       {
         params: { path: { channel } },
@@ -25,14 +34,12 @@ export async function getLakeshoreTemperatureCelsius(
   }
 }
 
-export async function getCurveHeader(channel: number) {
+export async function getCurveHeader(channel: number, systemId: string) {
   try {
-    const { data, error } = await lakeshoreFetchClient.GET(
-      "/api/v1/curve/{channel}/header",
-      {
-        params: { path: { channel } },
-      },
-    );
+    const client = await getClient(systemId);
+    const { data, error } = await client.GET("/api/v1/curve/{channel}/header", {
+      params: { path: { channel } },
+    });
 
     if (error || !data) {
       return null;
@@ -54,15 +61,14 @@ export async function setCurveHeader(
     temperatureLimit: number;
     coefficient: 1 | 2;
   },
+  systemId: string,
 ) {
   try {
-    const { data, error } = await lakeshoreFetchClient.PUT(
-      "/api/v1/curve/{channel}/header",
-      {
-        params: { path: { channel } },
-        body: header,
-      },
-    );
+    const client = await getClient(systemId);
+    const { data, error } = await client.PUT("/api/v1/curve/{channel}/header", {
+      params: { path: { channel } },
+      body: header,
+    });
 
     if (error) {
       return { success: false, error: "Failed to set curve header" };
@@ -75,9 +81,10 @@ export async function setCurveHeader(
   }
 }
 
-export async function getAllCurveDataPoints(channel: number) {
+export async function getAllCurveDataPoints(channel: number, systemId: string) {
   try {
-    const { data, error } = await lakeshoreFetchClient.GET(
+    const client = await getClient(systemId);
+    const { data, error } = await client.GET(
       "/api/v1/curve/{channel}/data-points",
       {
         params: { path: { channel } },
@@ -95,9 +102,14 @@ export async function getAllCurveDataPoints(channel: number) {
   }
 }
 
-export async function getCurveDataPoint(channel: number, index: number) {
+export async function getCurveDataPoint(
+  channel: number,
+  index: number,
+  systemId: string,
+) {
   try {
-    const { data, error } = await lakeshoreFetchClient.GET(
+    const client = await getClient(systemId);
+    const { data, error } = await client.GET(
       "/api/v1/curve/{channel}/data-point/{index}",
       {
         params: { path: { channel, index } },
@@ -122,9 +134,11 @@ export async function setCurveDataPoint(
     temperature: number;
     sensor: number;
   },
+  systemId: string,
 ) {
   try {
-    const { data, error } = await lakeshoreFetchClient.PUT(
+    const client = await getClient(systemId);
+    const { data, error } = await client.PUT(
       "/api/v1/curve/{channel}/data-point/{index}",
       {
         params: { path: { channel, index } },
@@ -146,9 +160,11 @@ export async function setCurveDataPoint(
 export async function setCurveDataPoints(
   channel: number,
   dataPoints: { temperature: number; sensor: number }[],
+  systemId: string,
 ) {
   try {
-    const { data, error } = await lakeshoreFetchClient.PUT(
+    const client = await getClient(systemId);
+    const { data, error } = await client.PUT(
       "/api/v1/curve/{channel}/data-points",
       {
         params: { path: { channel } },
@@ -167,14 +183,12 @@ export async function setCurveDataPoints(
   }
 }
 
-export async function deleteCurve(channel: number) {
+export async function deleteCurve(channel: number, systemId: string) {
   try {
-    const { data, error } = await lakeshoreFetchClient.DELETE(
-      "/api/v1/curve/{channel}",
-      {
-        params: { path: { channel } },
-      },
-    );
+    const client = await getClient(systemId);
+    const { data, error } = await client.DELETE("/api/v1/curve/{channel}", {
+      params: { path: { channel } },
+    });
 
     if (error) {
       return { success: false, error: "Failed to delete curve" };

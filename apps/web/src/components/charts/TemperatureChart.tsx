@@ -81,7 +81,9 @@ export function TemperatureChart({
   });
 
   // Separate temperature channels and heater power channels
-  const tempChannels = channelKeys.filter((key) => key.startsWith("Channel "));
+  const tempChannels = channelKeys.filter(
+    (key) => key.startsWith("Channel ") && !key.includes("Power (W)"),
+  );
   const heaterChannels = channelKeys.filter((key) => key.includes("Power (W)"));
 
   // Calculate Y-axis domain based on temperature data

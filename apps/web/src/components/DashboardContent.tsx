@@ -15,7 +15,6 @@ import {
 } from "@/components/PidControllerCard";
 import { useHeaterMetrics } from "@/hooks/useHeaterMetrics";
 import { useTempMetrics } from "@/hooks/useTempMetrics";
-import { LAKESHORE_SENSOR_CHANNEL_TEMP } from "@/libs/tempConfig";
 import {
   formatTimeframeLabel,
   getAvailableResolutions,
@@ -26,6 +25,11 @@ import {
 const PID_STATUS_REFRESH_MS = 1000;
 
 type DashboardContentProps = {
+  systemId: string;
+  systemDisplayName: string;
+  systemLocation: string | null;
+  sensorChannel: number;
+  heaterChannel: number;
   initialCurrentTemp: number | null;
   initialTargetTemp: number | null;
   initialIsActive: boolean;
@@ -38,6 +42,11 @@ type DashboardContentProps = {
 };
 
 export function DashboardContent({
+  systemId,
+  systemDisplayName,
+  systemLocation,
+  sensorChannel,
+  heaterChannel,
   initialCurrentTemp,
   initialTargetTemp,
   initialIsActive,
@@ -45,7 +54,7 @@ export function DashboardContent({
   initialPidRuntimeState,
 }: DashboardContentProps) {
   const [timeEnd, setTimeEnd] = useState<number>(() => Date.now());
-  const [selectedPin, setSelectedPin] = useState<number>(1);
+  const [selectedChannel, setSelectedChannel] = useState<number>(heaterChannel);
   const [timeRange, setTimeRange] = useState<TimeRange>({
     mode: "relative",
     minutes: 10,
@@ -73,9 +82,9 @@ export function DashboardContent({
 
   const refreshPidStatus = useCallback(async () => {
     const [status, params, lakeshoreTemp] = await Promise.all([
-      getHeaterStatus(1),
-      getPIDParameters(1),
-      getLakeshoreTemperatureCelsius(LAKESHORE_SENSOR_CHANNEL_TEMP),
+      getHeaterStatus(heaterChannel, systemId),
+      getPIDParameters(heaterChannel, systemId),
+      getLakeshoreTemperatureCelsius(sensorChannel, systemId),
     ]);
 
     if (status) {
@@ -92,7 +101,7 @@ export function DashboardContent({
       });
     }
     if (params) setPidParameters(params);
-  }, []);
+  }, [systemId, heaterChannel, sensorChannel]);
 
   const handleStatusRefresh = async () => {
     await refreshPidStatus();
@@ -112,14 +121,16 @@ export function DashboardContent({
     interval: timeInterval,
     timeStart: effectiveStart,
     timeRange: spanMs,
-    channels: [LAKESHORE_SENSOR_CHANNEL_TEMP],
+    channels: [sensorChannel],
+    systemId,
   });
 
   const heaterMetrics = useHeaterMetrics({
     interval: timeInterval,
     timeStart: effectiveStart,
     timeRange: spanMs,
-    pins: [selectedPin],
+    channels: [selectedChannel],
+    systemId,
   });
 
   useEffect(() => {
@@ -148,12 +159,13 @@ export function DashboardContent({
   }
 
   const { channels: tempChannels, chartData: tempChartData } = tempMetrics;
-  const { pins: heaterPins, chartData: heaterChartData } = heaterMetrics;
+  const { channels: heaterChannels, chartData: heaterChartData } =
+    heaterMetrics;
 
-  const channel1Data = tempChannels[LAKESHORE_SENSOR_CHANNEL_TEMP];
+  const channel1Data = tempChannels[sensorChannel];
   const avgTemp = channel1Data?.avgTemp ?? null;
 
-  const heaterPinData = heaterPins[selectedPin];
+  const heaterChannelData = heaterChannels[selectedChannel];
 
   const combinedChartData = tempChartData.map((tempEntry) => {
     const heaterEntry = heaterChartData.find((h) => h.time === tempEntry.time);
@@ -205,14 +217,16 @@ export function DashboardContent({
     <>
       <aside className="dashboard-sidebar">
         <div className="hidden lg:block mb-6">
-          <h1 className="text-2xl font-bold">Lab 20-05</h1>
-          <p className="text-sm text-muted-foreground">
-            20th Floor, Building 4
-          </p>
+          <h1 className="text-2xl font-bold">{systemDisplayName}</h1>
+          {systemLocation && (
+            <p className="text-sm text-muted-foreground">{systemLocation}</p>
+          )}
         </div>
 
         <div className="space-y-4">
           <PidControllerCard
+            channelId={heaterChannel}
+            systemId={systemId}
             currentTemp={currentTemp}
             targetTemp={targetTemp}
             isActive={isActive}
@@ -223,8 +237,8 @@ export function DashboardContent({
 
           <PeriodSummaryCard
             avgTemp={avgTemp}
-            avgPower={heaterPinData?.avgPower ?? null}
-            totalEnergy={heaterPinData?.totalEnergy ?? null}
+            avgPower={heaterChannelData?.avgPower ?? null}
+            totalEnergy={heaterChannelData?.totalEnergy ?? null}
             timeframeLabel={timeframeLabel}
           />
         </div>
@@ -233,8 +247,8 @@ export function DashboardContent({
       <div className="dashboard-content">
         <div className="mb-4">
           <DashboardControls
-            selectedPin={selectedPin}
-            onPinChange={setSelectedPin}
+            selectedPin={selectedChannel}
+            onPinChange={setSelectedChannel}
             timeRange={timeRange}
             onTimeRangeChange={handleTimeRangeChange}
             timeInterval={timeInterval}

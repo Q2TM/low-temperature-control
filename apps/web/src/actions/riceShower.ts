@@ -3,7 +3,7 @@
 import { riceShowerFetchClient } from "@/libs/serverApi";
 
 export async function getTempMetrics(params: {
-  instanceName: string;
+  systemId: string;
   channels: number[];
   timeStart: number;
   timeEnd: number;
@@ -11,10 +11,10 @@ export async function getTempMetrics(params: {
 }) {
   try {
     const { data, error } = await riceShowerFetchClient.GET(
-      "/query/temp/{instance_name}",
+      "/query/thermo/{system_id}",
       {
         params: {
-          path: { instance_name: params.instanceName },
+          path: { system_id: params.systemId },
           query: {
             channels: params.channels,
             time_start: params.timeStart,
@@ -37,20 +37,20 @@ export async function getTempMetrics(params: {
 }
 
 export async function getHeaterMetrics(params: {
-  instanceName: string;
-  pins: number[];
+  systemId: string;
+  channels: number[];
   timeStart: number;
   timeEnd: number;
   interval: number;
 }) {
   try {
     const { data, error } = await riceShowerFetchClient.GET(
-      "/query/heater/{instance_name}",
+      "/query/heater/{system_id}",
       {
         params: {
-          path: { instance_name: params.instanceName },
+          path: { system_id: params.systemId },
           query: {
-            pins: params.pins,
+            channels: params.channels,
             time_start: params.timeStart,
             time_end: params.timeEnd,
             interval: params.interval,

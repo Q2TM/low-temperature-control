@@ -40,7 +40,7 @@ import {
 
 const CHANNELS = [1, 2, 3, 4, 5, 6, 7, 8];
 
-export function CurveEditor() {
+export function CurveEditor({ systemId }: { systemId: string }) {
   const [selectedChannel, setSelectedChannel] = useState<number>(1);
   const [curveHeader, setCurveHeaderState] =
     useState<CurveHeaderFormValues | null>(null);
@@ -57,43 +57,46 @@ export function CurveEditor() {
   );
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const loadCurveData = useCallback(async (channel: number) => {
-    setIsLoading(true);
-    try {
-      const [header, points] = await Promise.all([
-        getCurveHeader(channel),
-        getAllCurveDataPoints(channel),
-      ]);
+  const loadCurveData = useCallback(
+    async (channel: number) => {
+      setIsLoading(true);
+      try {
+        const [header, points] = await Promise.all([
+          getCurveHeader(channel, systemId),
+          getAllCurveDataPoints(channel, systemId),
+        ]);
 
-      if (header) {
-        setCurveHeaderState(header);
-      } else {
+        if (header) {
+          setCurveHeaderState(header);
+        } else {
+          setCurveHeaderState(null);
+        }
+
+        if (points && points.temperatures && points.sensors) {
+          const formattedPoints: CurveDataPoint[] = points.temperatures
+            .map((temp, idx) => ({
+              index: idx + 1,
+              temperature: temp,
+              sensor: points.sensors[idx] || 0,
+            }))
+            .filter((point) => point.temperature !== 0 || point.sensor !== 0);
+          setDataPoints(formattedPoints);
+          setOriginalDataPoints(formattedPoints);
+        } else {
+          setDataPoints([]);
+          setOriginalDataPoints([]);
+        }
+      } catch (error) {
+        console.error("Failed to load curve data:", error);
         setCurveHeaderState(null);
-      }
-
-      if (points && points.temperatures && points.sensors) {
-        const formattedPoints: CurveDataPoint[] = points.temperatures
-          .map((temp, idx) => ({
-            index: idx + 1,
-            temperature: temp,
-            sensor: points.sensors[idx] || 0,
-          }))
-          .filter((point) => point.temperature !== 0 || point.sensor !== 0);
-        setDataPoints(formattedPoints);
-        setOriginalDataPoints(formattedPoints);
-      } else {
         setDataPoints([]);
         setOriginalDataPoints([]);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to load curve data:", error);
-      setCurveHeaderState(null);
-      setDataPoints([]);
-      setOriginalDataPoints([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    [systemId],
+  );
 
   useEffect(() => {
     loadCurveData(selectedChannel);
@@ -108,7 +111,7 @@ export function CurveEditor() {
   const handleHeaderSubmit = async (data: CurveHeaderFormValues) => {
     setIsHeaderLoading(true);
     try {
-      const result = await setCurveHeader(selectedChannel, data);
+      const result = await setCurveHeader(selectedChannel, data, systemId);
       if (result.success) {
         setCurveHeaderState(data);
       } else {
@@ -198,6 +201,7 @@ export function CurveEditor() {
           temperature: p.temperature,
           sensor: p.sensor,
         })),
+        systemId,
       );
 
       if (result.success) {
@@ -264,7 +268,7 @@ export function CurveEditor() {
 
   const handleDeleteCurve = async () => {
     try {
-      const result = await deleteCurve(selectedChannel);
+      const result = await deleteCurve(selectedChannel, systemId);
       if (result.success) {
         setShowDeleteDialog(false);
         setIsEditing(false);

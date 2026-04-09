@@ -1,49 +1,27 @@
-import { getHeaterStatus, getPIDParameters } from "@/actions/heater";
-import { getLakeshoreTemperatureCelsius } from "@/actions/lakeshore";
-import { DashboardContent } from "@/components/DashboardContent";
-import { LAKESHORE_SENSOR_CHANNEL_TEMP } from "@/libs/tempConfig";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
+import { getDefaultSystemId } from "@/libs/systemRegistry";
 
-export default async function Home() {
-  const [heaterStatus, pidParameters, lakeshoreTemp] = await Promise.all([
-    getHeaterStatus(1),
-    getPIDParameters(1),
-    getLakeshoreTemperatureCelsius(LAKESHORE_SENSOR_CHANNEL_TEMP),
-  ]);
+export default async function RootPage() {
+  const systemId = await getDefaultSystemId();
 
-  const targetTemp = heaterStatus?.target ?? null;
-  const isActive = heaterStatus?.isActive ?? false;
-  const currentTemp = lakeshoreTemp ?? heaterStatus?.currentTemp ?? null;
+  if (!systemId) {
+    return (
+      <main className="p-4 max-w-7xl mx-auto">
+        <div className="text-center my-16">
+          <h1 className="text-2xl font-bold mb-4">No Systems Configured</h1>
+          <p className="text-muted-foreground">
+            Add a system via the{" "}
+            <Link href="/admin/systems" className="underline">
+              Systems admin page
+            </Link>{" "}
+            to get started.
+          </p>
+        </div>
+      </main>
+    );
+  }
 
-  const pidRuntimeState = heaterStatus
-    ? {
-        power: heaterStatus.power,
-        maxHeaterPowerWatts: heaterStatus.maxHeaterPowerWatts,
-        startedAt: heaterStatus.startedAt,
-        runningForSeconds: heaterStatus.runningForSeconds,
-        pidVariables: heaterStatus.pidVariables,
-        errorStats: heaterStatus.errorStats,
-      }
-    : null;
-
-  return (
-    <main className="p-4 max-w-7xl mx-auto">
-      <header className="text-center my-8 lg:hidden">
-        <h1 className="text-3xl font-bold">
-          Lab 20-05 (20th Floor, Building 4)
-        </h1>
-      </header>
-
-      <div className="dashboard-layout">
-        <DashboardContent
-          initialCurrentTemp={currentTemp}
-          initialTargetTemp={targetTemp}
-          initialIsActive={isActive}
-          initialPidParameters={pidParameters}
-          initialPidRuntimeState={pidRuntimeState}
-        />
-      </div>
-    </main>
-  );
+  redirect(`/${systemId}`);
 }

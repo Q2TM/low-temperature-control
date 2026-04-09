@@ -100,6 +100,8 @@ export type PidRuntimeState = {
 };
 
 type PidControllerCardProps = {
+  channelId: number;
+  systemId: string;
   currentTemp: number | null;
   targetTemp: number | null;
   isActive: boolean;
@@ -109,6 +111,8 @@ type PidControllerCardProps = {
 };
 
 export function PidControllerCard({
+  channelId,
+  systemId,
   currentTemp,
   targetTemp,
   isActive,
@@ -135,7 +139,7 @@ export function PidControllerCard({
     }
 
     startTransition(async () => {
-      const result = await setTargetTemperature(1, temp);
+      const result = await setTargetTemperature(channelId, temp, systemId);
       if (result.success) {
         setIsEditing(false);
         onStatusChange?.();
@@ -173,7 +177,11 @@ export function PidControllerCard({
     }
 
     startTransition(async () => {
-      const result = await setPIDParameters(1, { kp, ki, kd });
+      const result = await setPIDParameters(
+        channelId,
+        { kp, ki, kd },
+        systemId,
+      );
       if (result.success) {
         setIsEditingPID(false);
         onStatusChange?.();
@@ -192,7 +200,9 @@ export function PidControllerCard({
 
   const handleTogglePID = async () => {
     startTransition(async () => {
-      const result = isActive ? await stopPID(1) : await startPID(1);
+      const result = isActive
+        ? await stopPID(channelId, systemId)
+        : await startPID(channelId, systemId);
       if (result.success) {
         onStatusChange?.();
       } else {

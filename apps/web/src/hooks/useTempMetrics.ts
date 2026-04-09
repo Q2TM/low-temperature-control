@@ -8,7 +8,7 @@ type UseTempMetricsProps = {
   timeStart: number;
   timeRange: number;
   channels: number[];
-  instanceName?: string;
+  systemId: string;
 };
 
 type ChannelData = {
@@ -31,14 +31,14 @@ type TempMetricsResult = {
  * @param timeStart - Start time in milliseconds (timestamp)
  * @param timeRange - Time range in milliseconds
  * @param channels - Array of channel numbers to query
- * @param instanceName - Name of the sensor instance (default: "sensor-1")
+ * @param systemId - System ID for the query
  */
 export function useTempMetrics({
   interval,
   timeStart,
   timeRange,
   channels,
-  instanceName = "sensor-1",
+  systemId,
 }: UseTempMetricsProps): TempMetricsResult | undefined {
   const timeEnd = timeStart + timeRange;
 
@@ -47,17 +47,10 @@ export function useTempMetrics({
     isLoading,
     error,
   } = useQuery({
-    queryKey: [
-      "tempMetrics",
-      instanceName,
-      channels,
-      timeStart,
-      timeEnd,
-      interval,
-    ],
+    queryKey: ["tempMetrics", systemId, channels, timeStart, timeEnd, interval],
     queryFn: () =>
       getTempMetrics({
-        instanceName,
+        systemId,
         channels,
         timeStart,
         timeEnd,

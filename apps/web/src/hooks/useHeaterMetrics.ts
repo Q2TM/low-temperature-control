@@ -7,15 +7,11 @@ type UseHeaterMetricsProps = {
   interval: number;
   timeStart: number;
   timeRange: number;
-  pins: number[];
-  instanceName?: string;
+  channels: number[];
+  systemId: string;
 };
 
-type PinData = {
-  currentDutyCycle: number | null;
-  firstDutyCycle: number | null;
-  dutyCycleChange: number | null;
-  avgDutyCycle: number | null;
+type ChannelData = {
   currentPower: number | null;
   firstPower: number | null;
   powerChange: number | null;
@@ -24,7 +20,7 @@ type PinData = {
 };
 
 type HeaterMetricsResult = {
-  pins: Record<number, PinData>;
+  channels: Record<number, ChannelData>;
   chartData: Array<{ time: string; [key: string]: string | number }>;
 };
 
@@ -33,31 +29,31 @@ type HeaterMetricsResult = {
  * @param interval - Interval in seconds for time bucketing
  * @param timeStart - Start time in milliseconds (timestamp)
  * @param timeRange - Time range in milliseconds
- * @param pins - Array of pin numbers to query
- * @param instanceName - Name of the heater instance (default: "heater-1")
+ * @param channels - Array of channel numbers to query
+ * @param systemId - System ID for the query
  */
 export function useHeaterMetrics({
   interval,
   timeStart,
   timeRange,
-  pins,
-  instanceName = "heater-1",
+  channels,
+  systemId,
 }: UseHeaterMetricsProps): HeaterMetricsResult | undefined {
   const timeEnd = timeStart + timeRange;
 
   const { data: rawData } = useQuery({
     queryKey: [
       "heaterMetrics",
-      instanceName,
-      pins,
+      systemId,
+      channels,
       timeStart,
       timeEnd,
       interval,
     ],
     queryFn: () =>
       getHeaterMetrics({
-        instanceName,
-        pins,
+        systemId,
+        channels,
         timeStart,
         timeEnd,
         interval,
@@ -72,57 +68,29 @@ export function useHeaterMetrics({
 
     const data = rawData.metrics;
 
-    // Helper function to safely get pin data
-    const getPinDutyCycle = (
+    // Helper function to safely get channel power
+    const getChannelPower = (
       entry: (typeof data)[number],
-      pinNum: number,
+      channelNum: number,
     ): number | null => {
-      const pinData = entry.pins.find((p) => p.pinNumber === pinNum);
-      return pinData ? pinData.dutyCycle : null;
-    };
-
-    const getPinPower = (
-      entry: (typeof data)[number],
-      pinNum: number,
-    ): number | null => {
-      const pinData = entry.pins.find((p) => p.pinNumber === pinNum);
-      return pinData ? pinData.powerWatts : null;
+      const channelData = entry.channels.find((c) => c.channel === channelNum);
+      return channelData ? channelData.powerWatts : null;
     };
 
     // Get first and last entries
     const lastEntry = data.length > 0 ? data[data.length - 1] : null;
     const firstEntry = data.length > 0 ? data[0] : null;
 
-    // Calculate metrics for all pins
-    const pinsData: Record<number, PinData> = {};
+    // Calculate metrics for all channels
+    const channelsData: Record<number, ChannelData> = {};
 
-    pins.forEach((pinNum) => {
-      const currentDutyCycle = lastEntry
-        ? getPinDutyCycle(lastEntry, pinNum)
+    channels.forEach((channelNum) => {
+      const currentPower = lastEntry
+        ? getChannelPower(lastEntry, channelNum)
         : null;
-      const firstDutyCycle = firstEntry
-        ? getPinDutyCycle(firstEntry, pinNum)
+      const firstPower = firstEntry
+        ? getChannelPower(firstEntry, channelNum)
         : null;
-
-      const dutyCycleChange =
-        currentDutyCycle !== null &&
-        firstDutyCycle !== null &&
-        firstDutyCycle !== 0
-          ? ((currentDutyCycle - firstDutyCycle) / Math.abs(firstDutyCycle)) *
-            100
-          : null;
-
-      const validDutyCycles = data
-        .map((entry) => getPinDutyCycle(entry, pinNum))
-        .filter((d): d is number => d !== null);
-      const avgDutyCycle =
-        validDutyCycles.length > 0
-          ? validDutyCycles.reduce((sum, d) => sum + d, 0) /
-            validDutyCycles.length
-          : null;
-
-      const currentPower = lastEntry ? getPinPower(lastEntry, pinNum) : null;
-      const firstPower = firstEntry ? getPinPower(firstEntry, pinNum) : null;
 
       const powerChange =
         currentPower !== null && firstPower !== null && firstPower !== 0
@@ -130,7 +98,7 @@ export function useHeaterMetrics({
           : null;
 
       const validPowers = data
-        .map((entry) => getPinPower(entry, pinNum))
+        .map((entry) => getChannelPower(entry, channelNum))
         .filter((p): p is number => p !== null);
       const avgPower =
         validPowers.length > 0
@@ -146,8 +114,8 @@ export function useHeaterMetrics({
           new Date(data[i]!.time).getTime() -
           new Date(data[i - 1]!.time).getTime();
         if (dtMs > gapThresholdMs) continue;
-        const p1 = getPinPower(data[i - 1]!, pinNum);
-        const p2 = getPinPower(data[i]!, pinNum);
+        const p1 = getChannelPower(data[i - 1]!, channelNum);
+        const p2 = getChannelPower(data[i]!, channelNum);
         if (p1 !== null && p2 !== null) {
           totalEnergyJoules += ((p1 + p2) / 2) * (dtMs / 1000);
           hasEnergyData = true;
@@ -155,11 +123,7 @@ export function useHeaterMetrics({
       }
       const totalEnergy = hasEnergyData ? totalEnergyJoules : null;
 
-      pinsData[pinNum] = {
-        currentDutyCycle,
-        firstDutyCycle,
-        dutyCycleChange,
-        avgDutyCycle,
+      channelsData[channelNum] = {
         currentPower,
         firstPower,
         powerChange,
@@ -174,17 +138,16 @@ export function useHeaterMetrics({
         time: entry.time,
       };
 
-      entry.pins.forEach((pin) => {
-        dataPoint[`Pin ${pin.pinNumber} Duty Cycle`] = pin.dutyCycle;
-        dataPoint[`Pin ${pin.pinNumber} Power (W)`] = pin.powerWatts;
+      entry.channels.forEach((ch) => {
+        dataPoint[`Channel ${ch.channel} Power (W)`] = ch.powerWatts;
       });
 
       return dataPoint;
     });
 
     return {
-      pins: pinsData,
+      channels: channelsData,
       chartData,
     };
-  }, [rawData, pins, interval]);
+  }, [rawData, channels, interval]);
 }

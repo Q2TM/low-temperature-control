@@ -1,8 +1,22 @@
+import { notFound } from "next/navigation";
+
 import { CurveEditor } from "@/components/CurveEditor";
+import { resolveSystem } from "@/libs/systemRegistry";
 
 export const dynamic = "force-dynamic";
 
-export default async function CurvePage() {
+type Props = {
+  params: Promise<{ systemId: string }>;
+};
+
+export default async function CurvePage({ params }: Props) {
+  const { systemId } = await params;
+  const system = await resolveSystem(systemId);
+
+  if (!system) {
+    notFound();
+  }
+
   return (
     <main className="container mx-auto p-6 max-w-[1800px]">
       <header className="text-center mb-6">
@@ -12,7 +26,7 @@ export default async function CurvePage() {
         </p>
       </header>
 
-      <CurveEditor />
+      <CurveEditor systemId={system.id} />
     </main>
   );
 }
