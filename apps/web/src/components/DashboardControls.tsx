@@ -167,6 +167,7 @@ export function DashboardControls({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="0">Off</SelectItem>
+              <SelectItem value="1000">1 second</SelectItem>
               <SelectItem value="5000">5 seconds</SelectItem>
               <SelectItem value="10000">10 seconds</SelectItem>
               <SelectItem value="30000">30 seconds</SelectItem>
