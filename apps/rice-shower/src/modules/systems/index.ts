@@ -64,6 +64,19 @@ export const systemsController = new Elysia({
   .post(
     "/",
     async ({ body, status }) => {
+      const thermoChannels = body.thermos.map((t) => t.channel);
+      if (new Set(thermoChannels).size !== thermoChannels.length) {
+        throw status(422, {
+          error: "Cannot create system: Duplicate thermo channel numbers",
+        });
+      }
+      const heaterChannels = body.heaters.map((h) => h.channel);
+      if (new Set(heaterChannels).size !== heaterChannels.length) {
+        throw status(422, {
+          error: "Cannot create system: Duplicate heater channel numbers",
+        });
+      }
+
       try {
         const system = await createSystem(body);
         await ScraperManager.reloadSystems();
@@ -85,18 +98,42 @@ export const systemsController = new Elysia({
       response: {
         200: SystemModel,
         409: t.Object({ error: t.String() }),
+        422: t.Object({ error: t.String() }),
       },
     },
   )
   .put(
     "/:id",
     async ({ params: { id }, body, status }) => {
-      const system = await updateSystem(id, body);
-      if (!system) {
-        throw status(404, { error: "System not found" });
+      if (body.thermos) {
+        const thermoChannels = body.thermos.map((t) => t.channel);
+        if (new Set(thermoChannels).size !== thermoChannels.length) {
+          throw status(422, {
+            error: "Cannot update system: Duplicate thermo channel numbers",
+          });
+        }
       }
-      await ScraperManager.reloadSystems();
-      return system;
+      if (body.heaters) {
+        const heaterChannels = body.heaters.map((h) => h.channel);
+        if (new Set(heaterChannels).size !== heaterChannels.length) {
+          throw status(422, {
+            error: "Cannot update system: Duplicate heater channel numbers",
+          });
+        }
+      }
+
+      try {
+        const system = await updateSystem(id, body);
+        if (!system) {
+          throw status(404, { error: "System not found" });
+        }
+        await ScraperManager.reloadSystems();
+        return system;
+      } catch (error) {
+        if (error && typeof error === "object" && "status" in error)
+          throw error;
+        throw status(500, { error: "Failed to update system: Internal Error" });
+      }
     },
     {
       detail: {
@@ -110,6 +147,8 @@ export const systemsController = new Elysia({
       response: {
         200: SystemModel,
         404: t.Object({ error: t.String() }),
+        422: t.Object({ error: t.String() }),
+        500: t.Object({ error: t.String() }),
       },
     },
   )

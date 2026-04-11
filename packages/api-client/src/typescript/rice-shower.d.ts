@@ -502,6 +502,17 @@ export interface operations {
           };
         };
       };
+      /** @description Response for status 422 */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
     };
   };
   getSystem: {
@@ -643,6 +654,28 @@ export interface operations {
       };
       /** @description Response for status 404 */
       404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+      /** @description Response for status 422 */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+      /** @description Response for status 500 */
+      500: {
         headers: {
           [name: string]: unknown;
         };

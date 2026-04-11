@@ -2,6 +2,7 @@
 
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@repo/ui/atom/badge";
 import { Button } from "@repo/ui/atom/button";
@@ -122,7 +123,7 @@ export function SystemsAdmin({ initialSystems }: { initialSystems: System[] }) {
         setDialogOpen(false);
         await reload();
       } else {
-        alert(result.error);
+        toast.error(result.error);
       }
     });
   };
@@ -136,7 +137,7 @@ export function SystemsAdmin({ initialSystems }: { initialSystems: System[] }) {
         setDeletingId(null);
         await reload();
       } else {
-        alert(result.error);
+        toast.error(result.error);
       }
     });
   };
