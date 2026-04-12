@@ -18,7 +18,7 @@ import re  # noqa: F401
 import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr, field_validator
-from typing import Any, ClassVar, Dict, List, Union
+from typing import Any, ClassVar, Dict, List, Optional, Union
 from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
@@ -32,7 +32,8 @@ class GetAllStates200ResponseSimulatorsInnerConfigInstrumentsInnerAnyOf1(BaseMod
     name: StrictStr
     heater_pin: Union[StrictFloat, StrictInt] = Field(alias="heaterPin")
     heater_power: Union[StrictFloat, StrictInt] = Field(alias="heaterPower")
-    __properties: ClassVar[List[str]] = ["type", "position", "name", "heaterPin", "heaterPower"]
+    initial_power: Optional[Union[Annotated[float, Field(le=1, strict=True, ge=0)], Annotated[int, Field(le=1, strict=True, ge=0)]]] = Field(default=None, alias="initialPower")
+    __properties: ClassVar[List[str]] = ["type", "position", "name", "heaterPin", "heaterPower", "initialPower"]
 
     @field_validator('type')
     def type_validate_enum(cls, value):
@@ -96,7 +97,8 @@ class GetAllStates200ResponseSimulatorsInnerConfigInstrumentsInnerAnyOf1(BaseMod
             "position": obj.get("position"),
             "name": obj.get("name"),
             "heaterPin": obj.get("heaterPin"),
-            "heaterPower": obj.get("heaterPower")
+            "heaterPower": obj.get("heaterPower"),
+            "initialPower": obj.get("initialPower")
         })
         return _obj
 

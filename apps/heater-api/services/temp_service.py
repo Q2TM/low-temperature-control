@@ -189,6 +189,24 @@ class TempService:
         self.heater.disconnect()
         return "Temperature control loop stopped and heater turned off."
 
+    def set_manual_power(self, power: float):
+        """Manually set heater power. Stops PID if running."""
+        if power < 0.0 or power > 1.0:
+            raise ValueError("Power must be between 0.0 and 1.0")
+
+        was_running = self._running
+        if was_running:
+            self._running = False
+            self._started_at = None
+            if self._thread:
+                self._thread.join(timeout=2.0)
+
+        if not was_running:
+            self.heater.connect()
+
+        self.heater.set_power(power)
+        return f"Manual power set to {power:.2f}" + (" (PID stopped)" if was_running else "")
+
     def _control_loop(self):
         """Internal method that runs in background to control temperature."""
         pid_cfg = self._pid_cfg

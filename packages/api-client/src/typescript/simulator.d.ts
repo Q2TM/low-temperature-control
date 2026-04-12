@@ -203,6 +203,7 @@ export interface operations {
                       name: string;
                       heaterPin: number;
                       heaterPower: number;
+                      initialPower?: number;
                     }
                 )[];
                 externalTemperature: number;

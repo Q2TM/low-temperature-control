@@ -212,6 +212,29 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/pid/{channel_id}/manual-power": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Set Manual Power
+     * @description Manually set heater power for a specific channel.
+     *
+     *     Stops the PID controller if it is currently running.
+     *     Power is a normalized value between 0.0 and 1.0.
+     */
+    post: operations["setManualPower"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -290,6 +313,16 @@ export interface components {
     HTTPValidationError: {
       /** Detail */
       detail?: components["schemas"]["ValidationError"][];
+    };
+    /**
+     * ManualPower
+     * @description Schema for manual power control.
+     *
+     *     Power is a normalized value between 0.0 and 1.0.
+     */
+    ManualPower: {
+      /** Power */
+      power: number;
     };
     /**
      * Parameters
@@ -701,6 +734,41 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["PidStatusOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  setManualPower: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        channel_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ManualPower"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": string;
         };
       };
       /** @description Validation Error */

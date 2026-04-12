@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **name** | **str** |  | 
 **heater_pin** | **float** |  | 
 **heater_power** | **float** |  | 
+**initial_power** | **float** |  | [optional] 
 
 ## Example
 

@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **thermo_channel** | **float** |  | 
 **heater_pin** | **float** |  | 
 **heater_power** | **float** |  | 
+**initial_power** | **float** |  | [optional] 
 
 ## Example
 

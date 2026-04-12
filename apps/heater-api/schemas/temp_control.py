@@ -14,6 +14,15 @@ class TargetTemp(CamelModel):
     target: float
 
 
+class ManualPower(CamelModel):
+    """
+    Schema for manual power control.
+
+    Power is a normalized value between 0.0 and 1.0.
+    """
+    power: float
+
+
 class StatusOut(CamelModel):
     """
     Schema for temperature status.

@@ -324,6 +324,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /pid/{channel_id}/manual-power:
+    post:
+      tags:
+      - PID
+      summary: Set Manual Power
+      description: 'Manually set heater power for a specific channel.
+
+
+        Stops the PID controller if it is currently running.
+
+        Power is a normalized value between 0.0 and 1.0.'
+      operationId: setManualPower
+      parameters:
+      - name: channel_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Channel Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManualPower'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: string
+                title: Response Setmanualpower
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
     AllChannelsStatus:
@@ -438,6 +477,19 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
+    ManualPower:
+      properties:
+        power:
+          type: number
+          title: Power
+      type: object
+      required:
+      - power
+      title: ManualPower
+      description: 'Schema for manual power control.
+
+
+        Power is a normalized value between 0.0 and 1.0.'
     Parameters:
       properties:
         kp:

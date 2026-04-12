@@ -41,7 +41,8 @@ class TestGetAllStates200ResponseSimulatorsInnerConfigInstrumentsInnerAnyOf1(uni
                     ],
                 name = '',
                 heater_pin = 1.337,
-                heater_power = 1.337
+                heater_power = 1.337,
+                initial_power = 0
             )
         else:
             return GetAllStates200ResponseSimulatorsInnerConfigInstrumentsInnerAnyOf1(

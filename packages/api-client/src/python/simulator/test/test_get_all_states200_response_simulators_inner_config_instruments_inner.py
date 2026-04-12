@@ -42,7 +42,8 @@ class TestGetAllStates200ResponseSimulatorsInnerConfigInstrumentsInner(unittest.
                 name = '',
                 thermo_channel = 1.337,
                 heater_pin = 1.337,
-                heater_power = 1.337
+                heater_power = 1.337,
+                initial_power = 0
             )
         else:
             return GetAllStates200ResponseSimulatorsInnerConfigInstrumentsInner(

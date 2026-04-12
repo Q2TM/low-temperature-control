@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from services.channel_manager import ChannelManager
-from schemas.temp_control import PidStatusOut
+from schemas.temp_control import ManualPower, PidStatusOut
 from .dependencies import get_channel_manager
 
 
@@ -58,3 +58,22 @@ def get_pid_status(
         return service.get_pid_status()
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.post("/{channel_id}/manual-power", response_model=str, operation_id="setManualPower")
+def set_manual_power(
+    channel_id: int,
+    body: ManualPower,
+    manager: ChannelManager = Depends(get_channel_manager)
+):
+    """
+    Manually set heater power for a specific channel.
+
+    Stops the PID controller if it is currently running.
+    Power is a normalized value between 0.0 and 1.0.
+    """
+    try:
+        service = manager.get_channel(channel_id)
+        return service.set_manual_power(body.power)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
