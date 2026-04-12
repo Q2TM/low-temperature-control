@@ -139,7 +139,7 @@ export function useHeaterMetrics({
       };
 
       entry.channels.forEach((ch) => {
-        dataPoint[`Channel ${ch.channel} Power (W)`] = ch.powerWatts;
+        dataPoint[`Heater Ch ${ch.channel}`] = ch.powerWatts;
       });
 
       return dataPoint;

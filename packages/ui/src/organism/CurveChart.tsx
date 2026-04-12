@@ -104,11 +104,12 @@ export function CurveChart({
                 tick={{ fill: "hsl(var(--foreground))" }}
               />
               <Tooltip
-                formatter={(value: number, name: string) => {
+                formatter={(value, name) => {
+                  const v = Number(value);
                   if (name === "temperature") {
-                    return [`${value.toFixed(3)} K`, "Temperature"];
+                    return [`${v.toFixed(3)} K`, "Temperature"];
                   }
-                  return [`${value.toFixed(3)} Ω`, "Resistance"];
+                  return [`${v.toFixed(3)} Ω`, "Resistance"];
                 }}
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",

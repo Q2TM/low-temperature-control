@@ -121,7 +121,9 @@ export function useTempMetrics({
       };
 
       entry.channels.forEach((channel) => {
-        dataPoint[`Channel ${channel.channel}`] = channel.kelvin;
+        dataPoint[`Thermo Ch ${channel.channel}`] = kelvinToCelsius(
+          channel.kelvin,
+        );
       });
 
       return dataPoint;

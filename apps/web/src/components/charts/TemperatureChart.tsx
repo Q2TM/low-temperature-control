@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import {
@@ -11,36 +12,24 @@ import {
   CardTitle,
 } from "@repo/ui/molecule/card";
 import {
-  ChartConfig,
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@repo/ui/organism/chart";
 
-export const description = "A line chart";
+const TEMP_COLORS = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+];
+const HEATER_COLOR = "var(--chart-5)";
 
-const chartConfig = {
-  channel1: {
-    label: "Channel 1",
-    color: "var(--chart-1)",
-  },
-  channel2: {
-    label: "Channel 2",
-    color: "var(--chart-2)",
-  },
-  channel3: {
-    label: "Channel 3",
-    color: "var(--chart-3)",
-  },
-  channel4: {
-    label: "Channel 4",
-    color: "var(--chart-4)",
-  },
-  heater: {
-    label: "Heater Power",
-    color: "var(--chart-5)",
-  },
-} satisfies ChartConfig;
+/** Sanitize a data key into a valid CSS custom property fragment */
+function toConfigKey(key: string) {
+  return key.toLowerCase().replace(/ /g, "-");
+}
 
 type TemperatureChartProps = {
   data: Array<{
@@ -58,36 +47,42 @@ export function TemperatureChart({
   spanMs,
   interval,
 }: TemperatureChartProps) {
-  // Get all channel keys (exclude 'time')
-  const channelKeys =
-    data.length > 0
-      ? Object.keys(data[0]!).filter((key) => key !== "time")
-      : [];
-
-  const mappedData = data.map((item) => {
-    const converted: Record<string, string | number | Date> = {
-      time: item.time,
-    };
-    channelKeys.forEach((key) => {
-      const value = item[key];
-      // Convert Kelvin to Celsius for temperature channels only
-      if (typeof value === "number" && key.startsWith("Channel ")) {
-        converted[key] = value - 273.15;
-      } else if (value !== undefined) {
-        converted[key] = value;
-      }
-    });
-    return converted;
-  });
-
-  // Separate temperature channels and heater power channels
-  const tempChannels = channelKeys.filter(
-    (key) => key.startsWith("Channel ") && !key.includes("Power (W)"),
+  const channelKeys = useMemo(
+    () =>
+      data.length > 0
+        ? Object.keys(data[0]!).filter((key) => key !== "time")
+        : [],
+    [data],
   );
-  const heaterChannels = channelKeys.filter((key) => key.includes("Power (W)"));
+
+  const tempChannels = useMemo(
+    () => channelKeys.filter((key) => key.startsWith("Thermo Ch ")),
+    [channelKeys],
+  );
+  const heaterChannels = useMemo(
+    () => channelKeys.filter((key) => key.startsWith("Heater Ch ")),
+    [channelKeys],
+  );
+
+  const chartConfig = useMemo<ChartConfig>(() => {
+    const config: ChartConfig = {};
+    tempChannels.forEach((key, i) => {
+      config[toConfigKey(key)] = {
+        label: key,
+        color: TEMP_COLORS[i % TEMP_COLORS.length],
+      };
+    });
+    heaterChannels.forEach((key) => {
+      config[toConfigKey(key)] = {
+        label: key,
+        color: HEATER_COLOR,
+      };
+    });
+    return config;
+  }, [tempChannels, heaterChannels]);
 
   // Calculate Y-axis domain based on temperature data
-  const allTemperatures = mappedData.flatMap((item) =>
+  const allTemperatures = data.flatMap((item) =>
     tempChannels
       .map((key) => item[key])
       .filter((temp): temp is number => typeof temp === "number"),
@@ -95,19 +90,19 @@ export function TemperatureChart({
   const minTemp = allTemperatures.length > 0 ? Math.min(...allTemperatures) : 0;
   const maxTemp =
     allTemperatures.length > 0 ? Math.max(...allTemperatures) : 100;
-  const padding = (maxTemp - minTemp) * 0.1 || 1; // 10% padding or 1 degree minimum
+  const padding = (maxTemp - minTemp) * 0.1 || 1;
   const yDomain = [minTemp - padding, maxTemp + padding];
 
   // Insert null-value markers at time gaps so Recharts breaks the line
   const gapThresholdMs = interval * 1000 * 1.5;
   const dataWithGaps: Array<Record<string, string | number | Date | null>> = [];
 
-  for (let i = 0; i < mappedData.length; i++) {
-    dataWithGaps.push(mappedData[i]!);
+  for (let i = 0; i < data.length; i++) {
+    dataWithGaps.push(data[i]!);
 
-    if (i < mappedData.length - 1) {
-      const currentTime = new Date(mappedData[i]!.time as string).getTime();
-      const nextTime = new Date(mappedData[i + 1]!.time as string).getTime();
+    if (i < data.length - 1) {
+      const currentTime = new Date(data[i]!.time as string).getTime();
+      const nextTime = new Date(data[i + 1]!.time as string).getTime();
 
       if (nextTime - currentTime > gapThresholdMs) {
         const gapMarker: Record<string, string | number | Date | null> = {
@@ -137,7 +132,7 @@ export function TemperatureChart({
               right: 12,
             }}
           >
-            <CartesianGrid vertical={false} />
+            <CartesianGrid vertical={false} yAxisId="temp" />
             <XAxis
               dataKey="time"
               tickLine={false}
@@ -205,38 +200,35 @@ export function TemperatureChart({
                 />
               }
             />
-            {tempChannels.map((channelKey) => {
-              const channelIndex = channelKeys.indexOf(channelKey);
-              return (
-                <Line
-                  key={channelKey}
-                  yAxisId="temp"
-                  dataKey={channelKey}
-                  type="monotone"
-                  stroke={`var(--chart-${(channelIndex % 5) + 1})`}
-                  strokeWidth={2}
-                  dot={false}
-                  connectNulls={false}
-                  unit="°C"
-                />
-              );
-            })}
-            {heaterChannels.map((channelKey) => {
-              return (
-                <Line
-                  key={channelKey}
-                  yAxisId="power"
-                  dataKey={channelKey}
-                  type="monotone"
-                  stroke="var(--chart-5)"
-                  strokeWidth={2}
-                  dot={false}
-                  connectNulls={false}
-                  strokeDasharray="5 5"
-                  unit="W"
-                />
-              );
-            })}
+            {tempChannels.map((channelKey) => (
+              <Line
+                key={channelKey}
+                yAxisId="temp"
+                dataKey={channelKey}
+                type="monotone"
+                stroke={`var(--color-${toConfigKey(channelKey)})`}
+                strokeWidth={2}
+                dot={false}
+                connectNulls={false}
+                isAnimationActive={false}
+                unit="°C"
+              />
+            ))}
+            {heaterChannels.map((channelKey) => (
+              <Line
+                key={channelKey}
+                yAxisId="power"
+                dataKey={channelKey}
+                type="monotone"
+                stroke={`var(--color-${toConfigKey(channelKey)})`}
+                strokeWidth={2}
+                dot={false}
+                connectNulls={false}
+                strokeDasharray="5 5"
+                isAnimationActive={false}
+                unit="W"
+              />
+            ))}
           </LineChart>
         </ChartContainer>
       </CardContent>
