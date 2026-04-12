@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 
 import { getDefaultSystemId } from "@/libs/systemRegistry";
 
+export const dynamic = "force-dynamic";
+
 export default async function RootPage() {
   const systemId = await getDefaultSystemId();
 
