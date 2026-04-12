@@ -220,6 +220,10 @@ paths:
                                         type: number
                                       heaterPower:
                                         type: number
+                                      initialPower:
+                                        minimum: 0
+                                        maximum: 1
+                                        type: number
                             externalTemperature:
                               type: number
                             externalConductivity:

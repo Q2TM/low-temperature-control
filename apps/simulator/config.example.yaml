@@ -17,11 +17,13 @@ environments:
         name: Cooler 1
         heaterPin: 1
         heaterPower: -2 # Watts
+        initialPower: 1 # Optional: start at 100% power (always on cooler)
       - type: heater
         position: [0, 2]
         name: Cooler 2
         heaterPin: 2
         heaterPower: -2 # Watts
+        initialPower: 1 # Optional: start at 100% power (always on cooler)
     externalTemperature: 25
     externalConductivity: 0.1 # Watts per Kelvin
     internalConductivity: 0.5 # Watts per Kelvin

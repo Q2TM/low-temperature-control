@@ -40,6 +40,13 @@ class Simulator {
       }
     }
 
+    // Initialize heater outputs from config
+    for (const instrument of this.config.instruments) {
+      if (instrument.type === "heater" && instrument.initialPower != null) {
+        this.heaterOutput.set(instrument.heaterPin, instrument.initialPower);
+      }
+    }
+
     setInterval(() => this.loop(), this.intervalSec * 1000);
   }
 

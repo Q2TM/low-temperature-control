@@ -313,6 +313,11 @@
                                         },
                                         "heaterPower": {
                                           "type": "number"
+                                        },
+                                        "initialPower": {
+                                          "minimum": 0,
+                                          "maximum": 1,
+                                          "type": "number"
                                         }
                                       }
                                     }

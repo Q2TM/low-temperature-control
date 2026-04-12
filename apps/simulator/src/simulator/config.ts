@@ -13,6 +13,7 @@ const heaterSchema = t.Object({
   name: t.String(),
   heaterPin: t.Number(),
   heaterPower: t.Number(),
+  initialPower: t.Optional(t.Number({ minimum: 0, maximum: 1 })),
 });
 
 const instrumentSchema = t.Union([thermometerSchema, heaterSchema]);
