@@ -537,21 +537,22 @@
             "type": "string",
             "title": "Name"
           },
-          "gpioPin": {
+          "thermoChannel": {
             "type": "integer",
-            "title": "Gpiopin"
+            "title": "Thermochannel"
           },
-          "sensorChannel": {
-            "type": "integer",
-            "title": "Sensorchannel"
+          "heaterType": {
+            "type": "string",
+            "title": "Heatertype",
+            "description": "Heater type: gpio, psu, or mock"
           },
           "enabled": {
             "type": "boolean",
             "title": "Enabled"
           },
-          "maxHeaterPowerWatts": {
+          "maxPowerWatts": {
             "type": "number",
-            "title": "Maxheaterpowerwatts",
+            "title": "Maxpowerwatts",
             "description": "Maximum heater power in watts"
           },
           "isActive": {
@@ -565,10 +566,10 @@
         "required": [
           "channelId",
           "name",
-          "gpioPin",
-          "sensorChannel",
+          "thermoChannel",
+          "heaterType",
           "enabled",
-          "maxHeaterPowerWatts"
+          "maxPowerWatts"
         ],
         "title": "ChannelInfo",
         "description": "Channel information with runtime status."
@@ -715,9 +716,17 @@
             "type": "number",
             "title": "Power"
           },
-          "maxHeaterPowerWatts": {
+          "powerPercent": {
             "type": "number",
-            "title": "Maxheaterpowerwatts"
+            "title": "Powerpercent"
+          },
+          "powerWatts": {
+            "type": "number",
+            "title": "Powerwatts"
+          },
+          "maxPowerWatts": {
+            "type": "number",
+            "title": "Maxpowerwatts"
           },
           "currentTemp": {
             "anyOf": [
@@ -761,6 +770,12 @@
           },
           "errorStats": {
             "$ref": "#/components/schemas/ErrorStats"
+          },
+          "heaterMetadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Heatermetadata",
+            "default": {}
           }
         },
         "type": "object",
@@ -770,7 +785,9 @@
           "isActive",
           "target",
           "power",
-          "maxHeaterPowerWatts",
+          "powerPercent",
+          "powerWatts",
+          "maxPowerWatts",
           "currentTemp",
           "startedAt",
           "runningForSeconds",

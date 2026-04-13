@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Dict, Any
 
 
 class HeaterRepository(ABC):
@@ -23,6 +24,20 @@ class HeaterRepository(ABC):
     def get_power(self) -> float:
         """Get current heater output power (0.0 to 1.0)."""
         ...
+
+    @abstractmethod
+    def get_power_watts(self) -> float:
+        """Get current heater output power in watts."""
+        ...
+
+    @abstractmethod
+    def get_max_power_watts(self) -> float:
+        """Get maximum heater power in watts."""
+        ...
+
+    def get_metadata(self) -> Dict[str, Any]:
+        """Get heater-type-specific metadata (e.g. voltage/current for PSU). Empty by default."""
+        return {}
 
     @abstractmethod
     def disconnect(self) -> None:

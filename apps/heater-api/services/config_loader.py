@@ -1,7 +1,7 @@
 import yaml
 from pathlib import Path
 from typing import List
-from schemas.channel import ChannelConfig
+from schemas.channel import ChannelConfig, GpioHeaterConfig, PsuHeaterConfig
 from schemas.app_config import AppConfig
 
 
@@ -17,7 +17,7 @@ class ConfigLoader:
             config_path: Path to YAML configuration file
 
         Returns:
-            AppConfig object with all settings (channels, pid, psu, gpio, server, otel)
+            AppConfig object with all settings (channels, pid, server, otel)
 
         Raises:
             FileNotFoundError: If configuration file doesn't exist
@@ -45,9 +45,25 @@ class ConfigLoader:
         if len(channel_ids) != len(set(channel_ids)):
             raise ValueError("Duplicate channel_id found in configuration")
 
-        enabled_pins = [ch.gpio_pin for ch in app_config.channels if ch.enabled]
-        if len(enabled_pins) != len(set(enabled_pins)):
-            raise ValueError("Duplicate gpio_pin found in enabled channels")
+        # Validate no duplicate gpio_pin across enabled GPIO channels
+        gpio_pins = [
+            ch.heater.gpio_pin
+            for ch in app_config.channels
+            if ch.enabled and isinstance(ch.heater, GpioHeaterConfig)
+        ]
+        if len(gpio_pins) != len(set(gpio_pins)):
+            raise ValueError(
+                "Duplicate gpio_pin found in enabled GPIO channels")
+
+        # Validate no duplicate serial_port across enabled PSU channels (when explicitly set)
+        serial_ports = [
+            ch.heater.serial_port
+            for ch in app_config.channels
+            if ch.enabled and isinstance(ch.heater, PsuHeaterConfig) and ch.heater.serial_port is not None
+        ]
+        if len(serial_ports) != len(set(serial_ports)):
+            raise ValueError(
+                "Duplicate serial_port found in enabled PSU channels")
 
         return app_config
 

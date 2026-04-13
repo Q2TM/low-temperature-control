@@ -1,5 +1,5 @@
 from typing import Dict
-from schemas.channel import ChannelConfig, ChannelInfo, AllChannelsStatus
+from schemas.channel import ChannelConfig, ChannelInfo, AllChannelsStatus, GpioHeaterConfig, PsuHeaterConfig, MockHeaterConfig
 from schemas.app_config import AppConfig
 from services.temp_service import TempService
 from services.config_loader import ConfigLoader
@@ -28,15 +28,14 @@ class ChannelManager:
                 service = TempService(
                     channel_id=config.channel_id,
                     channel_name=config.name,
-                    sensor_channel=config.sensor_channel,
-                    gpio_pin=config.gpio_pin,
-                    max_heater_power_watts=config.max_heater_power_watts,
+                    thermo_channel=config.thermo_channel,
+                    heater_config=config.heater,
                     app_config=self.app_config,
                 )
                 self._channels[config.channel_id] = service
                 print(
                     f"✓ Initialized channel: {config.channel_id} ({config.name}) "
-                    f"on GPIO pin {config.gpio_pin}"
+                    f"heater_type={config.heater.type}"
                 )
             else:
                 print(
@@ -79,10 +78,10 @@ class ChannelManager:
             result.append(ChannelInfo(
                 channel_id=config.channel_id,
                 name=config.name,
-                gpio_pin=config.gpio_pin,
-                sensor_channel=config.sensor_channel,
+                thermo_channel=config.thermo_channel,
+                heater_type=config.heater.type,
                 enabled=config.enabled,
-                max_heater_power_watts=config.max_heater_power_watts,
+                max_power_watts=_get_max_power_watts(config),
                 is_active=is_active
             ))
         return result
@@ -111,10 +110,10 @@ class ChannelManager:
         return ChannelInfo(
             channel_id=config.channel_id,
             name=config.name,
-            gpio_pin=config.gpio_pin,
-            sensor_channel=config.sensor_channel,
+            thermo_channel=config.thermo_channel,
+            heater_type=config.heater.type,
             enabled=config.enabled,
-            max_heater_power_watts=config.max_heater_power_watts,
+            max_power_watts=_get_max_power_watts(config),
             is_active=is_active
         )
 
@@ -135,3 +134,12 @@ class ChannelManager:
         """Cleanup all channels on shutdown."""
         for service in self._channels.values():
             service.cleanup()
+
+
+def _get_max_power_watts(config: ChannelConfig) -> float:
+    """Compute max power watts from a channel's heater config."""
+    heater = config.heater
+    if isinstance(heater, PsuHeaterConfig):
+        return heater.max_wattage
+    # GpioHeaterConfig and MockHeaterConfig both have max_power_watts
+    return heater.max_power_watts

@@ -6,57 +6,57 @@ from typing import TYPE_CHECKING
 from repositories.heater import HeaterRepository
 
 if TYPE_CHECKING:
-    from schemas.app_config import AppConfig
+    from schemas.channel import HeaterConfig
 
 
-def create_heater(mode: str, gpio_pin: int, app_config: AppConfig | None = None) -> HeaterRepository:
-    """Create a HeaterRepository based on the given mode."""
-    mode = mode.upper()
+def create_heater(config: HeaterConfig, channel_id: int) -> HeaterRepository:
+    """Create a HeaterRepository from a per-channel heater config."""
+    from schemas.channel import GpioHeaterConfig, PsuHeaterConfig, MockHeaterConfig
 
-    if mode == "MOCK":
+    if isinstance(config, MockHeaterConfig):
         from mocks.heater_mock import HeaterMock
-        return HeaterMock(gpio_pin=gpio_pin)
+        return HeaterMock(
+            channel_id=channel_id,
+            max_power_watts=config.max_power_watts,
+        )
 
-    if mode == "GPIO":
+    if isinstance(config, GpioHeaterConfig):
         import RPi.GPIO as GPIO  # type: ignore[import-untyped]
         from repositories.gpio_heater import GPIOHeater
-        frequency = app_config.gpio.default_frequency if app_config else 0.2
-        return GPIOHeater(gpio=GPIO, pin=gpio_pin, frequency=frequency)
+        return GPIOHeater(
+            gpio=GPIO,
+            pin=config.gpio_pin,
+            frequency=config.frequency,
+            max_power_watts=config.max_power_watts,
+        )
 
-    if mode == "PSU":
+    if isinstance(config, PsuHeaterConfig):
         from repositories.psu_heater import PSUHeater
-        port = _detect_serial_port()
-        if app_config:
-            return PSUHeater(
-                port=port,
-                voltage=app_config.psu.default_voltage,
-                max_current=app_config.psu.max_current,
-                baudrate=app_config.psu.baudrate,
-            )
-        return PSUHeater(port=port)
+        port = config.serial_port or _detect_serial_port()
+        return PSUHeater(
+            port=port,
+            max_voltage=config.max_voltage,
+            max_wattage=config.max_wattage,
+            baudrate=config.baudrate,
+        )
 
-    raise ValueError(
-        f"Unknown HEATER_MODE: '{mode}'. Expected one of: MOCK, GPIO, PSU"
-    )
+    raise ValueError(f"Unknown heater config type: {type(config)}")
 
 
 def _detect_serial_port() -> str:
-    env_port = os.getenv("PSU_SERIAL_PORT") or os.getenv("POWER_SUPPLY_SERIAL_PORT")
-    if env_port:
-        return env_port
-
+    """Auto-detect a serial port for PSU communication."""
     try:
         from serial.tools import list_ports
     except Exception as exc:
         raise RuntimeError(
-            "serial.tools is not available. Install pyserial and/or set PSU_SERIAL_PORT. "
+            "serial.tools is not available. Install pyserial or set serial_port in config. "
             f"Error: {type(exc).__name__}: {exc}"
         )
 
     ports = list(list_ports.comports())
     if not ports:
         raise RuntimeError(
-            "No serial ports detected. Connect CP2102 device or set PSU_SERIAL_PORT env var."
+            "No serial ports detected. Connect CP2102 device or set serial_port in config."
         )
 
     for p in ports:

@@ -1,49 +1,62 @@
 # Heater API Configuration
+# Copy this file to config.yaml and uncomment the heater type you use.
+# If you have more than one heater, duplicate the channel block and adjust channel_id.
 # All sections except 'channels' are optional and will use sensible defaults if omitted.
 
 # ── Channel Configuration ──────────────────────────────────────────────
-# Each channel represents a heater connected to a specific GPIO pin
-# and associated with a Lakeshore sensor.
+# Each channel represents a heater associated with a Lakeshore thermometer channel.
+# Uncomment ONE of the three heater types below.
+#
+# Supported heater types:
+#   gpio  — PWM-controlled relay via Raspberry Pi GPIO
+#   psu   — Programmable power supply over serial (V = Vmax × √duty, P = V²/R)
+#   mock  — Simulated heater (delegates to simulator API)
 
 channels:
-  - channel_id: 1
-    name: "Primary Heater"
-    gpio_pin: 18 # GPIO BCM pin number
-    sensor_channel: 1 # Lakeshore Model 240 sensor channel number
-    max_heater_power_watts: 45 # Maximum heater power in watts
-    enabled: true
-
-  # - channel_id: 2
-  #   name: "Secondary Heater"
-  #   gpio_pin: 23
-  #   sensor_channel: 2
+  # ── GPIO heater ──
+  # - channel_id: 1
+  #   name: "Heater"
+  #   thermo_channel: 5
   #   enabled: true
+  #   heater:
+  #     type: gpio
+  #     gpio_pin: 18          # GPIO BCM pin number
+  #     frequency: 0.2        # PWM frequency in Hz (default: 0.2)
+  #     max_power_watts: 45.0 # Hardcoded max power; GPIO cannot read real power
+
+  # ── PSU heater ──
+  # - channel_id: 1
+  #   name: "Heater"
+  #   thermo_channel: 5
+  #   enabled: true
+  #   heater:
+  #     type: psu
+  #     serial_port: "/dev/ttyUSB0" # Auto-detected if omitted
+  #     baudrate: 9600              # Serial baud rate (default: 9600)
+  #     max_voltage: 12.0           # Maximum output voltage in volts
+  #     max_wattage: 25.0           # Maximum output wattage in watts
+
+  # ── Mock heater (for development / simulator) ──
+  # - channel_id: 1
+  #   name: "Heater"
+  #   thermo_channel: 5
+  #   enabled: true
+  #   heater:
+  #     type: mock
+  #     max_power_watts: 45.0 # Simulated max power (default: 45.0)
 
 # ── PID Controller Settings ────────────────────────────────────────────
 
 pid:
-  default_target: 30.0 # Initial target temperature in °C
-  loop_interval_seconds: 5.0 # Sleep between PID loop iterations
+  default_target: 0.0 # Initial target temperature in °C
+  loop_interval_seconds: 3.0 # Sleep between PID loop iterations
   dt_min: 1.0 # Minimum dt clamp for PID update (seconds)
   dt_max: 15.0 # Maximum dt clamp for PID update (seconds)
   output_min: 0.0 # Minimum PID output (duty percent)
   output_max: 100.0 # Maximum PID output (duty percent)
-  anti_windup_min: -100.0 # Anti-windup integral lower bound
-  anti_windup_max: 100.0 # Anti-windup integral upper bound
+  anti_windup_min: -150.0 # Anti-windup integral lower bound
+  anti_windup_max: 150.0 # Anti-windup integral upper bound
 
-# ── Programmable Power Supply Settings ─────────────────────────────────
-# Only used when HEATER_MODE=PSU
-
-psu:
-  max_current: 5.0 # Maximum output current in amps
-  default_voltage: 12.0 # Default voltage in volts
-  baudrate: 9600 # Serial baud rate
-
-# ── GPIO PWM Settings ─────────────────────────────────────────────────
-# Only used when HEATER_MODE=GPIO
-
-gpio:
-  default_frequency: 0.2 # PWM frequency in Hz
 
 # ── Server Settings ────────────────────────────────────────────────────
 # Can also be overridden by env vars: HOST, PORT, WORKERS

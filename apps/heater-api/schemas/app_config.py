@@ -10,9 +10,9 @@ class PidConfig(BaseModel):
     """PID controller tuning and loop parameters."""
 
     default_target: float = Field(
-        default=30.0, description="Initial target temperature in °C")
+        default=0.0, description="Initial target temperature in °C")
     loop_interval_seconds: float = Field(
-        default=5.0, gt=0, description="Sleep between PID loop iterations in seconds")
+        default=3.0, gt=0, description="Sleep between PID loop iterations in seconds")
     dt_min: float = Field(
         default=1.0, gt=0, description="Minimum dt clamp for PID update in seconds")
     dt_max: float = Field(
@@ -22,27 +22,9 @@ class PidConfig(BaseModel):
     output_max: float = Field(
         default=100.0, description="Maximum PID output (duty percent)")
     anti_windup_min: float = Field(
-        default=-100.0, description="Anti-windup integral lower bound")
+        default=-150.0, description="Anti-windup integral lower bound")
     anti_windup_max: float = Field(
-        default=100.0, description="Anti-windup integral upper bound")
-
-
-class PsuConfig(BaseModel):
-    """Programmable power supply hardware parameters."""
-
-    max_voltage: float = Field(
-        default=12.0, gt=0, description="Maximum PSU output voltage in volts")
-    max_wattage: float = Field(
-        default=25.0, gt=0, description="Maximum PSU output wattage in watts (For n heaters, max_wattage = 25.0 * n)")
-    baudrate: int = Field(
-        default=9600, gt=0, description="Serial baud rate for PSU communication")
-
-
-class GpioConfig(BaseModel):
-    """GPIO PWM hardware parameters."""
-
-    default_frequency: float = Field(
-        default=0.2, gt=0, description="Default PWM frequency in Hz")
+        default=150.0, description="Anti-windup integral upper bound")
 
 
 class ServerConfig(BaseModel):
@@ -70,7 +52,5 @@ class AppConfig(BaseModel):
 
     channels: List[ChannelConfig]
     pid: PidConfig = Field(default_factory=PidConfig)
-    psu: PsuConfig = Field(default_factory=PsuConfig)
-    gpio: GpioConfig = Field(default_factory=GpioConfig)
     server: ServerConfig = Field(default_factory=ServerConfig)
     otel: OtelConfig = Field(default_factory=OtelConfig)
