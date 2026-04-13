@@ -1,3 +1,5 @@
+from numpy import sqrt
+
 from repositories.heater import HeaterRepository
 from repositories.psu import ProgrammablePowerSupplyRepository
 
@@ -8,25 +10,28 @@ class PSUHeater(HeaterRepository):
     def __init__(
         self,
         port: str,
-        voltage: float = 12.0,
-        max_current: float = 5.0,
+        max_voltage: float = 12.0,
+        max_wattage: float = 25.0,
         baudrate: int = 9600,
     ):
-        self._psu = ProgrammablePowerSupplyRepository(port=port, baudrate=baudrate)
-        self._voltage = voltage
-        self._max_current = max_current
+        self._psu = ProgrammablePowerSupplyRepository(
+            port=port, baudrate=baudrate)
+        self.max_voltage = max_voltage
+        self.max_wattage = max_wattage
+        self._max_current = round(self.max_wattage / self.max_voltage, 3)
         self._power = 0.0
 
     def connect(self) -> None:
         self._psu.pc_connect()
         self._psu.power_on()
-        self._psu.set_voltage(self._voltage)
-        self._psu.set_current(0.0)
+        self._psu.set_voltage(0.0)
+        self._psu.set_current(self._max_current)
 
-    def set_power(self, power: float) -> None:
-        self._power = max(0.0, min(1.0, power))
-        current = round(self._power * self._max_current, 3)
-        self._psu.set_current(current)
+    def set_power(self, duty: float) -> None:
+        capped_duty = max(0.0, min(1.0, duty))
+        self._power = self.max_wattage * capped_duty
+        voltage = self.max_voltage * sqrt(capped_duty)
+        self._psu.set_voltage(round(voltage, 3))
 
     def get_power(self) -> float:
         return self._power

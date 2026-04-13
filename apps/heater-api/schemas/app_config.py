@@ -30,10 +30,10 @@ class PidConfig(BaseModel):
 class PsuConfig(BaseModel):
     """Programmable power supply hardware parameters."""
 
-    max_current: float = Field(
-        default=5.0, gt=0, description="Maximum PSU output current in amps")
-    default_voltage: float = Field(
-        default=12.0, gt=0, description="Default PSU voltage in volts")
+    max_voltage: float = Field(
+        default=12.0, gt=0, description="Maximum PSU output voltage in volts")
+    max_wattage: float = Field(
+        default=25.0, gt=0, description="Maximum PSU output wattage in watts (For n heaters, max_wattage = 25.0 * n)")
     baudrate: int = Field(
         default=9600, gt=0, description="Serial baud rate for PSU communication")
 
@@ -50,7 +50,8 @@ class ServerConfig(BaseModel):
 
     host: str = Field(default="0.0.0.0", description="Bind host address")
     port: int = Field(default=8001, gt=0, le=65535, description="Bind port")
-    workers: int = Field(default=1, gt=0, description="Number of uvicorn workers")
+    workers: int = Field(
+        default=1, gt=0, description="Number of uvicorn workers")
 
 
 class OtelConfig(BaseModel):
