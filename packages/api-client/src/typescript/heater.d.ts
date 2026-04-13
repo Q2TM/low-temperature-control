@@ -27,6 +27,29 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/channels/status/all": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get All Channels Status
+     * @description Get comprehensive status for all enabled channels at once.
+     *
+     *     Returns detailed channel status including heater output state, PID controller
+     *     state, temperature readings, and error statistics for each enabled channel.
+     */
+    get: operations["getAllChannelsStatus"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/channels/{channel_id}": {
     parameters: {
       query?: never;
@@ -49,7 +72,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/channels/status/all": {
+  "/channels/{channel_id}/status": {
     parameters: {
       query?: never;
       header?: never;
@@ -57,13 +80,16 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Get All Channels Status
-     * @description Get comprehensive PID status for all enabled channels at once.
+     * Get Channel Status
+     * @description Get comprehensive real-time status for a specific channel.
      *
-     *     Returns detailed PID status including temperature, duty cycle, parameters,
-     *     and error statistics for each enabled channel.
+     *     Returns:
+     *     - channel_id, channel_name: Channel identity
+     *     - current_temp: Latest temperature reading in °C
+     *     - heater: Real-time heater output (power fraction, measured watts, type, metadata)
+     *     - pid: PID controller state (active, target, parameters, variables, timing, errors)
      */
-    get: operations["getAllChannelsStatus"];
+    get: operations["getChannelStatus"];
     put?: never;
     post?: never;
     delete?: never;
@@ -180,38 +206,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/pid/{channel_id}/status": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get Pid Status
-     * @description Get comprehensive PID status for a specific channel.
-     *
-     *     Returns:
-     *     - channel_id: Channel identifier
-     *     - channel_name: Channel name
-     *     - is_active: Whether PID controller is currently running
-     *     - target: Target temperature
-     *     - power: Current heater output power (0.0 to 1.0)
-     *     - max_heater_power_watts: Maximum heater power rating in watts
-     *     - current_temp: Current temperature reading
-     *     - pid_parameters: Current PID coefficients (Kp, Ki, Kd)
-     *     - pid_variables: Internal PID variables (integral, last_error, last_measurement)
-     *     - error_stats: Error statistics including counts for last 1m, 10m, and since start
-     */
-    get: operations["getPidStatus"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/pid/{channel_id}/manual-power": {
     parameters: {
       query?: never;
@@ -245,7 +239,7 @@ export interface components {
      */
     AllChannelsStatus: {
       /** Channels */
-      channels: components["schemas"]["PidStatusOut"][];
+      channels: components["schemas"]["ChannelStatusOut"][];
     };
     /**
      * ChannelInfo
@@ -256,17 +250,20 @@ export interface components {
       channelId: number;
       /** Name */
       name: string;
-      /** Gpiopin */
-      gpioPin: number;
-      /** Sensorchannel */
-      sensorChannel: number;
+      /** Thermochannel */
+      thermoChannel: number;
+      /**
+       * Heatertype
+       * @description Heater type: gpio, psu, or mock
+       */
+      heaterType: string;
       /** Enabled */
       enabled: boolean;
       /**
-       * Maxheaterpowerwatts
+       * Maxpowerwatts
        * @description Maximum heater power in watts
        */
-      maxHeaterPowerWatts: number;
+      maxPowerWatts: number;
       /**
        * Isactive
        * @description Whether PID controller is currently active
@@ -281,6 +278,34 @@ export interface components {
     ChannelListResponse: {
       /** Channels */
       channels: components["schemas"]["ChannelInfo"][];
+    };
+    /**
+     * ChannelStatusOut
+     * @description Comprehensive real-time status for a single heater channel.
+     *
+     *     Combines channel identity, the current temperature reading,
+     *     heater output state, and PID controller state into one response.
+     */
+    ChannelStatusOut: {
+      /**
+       * Channelid
+       * @description Unique channel identifier from configuration.
+       */
+      channelId: number;
+      /**
+       * Channelname
+       * @description Human-readable channel name.
+       */
+      channelName: string;
+      /**
+       * Currenttemp
+       * @description Latest temperature reading in °C from the associated Lakeshore thermometer channel. Null if no reading yet.
+       */
+      currentTemp?: number | null;
+      /** @description Real-time heater output state including power level, measured watts, and type-specific metadata. */
+      heater: components["schemas"]["HeaterStatus"];
+      /** @description PID controller state including target, parameters, internal variables, timing, and error statistics. */
+      pid: components["schemas"]["PidStatus"];
     };
     /**
      * ConfigAll
@@ -313,6 +338,37 @@ export interface components {
     HTTPValidationError: {
       /** Detail */
       detail?: components["schemas"]["ValidationError"][];
+    };
+    /**
+     * HeaterStatus
+     * @description Real-time heater output state.
+     *
+     *     Reports the current power level and heater-type-specific metadata.
+     */
+    HeaterStatus: {
+      /**
+       * Power
+       * @description Requested heater output level as a fraction (0.0 to 1.0). Reflects the value set by PID or manual control.
+       */
+      power: number;
+      /**
+       * Powerwatts
+       * @description Actual heater power in watts. For PSU heaters this is measured via voltage × current; for GPIO/Mock heaters it is calculated from the configured max power.
+       */
+      powerWatts: number;
+      /**
+       * Heatertype
+       * @description Heater type identifier: 'gpio', 'psu', or 'mock'.
+       */
+      heaterType: string;
+      /**
+       * Heatermetadata
+       * @description Heater-type-specific metadata. PSU: measured_voltage, measured_current, max_voltage, max_current, max_wattage. GPIO/Mock: empty.
+       * @default {}
+       */
+      heaterMetadata: {
+        [key: string]: unknown;
+      };
     };
     /**
      * ManualPower
@@ -349,32 +405,38 @@ export interface components {
       kd: number;
     };
     /**
-     * PidStatusOut
-     * @description Schema for PID status output.
+     * PidStatus
+     * @description PID controller state.
      *
-     *     Contains comprehensive information about PID controller state.
+     *     Contains whether the PID loop is running, its target, tuning parameters,
+     *     internal variables, timing information, and error statistics.
      */
-    PidStatusOut: {
-      /** Channelid */
-      channelId: number;
-      /** Channelname */
-      channelName: string;
-      /** Isactive */
+    PidStatus: {
+      /**
+       * Isactive
+       * @description Whether the PID control loop is currently running.
+       */
       isActive: boolean;
-      /** Target */
+      /**
+       * Target
+       * @description Target temperature in °C that the PID is tracking.
+       */
       target: number;
-      /** Power */
-      power: number;
-      /** Maxheaterpowerwatts */
-      maxHeaterPowerWatts: number;
-      /** Currenttemp */
-      currentTemp: number | null;
-      /** Startedat */
-      startedAt: string | null;
-      /** Runningforseconds */
-      runningForSeconds: number | null;
-      pidParameters: components["schemas"]["Parameters"];
-      pidVariables: components["schemas"]["PidVariables"];
+      /**
+       * Startedat
+       * @description UTC timestamp when the PID loop was started. Null if PID has never been started or was stopped.
+       */
+      startedAt?: string | null;
+      /**
+       * Runningforseconds
+       * @description Elapsed seconds since the PID loop was started. Null when PID is not active.
+       */
+      runningForSeconds?: number | null;
+      /** @description Current PID tuning coefficients (Kp, Ki, Kd). */
+      parameters: components["schemas"]["Parameters"];
+      /** @description Internal PID state: integral accumulator, last error, and last temperature measurement. */
+      variables: components["schemas"]["PidVariables"];
+      /** @description Error counters for thermometer API read failures over 1 min, 10 min, and since PID start. */
       errorStats: components["schemas"]["ErrorStats"];
     };
     /**
@@ -440,6 +502,26 @@ export interface operations {
       };
     };
   };
+  getAllChannelsStatus: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AllChannelsStatus"];
+        };
+      };
+    };
+  };
   getChannelInfo: {
     parameters: {
       query?: never;
@@ -471,11 +553,13 @@ export interface operations {
       };
     };
   };
-  getAllChannelsStatus: {
+  getChannelStatus: {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        channel_id: number;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -486,7 +570,16 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["AllChannelsStatus"];
+          "application/json": components["schemas"]["ChannelStatusOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
         };
       };
     };
@@ -703,37 +796,6 @@ export interface operations {
         };
         content: {
           "application/json": string;
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  getPidStatus: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        channel_id: number;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["PidStatusOut"];
         };
       };
       /** @description Validation Error */

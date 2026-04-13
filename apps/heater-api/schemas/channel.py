@@ -4,7 +4,7 @@ from typing import Annotated, Literal, Optional, Union
 
 from pydantic import Field
 from fastapi_camelcase import CamelModel
-from schemas.temp_control import PidStatusOut
+from schemas.temp_control import ChannelStatusOut
 
 
 # ── Per-channel heater configuration (discriminated union) ──────────────
@@ -86,4 +86,4 @@ class ChannelListResponse(CamelModel):
 
 class AllChannelsStatus(CamelModel):
     """Status of all channels at once."""
-    channels: list[PidStatusOut]
+    channels: list[ChannelStatusOut]

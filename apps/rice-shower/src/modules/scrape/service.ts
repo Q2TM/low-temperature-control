@@ -62,13 +62,16 @@ async function scrapeHeater(
   systemId: string,
   channel: number,
 ) {
-  const { data, error } = await heaterClient.GET("/pid/{channel_id}/status", {
-    params: {
-      path: {
-        channel_id: channel,
+  const { data, error } = await heaterClient.GET(
+    "/channels/{channel_id}/status",
+    {
+      params: {
+        path: {
+          channel_id: channel,
+        },
       },
     },
-  });
+  );
 
   if (error) {
     throw new Error(`Failed to fetch heater data: ${error}`);
@@ -78,16 +81,76 @@ async function scrapeHeater(
     time: new Date(),
     systemId,
     channel,
-    powerWatts: data.maxHeaterPowerWatts * data.power,
-    metadata: { duty_cycle: data.power * 100 },
+    powerWatts: data.heater.powerWatts,
+    powerPercent: data.heater.power * 100,
   });
 }
 
 export type ScrapeStats = {
   lastError: Date | null;
+  lastErrorMessage: string | null;
   errorCount: Record<number, number>;
   successCount: number;
+  /** Timestamps of recent successes for windowed counting */
+  successTimestamps: number[];
+  /** Timestamps of recent errors for windowed counting */
+  errorTimestamps: number[];
 };
+
+const ONE_MINUTE_MS = 60_000;
+const TEN_MINUTES_MS = 600_000;
+
+function initScrapeStats(): ScrapeStats {
+  return {
+    lastError: null,
+    lastErrorMessage: null,
+    errorCount: {},
+    successCount: 0,
+    successTimestamps: [],
+    errorTimestamps: [],
+  };
+}
+
+/** Count entries in a sorted timestamp array that fall within the last `windowMs`. */
+function countInWindow(timestamps: number[], windowMs: number): number {
+  const cutoff = Date.now() - windowMs;
+  // Binary search for first index >= cutoff
+  let lo = 0;
+  let hi = timestamps.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (timestamps[mid]! < cutoff) lo = mid + 1;
+    else hi = mid;
+  }
+  return timestamps.length - lo;
+}
+
+/** Remove entries older than 10 minutes from a sorted timestamp array. */
+function pruneTimestamps(timestamps: number[]): number[] {
+  const cutoff = Date.now() - TEN_MINUTES_MS;
+  let lo = 0;
+  let hi = timestamps.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (timestamps[mid]! < cutoff) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo > 0 ? timestamps.slice(lo) : timestamps;
+}
+
+export function getWindowedStats(stats: ScrapeStats) {
+  return {
+    successLast1M: countInWindow(stats.successTimestamps, ONE_MINUTE_MS),
+    successLast10M: countInWindow(stats.successTimestamps, TEN_MINUTES_MS),
+    successTotal: stats.successCount,
+    errorsLast1M: countInWindow(stats.errorTimestamps, ONE_MINUTE_MS),
+    errorsLast10M: countInWindow(stats.errorTimestamps, TEN_MINUTES_MS),
+    errorsTotal: Object.values(stats.errorCount).reduce((a, b) => a + b, 0),
+    lastError: stats.lastError,
+    lastErrorMessage: stats.lastErrorMessage,
+    errorCountPerChannel: stats.errorCount,
+  };
+}
 
 /**
  * Per-system scraper instance. Holds cached API clients and tracks
@@ -101,8 +164,9 @@ export class Scraper {
   private system: SystemWithRelations;
   private intervalId: ReturnType<typeof setInterval> | null = null;
 
-  thermo: ScrapeStats = { lastError: null, errorCount: {}, successCount: 0 };
-  heater: ScrapeStats = { lastError: null, errorCount: {}, successCount: 0 };
+  thermo: ScrapeStats = initScrapeStats();
+  heater: ScrapeStats = initScrapeStats();
+  startedAt: Date = new Date();
 
   constructor(system: SystemWithRelations) {
     this.systemId = system.id;
@@ -139,19 +203,24 @@ export class Scraper {
 
   private async job() {
     const jobStart = performance.now();
+    const now = Date.now();
 
     for (const thermo of this.system.thermos) {
       try {
         await scrapeThermo(this.lggClient, this.systemId, thermo.channel);
         this.thermo.successCount++;
+        this.thermo.successTimestamps.push(now);
         scrapeSuccessCounter.add(1, {
           type: "thermo",
           system: this.systemId,
         });
-      } catch (_) {
+      } catch (e) {
         this.thermo.lastError = new Date();
+        this.thermo.lastErrorMessage =
+          e instanceof Error ? e.message : String(e);
         this.thermo.errorCount[thermo.channel] =
           (this.thermo.errorCount[thermo.channel] ?? 0) + 1;
+        this.thermo.errorTimestamps.push(now);
         scrapeErrorCounter.add(1, {
           type: "thermo",
           system: this.systemId,
@@ -163,20 +232,34 @@ export class Scraper {
       try {
         await scrapeHeater(this.heaterClient, this.systemId, heater.channel);
         this.heater.successCount++;
+        this.heater.successTimestamps.push(now);
         scrapeSuccessCounter.add(1, {
           type: "heater",
           system: this.systemId,
         });
-      } catch (_) {
+      } catch (e) {
         this.heater.lastError = new Date();
+        this.heater.lastErrorMessage =
+          e instanceof Error ? e.message : String(e);
         this.heater.errorCount[heater.channel] =
           (this.heater.errorCount[heater.channel] ?? 0) + 1;
+        this.heater.errorTimestamps.push(now);
         scrapeErrorCounter.add(1, {
           type: "heater",
           system: this.systemId,
         });
       }
     }
+
+    // Prune old timestamps every cycle to bound memory
+    this.thermo.successTimestamps = pruneTimestamps(
+      this.thermo.successTimestamps,
+    );
+    this.thermo.errorTimestamps = pruneTimestamps(this.thermo.errorTimestamps);
+    this.heater.successTimestamps = pruneTimestamps(
+      this.heater.successTimestamps,
+    );
+    this.heater.errorTimestamps = pruneTimestamps(this.heater.errorTimestamps);
 
     scrapeDuration.record(performance.now() - jobStart, {
       system: this.systemId,

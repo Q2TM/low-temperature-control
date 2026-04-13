@@ -16,7 +16,7 @@ type HeaterCardsProps = {
   nMinutes: number;
   heaterStatus: {
     currentPower: number | null;
-    dutyCycle: number | null;
+    powerPercent: number | null;
     totalEnergy: number | null;
   } | null;
   targetTemp: number | null;
@@ -28,7 +28,7 @@ export default function HeaterCards({
   targetTemp,
 }: HeaterCardsProps) {
   const currentPower = heaterStatus?.currentPower ?? null;
-  const dutyCycle = heaterStatus?.dutyCycle ?? null;
+  const powerPercent = heaterStatus?.powerPercent ?? null;
   const totalEnergy = heaterStatus?.totalEnergy ?? null;
 
   return (
@@ -44,7 +44,7 @@ export default function HeaterCards({
           <CardAction>
             <Badge variant="outline">
               <Heater />
-              {dutyCycle !== null ? `${(dutyCycle * 100).toFixed(0)}%` : "--"}
+              {powerPercent !== null ? `${powerPercent.toFixed(0)}%` : "--"}
             </Badge>
           </CardAction>
         </CardHeader>

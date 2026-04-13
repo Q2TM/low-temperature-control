@@ -13,6 +13,7 @@ type UseHeaterMetricsProps = {
 
 type ChannelData = {
   currentPower: number | null;
+  currentPowerPercent: number | null;
   firstPower: number | null;
   powerChange: number | null;
   avgPower: number | null;
@@ -77,6 +78,14 @@ export function useHeaterMetrics({
       return channelData ? channelData.powerWatts : null;
     };
 
+    const getChannelPowerPercent = (
+      entry: (typeof data)[number],
+      channelNum: number,
+    ): number | null => {
+      const channelData = entry.channels.find((c) => c.channel === channelNum);
+      return channelData ? channelData.powerPercent : null;
+    };
+
     // Get first and last entries
     const lastEntry = data.length > 0 ? data[data.length - 1] : null;
     const firstEntry = data.length > 0 ? data[0] : null;
@@ -87,6 +96,9 @@ export function useHeaterMetrics({
     channels.forEach((channelNum) => {
       const currentPower = lastEntry
         ? getChannelPower(lastEntry, channelNum)
+        : null;
+      const currentPowerPercent = lastEntry
+        ? getChannelPowerPercent(lastEntry, channelNum)
         : null;
       const firstPower = firstEntry
         ? getChannelPower(firstEntry, channelNum)
@@ -125,6 +137,7 @@ export function useHeaterMetrics({
 
       channelsData[channelNum] = {
         currentPower,
+        currentPowerPercent,
         firstPower,
         powerChange,
         avgPower,

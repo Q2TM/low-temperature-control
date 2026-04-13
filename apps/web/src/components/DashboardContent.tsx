@@ -13,6 +13,7 @@ import {
   PidControllerCard,
   type PidRuntimeState,
 } from "@/components/PidControllerCard";
+import { ScrapeStatusCard } from "@/components/ScrapeStatusCard";
 import { useHeaterMetrics } from "@/hooks/useHeaterMetrics";
 import { useTempMetrics } from "@/hooks/useTempMetrics";
 import {
@@ -89,15 +90,14 @@ export function DashboardContent({
 
     if (status) {
       setCurrentTemp(lakeshoreTemp ?? status.currentTemp ?? null);
-      setTargetTemp(status.target);
-      setIsActive(status.isActive);
+      setTargetTemp(status.pid.target);
+      setIsActive(status.pid.isActive);
       setPidRuntimeState({
-        power: status.power,
-        maxHeaterPowerWatts: status.maxHeaterPowerWatts,
-        startedAt: status.startedAt,
-        runningForSeconds: status.runningForSeconds,
-        pidVariables: status.pidVariables,
-        errorStats: status.errorStats,
+        power: status.heater.power,
+        startedAt: status.pid.startedAt,
+        runningForSeconds: status.pid.runningForSeconds,
+        pidVariables: status.pid.variables,
+        errorStats: status.pid.errorStats,
       });
     }
     if (params) setPidParameters(params);
@@ -241,6 +241,8 @@ export function DashboardContent({
             totalEnergy={heaterChannelData?.totalEnergy ?? null}
             timeframeLabel={timeframeLabel}
           />
+
+          <ScrapeStatusCard systemId={systemId} />
         </div>
       </aside>
 

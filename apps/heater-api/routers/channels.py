@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from services.channel_manager import ChannelManager
 from schemas.channel import ChannelInfo, ChannelListResponse, AllChannelsStatus
+from schemas.temp_control import ChannelStatusOut
 from .dependencies import get_channel_manager
 
 
@@ -20,6 +21,19 @@ def list_channels(
     return ChannelListResponse(channels=manager.list_channels())
 
 
+@router.get("/status/all", response_model=AllChannelsStatus, operation_id="getAllChannelsStatus")
+def get_all_channels_status(
+    manager: ChannelManager = Depends(get_channel_manager)
+) -> AllChannelsStatus:
+    """
+    Get comprehensive status for all enabled channels at once.
+
+    Returns detailed channel status including heater output state, PID controller
+    state, temperature readings, and error statistics for each enabled channel.
+    """
+    return manager.get_all_status()
+
+
 @router.get("/{channel_id}", response_model=ChannelInfo, operation_id="getChannelInfo")
 def get_channel_info(
     channel_id: int,
@@ -36,14 +50,22 @@ def get_channel_info(
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.get("/status/all", response_model=AllChannelsStatus, operation_id="getAllChannelsStatus")
-def get_all_channels_status(
+@router.get("/{channel_id}/status", response_model=ChannelStatusOut, operation_id="getChannelStatus")
+def get_channel_status(
+    channel_id: int,
     manager: ChannelManager = Depends(get_channel_manager)
-) -> AllChannelsStatus:
+) -> ChannelStatusOut:
     """
-    Get comprehensive PID status for all enabled channels at once.
+    Get comprehensive real-time status for a specific channel.
 
-    Returns detailed PID status including temperature, duty cycle, parameters,
-    and error statistics for each enabled channel.
+    Returns:
+    - channel_id, channel_name: Channel identity
+    - current_temp: Latest temperature reading in °C
+    - heater: Real-time heater output (power fraction, measured watts, type, metadata)
+    - pid: PID controller state (active, target, parameters, variables, timing, errors)
     """
-    return manager.get_all_status()
+    try:
+        service = manager.get_channel(channel_id)
+        return service.get_channel_status()
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))

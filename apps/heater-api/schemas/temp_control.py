@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
+from pydantic import Field
 from fastapi_camelcase import CamelModel
 
 
@@ -79,24 +80,75 @@ class ConfigAll(CamelModel):
     pid_parameters: Parameters
 
 
-class PidStatusOut(CamelModel):
+class HeaterStatus(CamelModel):
     """
-    Schema for PID status output.
+    Real-time heater output state.
 
-    Contains comprehensive information about PID controller state.
+    Reports the current power level and heater-type-specific metadata.
     """
-    channel_id: int
-    channel_name: str
-    is_active: bool
-    target: float
-    power: float
-    power_percent: float
-    power_watts: float
-    max_power_watts: float
-    current_temp: Optional[float]
-    started_at: Optional[datetime]
-    running_for_seconds: Optional[float]
-    pid_parameters: Parameters
-    pid_variables: PidVariables
-    error_stats: ErrorStats
-    heater_metadata: dict = {}
+    power: float = Field(
+        description="Requested heater output level as a fraction (0.0 to 1.0). "
+                    "Reflects the value set by PID or manual control.")
+    power_watts: float = Field(
+        description="Actual heater power in watts. "
+                    "For PSU heaters this is measured via voltage × current; "
+                    "for GPIO/Mock heaters it is calculated from the configured max power.")
+    heater_type: str = Field(
+        description="Heater type identifier: 'gpio', 'psu', or 'mock'.")
+    heater_metadata: dict = Field(
+        default={},
+        description="Heater-type-specific metadata. "
+                    "PSU: measured_voltage, measured_current, max_voltage, max_current, max_wattage. "
+                    "GPIO/Mock: empty.")
+
+
+class PidStatus(CamelModel):
+    """
+    PID controller state.
+
+    Contains whether the PID loop is running, its target, tuning parameters,
+    internal variables, timing information, and error statistics.
+    """
+    is_active: bool = Field(
+        description="Whether the PID control loop is currently running.")
+    target: float = Field(
+        description="Target temperature in °C that the PID is tracking.")
+    started_at: Optional[datetime] = Field(
+        default=None,
+        description="UTC timestamp when the PID loop was started. "
+                    "Null if PID has never been started or was stopped.")
+    running_for_seconds: Optional[float] = Field(
+        default=None,
+        description="Elapsed seconds since the PID loop was started. "
+                    "Null when PID is not active.")
+    parameters: Parameters = Field(
+        description="Current PID tuning coefficients (Kp, Ki, Kd).")
+    variables: PidVariables = Field(
+        description="Internal PID state: integral accumulator, last error, "
+                    "and last temperature measurement.")
+    error_stats: ErrorStats = Field(
+        description="Error counters for thermometer API read failures "
+                    "over 1 min, 10 min, and since PID start.")
+
+
+class ChannelStatusOut(CamelModel):
+    """
+    Comprehensive real-time status for a single heater channel.
+
+    Combines channel identity, the current temperature reading,
+    heater output state, and PID controller state into one response.
+    """
+    channel_id: int = Field(
+        description="Unique channel identifier from configuration.")
+    channel_name: str = Field(
+        description="Human-readable channel name.")
+    current_temp: Optional[float] = Field(
+        default=None,
+        description="Latest temperature reading in °C from the associated "
+                    "Lakeshore thermometer channel. Null if no reading yet.")
+    heater: HeaterStatus = Field(
+        description="Real-time heater output state including power level, "
+                    "measured watts, and type-specific metadata.")
+    pid: PidStatus = Field(
+        description="PID controller state including target, parameters, "
+                    "internal variables, timing, and error statistics.")

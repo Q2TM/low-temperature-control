@@ -38,15 +38,28 @@ class PSUHeater(HeaterRepository):
         return self._power
 
     def get_power_watts(self) -> float:
-        return self._max_wattage * self._power
+        try:
+            v = self._psu.read_voltage()
+            i = self._psu.read_current()
+            return round(v * i, 3)
+        except Exception:
+            return self._max_wattage * self._power
 
     def get_max_power_watts(self) -> float:
         return self._max_wattage
 
     def get_metadata(self) -> Dict[str, Any]:
+        measured_voltage = None
+        measured_current = None
+        try:
+            measured_voltage = self._psu.read_voltage()
+            measured_current = self._psu.read_current()
+        except Exception:
+            pass
         return {
+            "measured_voltage": measured_voltage,
+            "measured_current": measured_current,
             "max_voltage": self._max_voltage,
-            "voltage": round(self._max_voltage * sqrt(self._power), 3),
             "max_current": self._max_current,
             "max_wattage": self._max_wattage,
         }

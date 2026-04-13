@@ -78,6 +78,10 @@ export const QueryHeaterMetricsResponse = t.Object({
           powerWatts: t.Number({
             description: "Power in Watts",
           }),
+          powerPercent: t.Number({
+            description:
+              "Requested power as a percentage (0-100). Reflects PID output or manual setting.",
+          }),
         }),
       ),
     }),

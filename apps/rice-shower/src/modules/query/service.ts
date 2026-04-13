@@ -94,12 +94,16 @@ export async function getHeaterData({
     (channel) =>
       sql`avg(${heaterMetrics.powerWatts}) FILTER (WHERE ${heaterMetrics.channel} = ${channel}) AS "power_watts_${sql.raw(`${channel}`)}"`,
   );
+  const powerPercentSql = channels.map(
+    (channel) =>
+      sql`avg(${heaterMetrics.powerPercent}) FILTER (WHERE ${heaterMetrics.channel} = ${channel}) AS "power_percent_${sql.raw(`${channel}`)}"`,
+  );
 
   const sqlQuery = record(
     "prepare-sql-query-heater",
     () => sql`
 SELECT time_bucket(interval ${intervalSql}, ${heaterMetrics.time}) AS "time",
-${sql.join(powerWattsSql, sql`, `)}
+${sql.join([...powerWattsSql, ...powerPercentSql], sql`, `)}
 FROM ${heaterMetrics}
 WHERE ${heaterMetrics.time} >= ${timeStart.toISOString()} AND ${heaterMetrics.time} < ${timeEnd.toISOString()} AND ${heaterMetrics.systemId} = ${systemId}
 GROUP BY 1
@@ -113,6 +117,7 @@ ORDER BY 1 ASC;
       (await db.execute(sqlQuery)) as Array<{
         time: string;
         [key: `power_watts_${number}`]: number;
+        [key: `power_percent_${number}`]: number;
       }>,
   );
 
@@ -121,11 +126,17 @@ ORDER BY 1 ASC;
       const channelData = channels.map((channel) => ({
         channel,
         powerWatts: entry[`power_watts_${channel}`],
+        powerPercent: entry[`power_percent_${channel}`],
       }));
 
       const validChannels = channelData.filter(
-        (ch): ch is { channel: number; powerWatts: number } =>
-          ch.powerWatts != null,
+        (
+          ch,
+        ): ch is {
+          channel: number;
+          powerWatts: number;
+          powerPercent: number;
+        } => ch.powerWatts != null,
       );
 
       if (validChannels.length === 0) return [];

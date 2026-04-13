@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from services.channel_manager import ChannelManager
-from schemas.temp_control import ManualPower, PidStatusOut
+from schemas.temp_control import ManualPower
 from .dependencies import get_channel_manager
 
 
@@ -29,33 +29,6 @@ def stop_pid(
     try:
         service = manager.get_channel(channel_id)
         return service.stop()
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-
-
-@router.get("/{channel_id}/status", response_model=PidStatusOut, operation_id="getPidStatus")
-def get_pid_status(
-    channel_id: int,
-    manager: ChannelManager = Depends(get_channel_manager)
-) -> PidStatusOut:
-    """
-    Get comprehensive PID status for a specific channel.
-
-    Returns:
-    - channel_id: Channel identifier
-    - channel_name: Channel name
-    - is_active: Whether PID controller is currently running
-    - target: Target temperature
-    - power: Current heater output power (0.0 to 1.0)
-    - max_heater_power_watts: Maximum heater power rating in watts
-    - current_temp: Current temperature reading
-    - pid_parameters: Current PID coefficients (Kp, Ki, Kd)
-    - pid_variables: Internal PID variables (integral, last_error, last_measurement)
-    - error_stats: Error statistics including counts for last 1m, 10m, and since start
-    """
-    try:
-        service = manager.get_channel(channel_id)
-        return service.get_pid_status()
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 

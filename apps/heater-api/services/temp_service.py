@@ -8,7 +8,7 @@ from opentelemetry import metrics
 
 from schemas.app_config import AppConfig, PidConfig
 from schemas.channel import HeaterConfig
-from schemas.temp_control import Parameters, PidVariables, ErrorStats, PidStatusOut
+from schemas.temp_control import Parameters, PidVariables, ErrorStats, ChannelStatusOut, HeaterStatus, PidStatus
 from .PID import PIDController
 from repositories.heater import HeaterRepository
 from .heater_factory import create_heater
@@ -60,6 +60,7 @@ class TempService:
 
         self.heater: HeaterRepository = create_heater(
             config=heater_config, channel_id=channel_id)
+        self._heater_type = heater_config.type
 
         self._running = False
         self._started_at: Optional[datetime] = None
@@ -120,8 +121,8 @@ class TempService:
                 last_error_message=self._last_error_message
             )
 
-    def get_pid_status(self) -> PidStatusOut:
-        """Get comprehensive PID status including all internal variables."""
+    def get_channel_status(self) -> ChannelStatusOut:
+        """Get comprehensive channel status including heater state and PID variables."""
         power = self.heater.get_power()
         pid_state = self._pid.get_state()
 
@@ -145,22 +146,29 @@ class TempService:
             running_for_seconds = (datetime.now(
                 timezone.utc) - started_at).total_seconds()
 
-        return PidStatusOut(
-            channel_id=self.channel_id,
-            channel_name=self.channel_name,
+        heater_status = HeaterStatus(
+            power=power,
+            power_watts=self.heater.get_power_watts(),
+            heater_type=self._heater_type,
+            heater_metadata=self.heater.get_metadata(),
+        )
+
+        pid_status = PidStatus(
             is_active=self._running,
             target=self._target,
-            power=power,
-            power_percent=round(power * 100.0, 2),
-            power_watts=self.heater.get_power_watts(),
-            max_power_watts=self.heater.get_max_power_watts(),
-            current_temp=self._current_temp,
             started_at=started_at,
             running_for_seconds=running_for_seconds,
-            pid_parameters=pid_parameters,
-            pid_variables=pid_variables,
+            parameters=pid_parameters,
+            variables=pid_variables,
             error_stats=error_stats,
-            heater_metadata=self.heater.get_metadata(),
+        )
+
+        return ChannelStatusOut(
+            channel_id=self.channel_id,
+            channel_name=self.channel_name,
+            current_temp=self._current_temp,
+            heater=heater_status,
+            pid=pid_status,
         )
 
     def start(self):

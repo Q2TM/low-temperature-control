@@ -119,13 +119,13 @@ class ChannelManager:
 
     def get_all_status(self) -> AllChannelsStatus:
         """
-        Get PID status for all enabled channels.
+        Get status for all enabled channels.
 
         Returns:
             AllChannelsStatus object with status list
         """
         statuses = [
-            service.get_pid_status()
+            service.get_channel_status()
             for service in self._channels.values()
         ]
         return AllChannelsStatus(channels=statuses)

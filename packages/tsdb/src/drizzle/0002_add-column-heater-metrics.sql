@@ -1,0 +1,1 @@
+ALTER TABLE "heater_metrics" ADD COLUMN "power_percent" double precision;

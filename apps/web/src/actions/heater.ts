@@ -12,7 +12,7 @@ async function getClient(systemId: string) {
 export async function getHeaterStatus(channelId: number, systemId: string) {
   try {
     const client = await getClient(systemId);
-    const { data, error } = await client.GET("/pid/{channel_id}/status", {
+    const { data, error } = await client.GET("/channels/{channel_id}/status", {
       params: { path: { channel_id: channelId } },
     });
 

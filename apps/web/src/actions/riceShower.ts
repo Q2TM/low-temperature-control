@@ -69,3 +69,25 @@ export async function getHeaterMetrics(params: {
     return null;
   }
 }
+
+export async function getScrapeStatus(systemId: string) {
+  try {
+    const { data, error } = await riceShowerFetchClient.GET(
+      "/scrape/status/{systemId}",
+      {
+        params: {
+          path: { systemId },
+        },
+      },
+    );
+
+    if (error || !data) {
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch scrape status:", error);
+    return null;
+  }
+}
