@@ -6,7 +6,7 @@ import {
   SystemScrapeMetricsResponse,
   SystemWindowedScrapeMetricsResponse,
 } from "./model";
-import { type Scraper, getWindowedStats, ScraperManager } from "./service";
+import { getWindowedStats, type Scraper, ScraperManager } from "./service";
 
 function serializeScraperMetrics(scraper: Scraper) {
   return {

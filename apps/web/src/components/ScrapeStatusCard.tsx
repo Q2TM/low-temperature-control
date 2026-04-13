@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Badge } from "@repo/ui/atom/badge";
 import {
@@ -35,13 +35,7 @@ type ScrapeStatusCardProps = {
 
 const REFRESH_INTERVAL_MS = 5000;
 
-function StatsRow({
-  label,
-  stats,
-}: {
-  label: string;
-  stats: WindowedStats;
-}) {
+function StatsRow({ label, stats }: { label: string; stats: WindowedStats }) {
   const hasRecentErrors = stats.errorsLast1M > 0;
 
   return (
@@ -110,18 +104,23 @@ function StatsRow({
 export function ScrapeStatusCard({ systemId }: ScrapeStatusCardProps) {
   const [status, setStatus] = useState<ScrapeStatus | null>(null);
 
-  const refresh = useCallback(async () => {
-    const data = await getScrapeStatus(systemId);
-    if (data) {
-      setStatus(data);
-    }
-  }, [systemId]);
-
   useEffect(() => {
-    void refresh();
-    const id = setInterval(() => void refresh(), REFRESH_INTERVAL_MS);
-    return () => clearInterval(id);
-  }, [refresh]);
+    let active = true;
+
+    const poll = async () => {
+      const data = await getScrapeStatus(systemId);
+      if (active && data) {
+        setStatus(data);
+      }
+    };
+
+    void poll();
+    const id = setInterval(() => void poll(), REFRESH_INTERVAL_MS);
+    return () => {
+      active = false;
+      clearInterval(id);
+    };
+  }, [systemId]);
 
   if (!status) {
     return (
@@ -160,9 +159,7 @@ export function ScrapeStatusCard({ systemId }: ScrapeStatusCardProps) {
         <p className="text-xs text-muted-foreground">
           Since {new Date(status.startedAt).toLocaleString()}
         </p>
-        <p className="text-xs text-muted-foreground">
-          Success / Error counts
-        </p>
+        <p className="text-xs text-muted-foreground">Success / Error counts</p>
       </CardHeader>
 
       <CardContent className="space-y-3">
