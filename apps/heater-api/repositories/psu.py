@@ -68,7 +68,7 @@ class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
     def read_voltage(self):
         self.send_frame("<02000000000>")
         resp = self.read_frame()
-        value = int(resp[3:10]) / 100
+        value = int(resp[3:10]) / 10000
         print("Received frame:", resp, "Value:", value)
         return value
 
@@ -88,7 +88,7 @@ class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
     def read_current(self):
         self.send_frame("<04000000000>")
         resp = self.read_frame()
-        value = int(resp[3:10]) / 1000
+        value = int(resp[3:10]) / 10000
         print("Received frame:", resp, "Value:", value)
         return value
 
