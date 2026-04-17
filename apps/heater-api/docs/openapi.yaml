@@ -23,6 +23,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChannelListResponse'
+  /channels/status/all:
+    get:
+      tags:
+      - Channels
+      summary: Get All Channels Status
+      description: 'Get comprehensive status for all enabled channels at once.
+
+
+        Returns detailed channel status including heater output state, PID controller
+
+        state, temperature readings, and error statistics for each enabled channel.'
+      operationId: getAllChannelsStatus
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllChannelsStatus'
   /channels/{channel_id}:
     get:
       tags:
@@ -53,25 +72,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /channels/status/all:
+  /channels/{channel_id}/status:
     get:
       tags:
       - Channels
-      summary: Get All Channels Status
-      description: 'Get comprehensive PID status for all enabled channels at once.
-
-
-        Returns detailed PID status including temperature, duty cycle, parameters,
-
-        and error statistics for each enabled channel.'
-      operationId: getAllChannelsStatus
+      summary: Get Channel Status
+      description: "Get comprehensive real-time status for a specific channel.\n\n\
+        Returns:\n- channel_id, channel_name: Channel identity\n- current_temp: Latest\
+        \ temperature reading in \xB0C\n- heater: Real-time heater output (power fraction,\
+        \ measured watts, type, metadata)\n- pid: PID controller state (active, target,\
+        \ parameters, variables, timing, errors)"
+      operationId: getChannelStatus
+      parameters:
+      - name: channel_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Channel Id
       responses:
         '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AllChannelsStatus'
+                $ref: '#/components/schemas/ChannelStatusOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /config/{channel_id}/target-temp:
     get:
       tags:
@@ -273,57 +304,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /pid/{channel_id}/status:
-    get:
-      tags:
-      - PID
-      summary: Get Pid Status
-      description: 'Get comprehensive PID status for a specific channel.
-
-
-        Returns:
-
-        - channel_id: Channel identifier
-
-        - channel_name: Channel name
-
-        - is_active: Whether PID controller is currently running
-
-        - target: Target temperature
-
-        - power: Current heater output power (0.0 to 1.0)
-
-        - max_heater_power_watts: Maximum heater power rating in watts
-
-        - current_temp: Current temperature reading
-
-        - pid_parameters: Current PID coefficients (Kp, Ki, Kd)
-
-        - pid_variables: Internal PID variables (integral, last_error, last_measurement)
-
-        - error_stats: Error statistics including counts for last 1m, 10m, and since
-        start'
-      operationId: getPidStatus
-      parameters:
-      - name: channel_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          title: Channel Id
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PidStatusOut'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
   /pid/{channel_id}/manual-power:
     post:
       tags:
@@ -369,7 +349,7 @@ components:
       properties:
         channels:
           items:
-            $ref: '#/components/schemas/PidStatusOut'
+            $ref: '#/components/schemas/ChannelStatusOut'
           type: array
           title: Channels
       type: object
@@ -385,18 +365,19 @@ components:
         name:
           type: string
           title: Name
-        gpioPin:
+        thermoChannel:
           type: integer
-          title: Gpiopin
-        sensorChannel:
-          type: integer
-          title: Sensorchannel
+          title: Thermochannel
+        heaterType:
+          type: string
+          title: Heatertype
+          description: 'Heater type: gpio, psu, or mock'
         enabled:
           type: boolean
           title: Enabled
-        maxHeaterPowerWatts:
+        maxPowerWatts:
           type: number
-          title: Maxheaterpowerwatts
+          title: Maxpowerwatts
           description: Maximum heater power in watts
         isActive:
           type: boolean
@@ -407,10 +388,10 @@ components:
       required:
       - channelId
       - name
-      - gpioPin
-      - sensorChannel
+      - thermoChannel
+      - heaterType
       - enabled
-      - maxHeaterPowerWatts
+      - maxPowerWatts
       title: ChannelInfo
       description: Channel information with runtime status.
     ChannelListResponse:
@@ -425,6 +406,44 @@ components:
       - channels
       title: ChannelListResponse
       description: List of all configured channels.
+    ChannelStatusOut:
+      properties:
+        channelId:
+          type: integer
+          title: Channelid
+          description: Unique channel identifier from configuration.
+        channelName:
+          type: string
+          title: Channelname
+          description: Human-readable channel name.
+        currentTemp:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Currenttemp
+          description: "Latest temperature reading in \xB0C from the associated Lakeshore\
+            \ thermometer channel. Null if no reading yet."
+        heater:
+          $ref: '#/components/schemas/HeaterStatus'
+          description: Real-time heater output state including power level, measured
+            watts, and type-specific metadata.
+        pid:
+          $ref: '#/components/schemas/PidStatus'
+          description: PID controller state including target, parameters, internal
+            variables, timing, and error statistics.
+      type: object
+      required:
+      - channelId
+      - channelName
+      - heater
+      - pid
+      title: ChannelStatusOut
+      description: 'Comprehensive real-time status for a single heater channel.
+
+
+        Combines channel identity, the current temperature reading,
+
+        heater output state, and PID controller state into one response.'
     ConfigAll:
       properties:
         targetTemp:
@@ -477,6 +496,40 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
+    HeaterStatus:
+      properties:
+        power:
+          type: number
+          title: Power
+          description: Requested heater output level as a fraction (0.0 to 1.0). Reflects
+            the value set by PID or manual control.
+        powerWatts:
+          type: number
+          title: Powerwatts
+          description: "Actual heater power in watts. For PSU heaters this is measured\
+            \ via voltage \xD7 current; for GPIO/Mock heaters it is calculated from\
+            \ the configured max power."
+        heaterType:
+          type: string
+          title: Heatertype
+          description: 'Heater type identifier: ''gpio'', ''psu'', or ''mock''.'
+        heaterMetadata:
+          additionalProperties: true
+          type: object
+          title: Heatermetadata
+          description: 'Heater-type-specific metadata. PSU: measured_voltage, measured_current,
+            max_voltage, max_current, max_wattage. GPIO/Mock: empty.'
+          default: {}
+      type: object
+      required:
+      - power
+      - powerWatts
+      - heaterType
+      title: HeaterStatus
+      description: 'Real-time heater output state.
+
+
+        Reports the current power level and heater-type-specific metadata.'
     ManualPower:
       properties:
         power:
@@ -512,67 +565,56 @@ components:
         Used by GET and PUT /temp/parameters endpoints
 
         to retrieve or update temperature parameters.'
-    PidStatusOut:
+    PidStatus:
       properties:
-        channelId:
-          type: integer
-          title: Channelid
-        channelName:
-          type: string
-          title: Channelname
         isActive:
           type: boolean
           title: Isactive
+          description: Whether the PID control loop is currently running.
         target:
           type: number
           title: Target
-        power:
-          type: number
-          title: Power
-        maxHeaterPowerWatts:
-          type: number
-          title: Maxheaterpowerwatts
-        currentTemp:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Currenttemp
+          description: "Target temperature in \xB0C that the PID is tracking."
         startedAt:
           anyOf:
           - type: string
             format: date-time
           - type: 'null'
           title: Startedat
+          description: UTC timestamp when the PID loop was started. Null if PID has
+            never been started or was stopped.
         runningForSeconds:
           anyOf:
           - type: number
           - type: 'null'
           title: Runningforseconds
-        pidParameters:
+          description: Elapsed seconds since the PID loop was started. Null when PID
+            is not active.
+        parameters:
           $ref: '#/components/schemas/Parameters'
-        pidVariables:
+          description: Current PID tuning coefficients (Kp, Ki, Kd).
+        variables:
           $ref: '#/components/schemas/PidVariables'
+          description: 'Internal PID state: integral accumulator, last error, and
+            last temperature measurement.'
         errorStats:
           $ref: '#/components/schemas/ErrorStats'
+          description: Error counters for thermometer API read failures over 1 min,
+            10 min, and since PID start.
       type: object
       required:
-      - channelId
-      - channelName
       - isActive
       - target
-      - power
-      - maxHeaterPowerWatts
-      - currentTemp
-      - startedAt
-      - runningForSeconds
-      - pidParameters
-      - pidVariables
+      - parameters
+      - variables
       - errorStats
-      title: PidStatusOut
-      description: 'Schema for PID status output.
+      title: PidStatus
+      description: 'PID controller state.
 
 
-        Contains comprehensive information about PID controller state.'
+        Contains whether the PID loop is running, its target, tuning parameters,
+
+        internal variables, timing information, and error statistics.'
     PidVariables:
       properties:
         integral:

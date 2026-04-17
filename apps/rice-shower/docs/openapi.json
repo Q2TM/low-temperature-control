@@ -315,7 +315,8 @@
                               "type": "object",
                               "required": [
                                 "channel",
-                                "powerWatts"
+                                "powerWatts",
+                                "powerPercent"
                               ],
                               "properties": {
                                 "channel": {
@@ -324,6 +325,10 @@
                                 },
                                 "powerWatts": {
                                   "description": "Power in Watts",
+                                  "type": "number"
+                                },
+                                "powerPercent": {
+                                  "description": "Requested power as a percentage (0-100). Reflects PID output or manual setting.",
                                   "type": "number"
                                 }
                               }
@@ -620,6 +625,411 @@
                           "type": "number"
                         }
                       }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response for status 404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scrape/status": {
+      "get": {
+        "tags": [
+          "Scrape"
+        ],
+        "operationId": "getAllScrapeStatus",
+        "summary": "Get All Scrape Status",
+        "description": "Retrieve windowed scrape status (success/error counts in last 1m, 10m, and since start) for all active systems",
+        "responses": {
+          "200": {
+            "description": "Response for status 200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "systemId",
+                      "thermo",
+                      "heater",
+                      "startedAt"
+                    ],
+                    "properties": {
+                      "systemId": {
+                        "description": "System identifier",
+                        "type": "string"
+                      },
+                      "thermo": {
+                        "type": "object",
+                        "required": [
+                          "successLast1M",
+                          "successLast10M",
+                          "successTotal",
+                          "errorsLast1M",
+                          "errorsLast10M",
+                          "errorsTotal",
+                          "lastError",
+                          "lastErrorMessage",
+                          "errorCountPerChannel"
+                        ],
+                        "properties": {
+                          "successLast1M": {
+                            "description": "Number of successful scrapes in the last 1 minute",
+                            "type": "number"
+                          },
+                          "successLast10M": {
+                            "description": "Number of successful scrapes in the last 10 minutes",
+                            "type": "number"
+                          },
+                          "successTotal": {
+                            "description": "Total number of successful scrapes since service start",
+                            "type": "number"
+                          },
+                          "errorsLast1M": {
+                            "description": "Number of failed scrapes in the last 1 minute",
+                            "type": "number"
+                          },
+                          "errorsLast10M": {
+                            "description": "Number of failed scrapes in the last 10 minutes",
+                            "type": "number"
+                          },
+                          "errorsTotal": {
+                            "description": "Total number of failed scrapes since service start",
+                            "type": "number"
+                          },
+                          "lastError": {
+                            "nullable": true,
+                            "anyOf": [
+                              {
+                                "description": "Timestamp of the last error, or null if none",
+                                "format": "date-time",
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "lastErrorMessage": {
+                            "nullable": true,
+                            "anyOf": [
+                              {
+                                "description": "Message of the last error, or null if none",
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "errorCountPerChannel": {
+                            "description": "Mapping of channel number to cumulative error count for that channel",
+                            "type": "object",
+                            "patternProperties": {
+                              "^(.*)$": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "heater": {
+                        "type": "object",
+                        "required": [
+                          "successLast1M",
+                          "successLast10M",
+                          "successTotal",
+                          "errorsLast1M",
+                          "errorsLast10M",
+                          "errorsTotal",
+                          "lastError",
+                          "lastErrorMessage",
+                          "errorCountPerChannel"
+                        ],
+                        "properties": {
+                          "successLast1M": {
+                            "description": "Number of successful scrapes in the last 1 minute",
+                            "type": "number"
+                          },
+                          "successLast10M": {
+                            "description": "Number of successful scrapes in the last 10 minutes",
+                            "type": "number"
+                          },
+                          "successTotal": {
+                            "description": "Total number of successful scrapes since service start",
+                            "type": "number"
+                          },
+                          "errorsLast1M": {
+                            "description": "Number of failed scrapes in the last 1 minute",
+                            "type": "number"
+                          },
+                          "errorsLast10M": {
+                            "description": "Number of failed scrapes in the last 10 minutes",
+                            "type": "number"
+                          },
+                          "errorsTotal": {
+                            "description": "Total number of failed scrapes since service start",
+                            "type": "number"
+                          },
+                          "lastError": {
+                            "nullable": true,
+                            "anyOf": [
+                              {
+                                "description": "Timestamp of the last error, or null if none",
+                                "format": "date-time",
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "lastErrorMessage": {
+                            "nullable": true,
+                            "anyOf": [
+                              {
+                                "description": "Message of the last error, or null if none",
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "errorCountPerChannel": {
+                            "description": "Mapping of channel number to cumulative error count for that channel",
+                            "type": "object",
+                            "patternProperties": {
+                              "^(.*)$": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "startedAt": {
+                        "description": "UTC timestamp when this scraper was started",
+                        "format": "date-time",
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scrape/status/{systemId}": {
+      "get": {
+        "tags": [
+          "Scrape"
+        ],
+        "operationId": "getSystemScrapeStatus",
+        "summary": "Get System Scrape Status",
+        "description": "Retrieve windowed scrape status for a specific system by its ID",
+        "parameters": [
+          {
+            "name": "systemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response for status 200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "systemId",
+                    "thermo",
+                    "heater",
+                    "startedAt"
+                  ],
+                  "properties": {
+                    "systemId": {
+                      "description": "System identifier",
+                      "type": "string"
+                    },
+                    "thermo": {
+                      "type": "object",
+                      "required": [
+                        "successLast1M",
+                        "successLast10M",
+                        "successTotal",
+                        "errorsLast1M",
+                        "errorsLast10M",
+                        "errorsTotal",
+                        "lastError",
+                        "lastErrorMessage",
+                        "errorCountPerChannel"
+                      ],
+                      "properties": {
+                        "successLast1M": {
+                          "description": "Number of successful scrapes in the last 1 minute",
+                          "type": "number"
+                        },
+                        "successLast10M": {
+                          "description": "Number of successful scrapes in the last 10 minutes",
+                          "type": "number"
+                        },
+                        "successTotal": {
+                          "description": "Total number of successful scrapes since service start",
+                          "type": "number"
+                        },
+                        "errorsLast1M": {
+                          "description": "Number of failed scrapes in the last 1 minute",
+                          "type": "number"
+                        },
+                        "errorsLast10M": {
+                          "description": "Number of failed scrapes in the last 10 minutes",
+                          "type": "number"
+                        },
+                        "errorsTotal": {
+                          "description": "Total number of failed scrapes since service start",
+                          "type": "number"
+                        },
+                        "lastError": {
+                          "nullable": true,
+                          "anyOf": [
+                            {
+                              "description": "Timestamp of the last error, or null if none",
+                              "format": "date-time",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "lastErrorMessage": {
+                          "nullable": true,
+                          "anyOf": [
+                            {
+                              "description": "Message of the last error, or null if none",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "errorCountPerChannel": {
+                          "description": "Mapping of channel number to cumulative error count for that channel",
+                          "type": "object",
+                          "patternProperties": {
+                            "^(.*)$": {
+                              "type": "number"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "heater": {
+                      "type": "object",
+                      "required": [
+                        "successLast1M",
+                        "successLast10M",
+                        "successTotal",
+                        "errorsLast1M",
+                        "errorsLast10M",
+                        "errorsTotal",
+                        "lastError",
+                        "lastErrorMessage",
+                        "errorCountPerChannel"
+                      ],
+                      "properties": {
+                        "successLast1M": {
+                          "description": "Number of successful scrapes in the last 1 minute",
+                          "type": "number"
+                        },
+                        "successLast10M": {
+                          "description": "Number of successful scrapes in the last 10 minutes",
+                          "type": "number"
+                        },
+                        "successTotal": {
+                          "description": "Total number of successful scrapes since service start",
+                          "type": "number"
+                        },
+                        "errorsLast1M": {
+                          "description": "Number of failed scrapes in the last 1 minute",
+                          "type": "number"
+                        },
+                        "errorsLast10M": {
+                          "description": "Number of failed scrapes in the last 10 minutes",
+                          "type": "number"
+                        },
+                        "errorsTotal": {
+                          "description": "Total number of failed scrapes since service start",
+                          "type": "number"
+                        },
+                        "lastError": {
+                          "nullable": true,
+                          "anyOf": [
+                            {
+                              "description": "Timestamp of the last error, or null if none",
+                              "format": "date-time",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "lastErrorMessage": {
+                          "nullable": true,
+                          "anyOf": [
+                            {
+                              "description": "Message of the last error, or null if none",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "errorCountPerChannel": {
+                          "description": "Mapping of channel number to cumulative error count for that channel",
+                          "type": "object",
+                          "patternProperties": {
+                            "^(.*)$": {
+                              "type": "number"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "startedAt": {
+                      "description": "UTC timestamp when this scraper was started",
+                      "format": "date-time",
+                      "type": "string"
                     }
                   }
                 }

@@ -11,8 +11,8 @@ class PIDController:
         setpoint: float = 0.0,
         output_min: float = 0.0,
         output_max: float = 100.0,
-        anti_windup_min: float = -100.0,
-        anti_windup_max: float = 100.0,
+        anti_windup_min: float = -150.0,
+        anti_windup_max: float = 150.0,
     ):
         self.kp = float(kp)
         self.ki = float(ki)
@@ -38,7 +38,8 @@ class PIDController:
             new_integral = self._integral + error * dt
 
             # Using measurement derivative to avoid derivative kick
-            derivative = 0.0 if self._last_measurement is None else -(measurement - self._last_measurement) / dt
+            derivative = 0.0 if self._last_measurement is None else - \
+                (measurement - self._last_measurement) / dt
 
             output = (
                 (self.kp * error) +
@@ -53,7 +54,8 @@ class PIDController:
                 self._integral = new_integral
             else:
                 output = max(self._output_min, min(self._output_max, output))
-                self._integral = max(min(new_integral, self._anti_windup_max), self._anti_windup_min)
+                self._integral = max(
+                    min(new_integral, self._anti_windup_max), self._anti_windup_min)
 
             return output
 

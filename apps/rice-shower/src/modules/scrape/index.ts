@@ -2,9 +2,11 @@ import Elysia, { t } from "elysia";
 
 import {
   AllSystemsScrapeMetricsResponse,
+  AllSystemsWindowedScrapeMetricsResponse,
   SystemScrapeMetricsResponse,
+  SystemWindowedScrapeMetricsResponse,
 } from "./model";
-import { type Scraper, ScraperManager } from "./service";
+import { getWindowedStats, type Scraper, ScraperManager } from "./service";
 
 function serializeScraperMetrics(scraper: Scraper) {
   return {
@@ -28,6 +30,23 @@ function serializeScraperMetrics(scraper: Scraper) {
         }),
       ),
       successCount: scraper.heater.successCount,
+    },
+  };
+}
+
+function serializeWindowedMetrics(scraper: Scraper) {
+  const thermo = getWindowedStats(scraper.thermo);
+  const heater = getWindowedStats(scraper.heater);
+  return {
+    systemId: scraper.systemId,
+    startedAt: scraper.startedAt.toISOString(),
+    thermo: {
+      ...thermo,
+      lastError: thermo.lastError?.toISOString() ?? null,
+    },
+    heater: {
+      ...heater,
+      lastError: heater.lastError?.toISOString() ?? null,
     },
   };
 }
@@ -77,6 +96,49 @@ export const scrapeController = new Elysia({
       },
       response: {
         200: SystemScrapeMetricsResponse,
+        404: t.Object({ error: t.String() }),
+      },
+    },
+  )
+  .get(
+    "/status",
+    () => {
+      return [...ScraperManager.getAllScrapers().values()].map(
+        serializeWindowedMetrics,
+      );
+    },
+    {
+      detail: {
+        operationId: "getAllScrapeStatus",
+        summary: "Get All Scrape Status",
+        description:
+          "Retrieve windowed scrape status (success/error counts in last 1m, 10m, and since start) for all active systems",
+      },
+      response: {
+        200: AllSystemsWindowedScrapeMetricsResponse,
+      },
+    },
+  )
+  .get(
+    "/status/:systemId",
+    ({ params: { systemId }, status }) => {
+      const scraper = ScraperManager.getScraper(systemId);
+      if (!scraper) {
+        throw status(404, {
+          error: `No active scraper for system '${systemId}'`,
+        });
+      }
+      return serializeWindowedMetrics(scraper);
+    },
+    {
+      detail: {
+        operationId: "getSystemScrapeStatus",
+        summary: "Get System Scrape Status",
+        description:
+          "Retrieve windowed scrape status for a specific system by its ID",
+      },
+      response: {
+        200: SystemWindowedScrapeMetricsResponse,
         404: t.Object({ error: t.String() }),
       },
     },

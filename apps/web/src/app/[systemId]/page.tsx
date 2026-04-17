@@ -28,18 +28,17 @@ export default async function SystemDashboardPage({ params }: Props) {
     getLakeshoreTemperatureCelsius(sensorChannel, systemId),
   ]);
 
-  const targetTemp = heaterStatus?.target ?? null;
-  const isActive = heaterStatus?.isActive ?? false;
+  const targetTemp = heaterStatus?.pid.target ?? null;
+  const isActive = heaterStatus?.pid.isActive ?? false;
   const currentTemp = lakeshoreTemp ?? heaterStatus?.currentTemp ?? null;
 
   const pidRuntimeState = heaterStatus
     ? {
-        power: heaterStatus.power,
-        maxHeaterPowerWatts: heaterStatus.maxHeaterPowerWatts,
-        startedAt: heaterStatus.startedAt,
-        runningForSeconds: heaterStatus.runningForSeconds,
-        pidVariables: heaterStatus.pidVariables,
-        errorStats: heaterStatus.errorStats,
+        power: heaterStatus.heater.power,
+        startedAt: heaterStatus.pid.startedAt,
+        runningForSeconds: heaterStatus.pid.runningForSeconds,
+        pidVariables: heaterStatus.pid.variables,
+        errorStats: heaterStatus.pid.errorStats,
       }
     : null;
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronRight, Pause, Play, X } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 
 import { Badge } from "@repo/ui/atom/badge";
 import { Button } from "@repo/ui/atom/button";
@@ -34,48 +34,17 @@ function formatPidRunningDuration(totalSeconds: number): string {
   return `${s}s`;
 }
 
-function ArrowPowerReadout({
-  powerNorm,
-  maxWatts,
-}: {
-  powerNorm: number;
-  maxWatts: number;
-}) {
-  const [showWatts, setShowWatts] = useState(false);
-
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      setShowWatts((v) => !v);
-    }, 3200);
-    return () => window.clearInterval(id);
-  }, []);
-
+function PowerReadout({ powerNorm }: { powerNorm: number }) {
   const pct = powerNorm * 100;
-  const watts = powerNorm * maxWatts;
 
   return (
     <div
       className="relative mb-0.5 flex h-4 min-w-[4.25rem] items-center justify-center"
-      title={`${pct.toFixed(1)}% · ${watts.toFixed(1)} W`}
+      title={`${pct.toFixed(1)}%`}
     >
-      <span className="sr-only">
-        {pct.toFixed(1)} percent, {watts.toFixed(1)} watts
-      </span>
-      <span
-        className={`absolute text-xs font-semibold tabular-nums text-orange-500 transition-opacity duration-700 ease-in-out dark:text-orange-400 ${
-          showWatts ? "opacity-0" : "opacity-100"
-        }`}
-        aria-hidden={showWatts}
-      >
+      <span className="sr-only">{pct.toFixed(1)} percent</span>
+      <span className="text-xs font-semibold tabular-nums text-orange-500 dark:text-orange-400">
         {pct.toFixed(1)}%
-      </span>
-      <span
-        className={`absolute text-xs font-semibold tabular-nums text-orange-500 transition-opacity duration-700 ease-in-out dark:text-orange-400 ${
-          showWatts ? "opacity-100" : "opacity-0"
-        }`}
-        aria-hidden={!showWatts}
-      >
-        {watts.toFixed(1)} W
       </span>
     </div>
   );
@@ -83,9 +52,8 @@ function ArrowPowerReadout({
 
 export type PidRuntimeState = {
   power: number;
-  maxHeaterPowerWatts: number;
-  startedAt: string | null;
-  runningForSeconds: number | null;
+  startedAt?: string | null;
+  runningForSeconds?: number | null;
   pidVariables: {
     integral: number;
     lastError: number;
@@ -237,10 +205,7 @@ export function PidControllerCard({
 
           <div className="flex flex-col items-center shrink-0">
             {isActive && pidRuntimeState && (
-              <ArrowPowerReadout
-                powerNorm={pidRuntimeState.power}
-                maxWatts={pidRuntimeState.maxHeaterPowerWatts}
-              />
+              <PowerReadout powerNorm={pidRuntimeState.power} />
             )}
             <div className="flex items-center -space-x-1.5">
               <ChevronRight
@@ -386,7 +351,7 @@ export function PidControllerCard({
           <div className="space-y-2">
             <div className="text-sm font-medium">PID State</div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-              {pidRuntimeState.runningForSeconds !== null && (
+              {pidRuntimeState.runningForSeconds != null && (
                 <>
                   <div className="text-muted-foreground">Running for</div>
                   <div

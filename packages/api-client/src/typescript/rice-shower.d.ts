@@ -84,6 +84,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/scrape/status": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get All Scrape Status
+     * @description Retrieve windowed scrape status (success/error counts in last 1m, 10m, and since start) for all active systems
+     */
+    get: operations["getAllScrapeStatus"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/scrape/status/{systemId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get System Scrape Status
+     * @description Retrieve windowed scrape status for a specific system by its ID
+     */
+    get: operations["getSystemScrapeStatus"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/systems/": {
     parameters: {
       query?: never;
@@ -238,6 +278,8 @@ export interface operations {
                 channel: number;
                 /** @description Power in Watts */
                 powerWatts: number;
+                /** @description Requested power as a percentage (0-100). Reflects PID output or manual setting. */
+                powerPercent: number;
               }[];
             }[];
           };
@@ -347,6 +389,155 @@ export interface operations {
               /** @description Total number of successful scrapes */
               successCount: number;
             };
+          };
+        };
+      };
+      /** @description Response for status 404 */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+    };
+  };
+  getAllScrapeStatus: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** @description System identifier */
+            systemId: string;
+            thermo: {
+              /** @description Number of successful scrapes in the last 1 minute */
+              successLast1M: number;
+              /** @description Number of successful scrapes in the last 10 minutes */
+              successLast10M: number;
+              /** @description Total number of successful scrapes since service start */
+              successTotal: number;
+              /** @description Number of failed scrapes in the last 1 minute */
+              errorsLast1M: number;
+              /** @description Number of failed scrapes in the last 10 minutes */
+              errorsLast10M: number;
+              /** @description Total number of failed scrapes since service start */
+              errorsTotal: number;
+              lastError: (string | null) | null;
+              lastErrorMessage: (string | null) | null;
+              /** @description Mapping of channel number to cumulative error count for that channel */
+              errorCountPerChannel: {
+                [key: string]: number;
+              };
+            };
+            heater: {
+              /** @description Number of successful scrapes in the last 1 minute */
+              successLast1M: number;
+              /** @description Number of successful scrapes in the last 10 minutes */
+              successLast10M: number;
+              /** @description Total number of successful scrapes since service start */
+              successTotal: number;
+              /** @description Number of failed scrapes in the last 1 minute */
+              errorsLast1M: number;
+              /** @description Number of failed scrapes in the last 10 minutes */
+              errorsLast10M: number;
+              /** @description Total number of failed scrapes since service start */
+              errorsTotal: number;
+              lastError: (string | null) | null;
+              lastErrorMessage: (string | null) | null;
+              /** @description Mapping of channel number to cumulative error count for that channel */
+              errorCountPerChannel: {
+                [key: string]: number;
+              };
+            };
+            /**
+             * Format: date-time
+             * @description UTC timestamp when this scraper was started
+             */
+            startedAt: string;
+          }[];
+        };
+      };
+    };
+  };
+  getSystemScrapeStatus: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        systemId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** @description System identifier */
+            systemId: string;
+            thermo: {
+              /** @description Number of successful scrapes in the last 1 minute */
+              successLast1M: number;
+              /** @description Number of successful scrapes in the last 10 minutes */
+              successLast10M: number;
+              /** @description Total number of successful scrapes since service start */
+              successTotal: number;
+              /** @description Number of failed scrapes in the last 1 minute */
+              errorsLast1M: number;
+              /** @description Number of failed scrapes in the last 10 minutes */
+              errorsLast10M: number;
+              /** @description Total number of failed scrapes since service start */
+              errorsTotal: number;
+              lastError: (string | null) | null;
+              lastErrorMessage: (string | null) | null;
+              /** @description Mapping of channel number to cumulative error count for that channel */
+              errorCountPerChannel: {
+                [key: string]: number;
+              };
+            };
+            heater: {
+              /** @description Number of successful scrapes in the last 1 minute */
+              successLast1M: number;
+              /** @description Number of successful scrapes in the last 10 minutes */
+              successLast10M: number;
+              /** @description Total number of successful scrapes since service start */
+              successTotal: number;
+              /** @description Number of failed scrapes in the last 1 minute */
+              errorsLast1M: number;
+              /** @description Number of failed scrapes in the last 10 minutes */
+              errorsLast10M: number;
+              /** @description Total number of failed scrapes since service start */
+              errorsTotal: number;
+              lastError: (string | null) | null;
+              lastErrorMessage: (string | null) | null;
+              /** @description Mapping of channel number to cumulative error count for that channel */
+              errorCountPerChannel: {
+                [key: string]: number;
+              };
+            };
+            /**
+             * Format: date-time
+             * @description UTC timestamp when this scraper was started
+             */
+            startedAt: string;
           };
         };
       };

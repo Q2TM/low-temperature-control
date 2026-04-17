@@ -1,4 +1,3 @@
-import os
 import threading
 import time
 from collections import deque
@@ -8,7 +7,8 @@ from typing import Optional
 from opentelemetry import metrics
 
 from schemas.app_config import AppConfig, PidConfig
-from schemas.temp_control import Parameters, PidVariables, ErrorStats, PidStatusOut
+from schemas.channel import HeaterConfig
+from schemas.temp_control import Parameters, PidVariables, ErrorStats, ChannelStatusOut, HeaterStatus, PidStatus
 from .PID import PIDController
 from repositories.heater import HeaterRepository
 from .heater_factory import create_heater
@@ -32,16 +32,14 @@ class TempService:
         self,
         channel_id: int,
         channel_name: str,
-        sensor_channel: int,
-        gpio_pin: int,
-        max_heater_power_watts: float = 45.0,
+        thermo_channel: int,
+        heater_config: HeaterConfig,
         app_config: AppConfig | None = None,
     ):
         """Initialize temperature service for a specific channel."""
         self.channel_id = channel_id
         self.channel_name = channel_name
-        self.sensor_channel = sensor_channel
-        self.max_heater_power_watts = max_heater_power_watts
+        self.thermo_channel = thermo_channel
 
         pid_cfg = app_config.pid if app_config else PidConfig()
         self._pid_cfg = pid_cfg
@@ -60,9 +58,9 @@ class TempService:
             anti_windup_max=pid_cfg.anti_windup_max,
         )
 
-        heater_mode = os.getenv("HEATER_MODE", "PSU")
         self.heater: HeaterRepository = create_heater(
-            mode=heater_mode, gpio_pin=gpio_pin, app_config=app_config)
+            config=heater_config, channel_id=channel_id)
+        self._heater_type = heater_config.type
 
         self._running = False
         self._started_at: Optional[datetime] = None
@@ -123,8 +121,8 @@ class TempService:
                 last_error_message=self._last_error_message
             )
 
-    def get_pid_status(self) -> PidStatusOut:
-        """Get comprehensive PID status including all internal variables."""
+    def get_channel_status(self) -> ChannelStatusOut:
+        """Get comprehensive channel status including heater state and PID variables."""
         power = self.heater.get_power()
         pid_state = self._pid.get_state()
 
@@ -148,19 +146,29 @@ class TempService:
             running_for_seconds = (datetime.now(
                 timezone.utc) - started_at).total_seconds()
 
-        return PidStatusOut(
-            channel_id=self.channel_id,
-            channel_name=self.channel_name,
+        heater_status = HeaterStatus(
+            power=power,
+            power_watts=self.heater.get_power_watts(),
+            heater_type=self._heater_type,
+            heater_metadata=self.heater.get_metadata(),
+        )
+
+        pid_status = PidStatus(
             is_active=self._running,
             target=self._target,
-            power=power,
-            max_heater_power_watts=self.max_heater_power_watts,
-            current_temp=self._current_temp,
             started_at=started_at,
             running_for_seconds=running_for_seconds,
-            pid_parameters=pid_parameters,
-            pid_variables=pid_variables,
-            error_stats=error_stats
+            parameters=pid_parameters,
+            variables=pid_variables,
+            error_stats=error_stats,
+        )
+
+        return ChannelStatusOut(
+            channel_id=self.channel_id,
+            channel_name=self.channel_name,
+            current_temp=self._current_temp,
+            heater=heater_status,
+            pid=pid_status,
         )
 
     def start(self):
@@ -171,6 +179,9 @@ class TempService:
         self._running = True
         self._started_at = datetime.now(timezone.utc)
         self.heater.connect()
+        self._pid._integral = 0.0
+        self._pid._last_error = 0.0
+        self._pid._last_measurement = None
 
         self._thread = threading.Thread(target=self._control_loop, daemon=True)
         self._thread.start()
@@ -226,7 +237,7 @@ class TempService:
                 try:
                     read_start = time.monotonic()
                     current_temp = readingApi.get_monitor(
-                        self.sensor_channel).kelvin - 273.15
+                        self.thermo_channel).kelvin - 273.15
                     _thermo_api_read_duration.record(
                         (time.monotonic() - read_start) * 1000,
                         {"channel_id": self.channel_id},

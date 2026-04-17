@@ -77,6 +77,7 @@ export const heaterMetrics = pgTable(
       .references(() => systems.id),
     channel: integer("channel").notNull(),
     powerWatts: doublePrecision("power_watts"),
+    powerPercent: doublePrecision("power_percent"),
     metadata: jsonb("metadata").$type<Record<string, unknown>>(),
   },
   (table) => [
