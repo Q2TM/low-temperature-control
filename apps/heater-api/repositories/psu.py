@@ -48,6 +48,8 @@ class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
             ch = self.ser.read(1).decode('ascii', errors='ignore')
             if not ch:
                 return None
+            if not buf and ch != '<':
+                return None
             buf += ch
             if ch == '>':
                 return buf
@@ -68,7 +70,20 @@ class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
     def read_voltage(self):
         self.send_frame("<02000000000>")
         resp = self.read_frame()
-        value = int(resp[3:10]) / 10000
+
+        if not resp:
+            print("read_voltage failed: no response frame")
+            return None
+        if len(resp) != 13 or not (resp.startswith("<") and resp.endswith(">")):
+            print(f"read_voltage failed: invalid frame format: {resp!r}")
+            return None
+
+        raw_value = resp[3:10]
+        if not raw_value.isdigit():
+            print(f"read_voltage failed: non-numeric payload: {resp!r}")
+            return None
+
+        value = int(raw_value) / 10000
         print("Received frame:", resp, "Value:", value)
         return value
 
@@ -88,7 +103,20 @@ class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
     def read_current(self):
         self.send_frame("<04000000000>")
         resp = self.read_frame()
-        value = int(resp[3:10]) / 10000
+
+        if not resp:
+            print("read_current failed: no response frame")
+            return None
+        if len(resp) != 13 or not (resp.startswith("<") and resp.endswith(">")):
+            print(f"read_current failed: invalid frame format: {resp!r}")
+            return None
+
+        raw_value = resp[3:10]
+        if not raw_value.isdigit():
+            print(f"read_current failed: non-numeric payload: {resp!r}")
+            return None
+
+        value = int(raw_value) / 10000
         print("Received frame:", resp, "Value:", value)
         return value
 
