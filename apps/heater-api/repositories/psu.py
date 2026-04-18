@@ -81,6 +81,9 @@ class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
         raw_value = resp[3:10]
         if not raw_value.isdigit():
             print(f"read_voltage failed: non-numeric payload: {resp!r}")
+            if raw_value[0:2] == "OK":
+                print(
+                    f"This is set_current/voltage response: {resp!r}, not a voltage reading")
             return None
 
         value = int(raw_value) / 10000
@@ -114,6 +117,9 @@ class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
         raw_value = resp[3:10]
         if not raw_value.isdigit():
             print(f"read_current failed: non-numeric payload: {resp!r}")
+            if raw_value[0:2] == "OK":
+                print(
+                    f"This is set_current/voltage response: {resp!r}, not a current reading")
             return None
 
         value = int(raw_value) / 10000
