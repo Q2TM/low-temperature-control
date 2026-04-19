@@ -87,6 +87,16 @@ class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
             return None
 
         value = int(raw_value) / 10000
+
+        # Hardcode cap value, to be fixed later (voltage does not exceed 12 V)
+        if value > 12:
+            print(
+                f"==========================================================================================")
+            print(f"Voltage capped at 12 V, original: {value}")
+            print(
+                f"==========================================================================================")
+            value = 12
+
         print("Received frame:", resp, "Value:", value)
         return value
 
@@ -123,6 +133,16 @@ class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
             return None
 
         value = int(raw_value) / 10000
+
+        # Hardcode cap value, to be fixed later (current does not exceed 2.08 A)
+        if value > 2.08:
+            print(
+                f"==========================================================================================")
+            print(f"Current capped at 2.08 A, original: {value}")
+            print(
+                f"==========================================================================================")
+            value = 2.08
+
         print("Received frame:", resp, "Value:", value)
         return value
 
