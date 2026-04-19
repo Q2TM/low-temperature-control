@@ -95,7 +95,7 @@ class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
             print(f"Voltage capped at 12 V, original: {value}")
             print(
                 f"==========================================================================================")
-            value = 12
+            # value = 12
 
         print("Received frame:", resp, "Value:", value)
         return value
@@ -141,7 +141,7 @@ class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
             print(f"Current capped at 2.08 A, original: {value}")
             print(
                 f"==========================================================================================")
-            value = 2.08
+            # value = 2.08
 
         print("Received frame:", resp, "Value:", value)
         return value
