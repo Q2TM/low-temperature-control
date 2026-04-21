@@ -149,10 +149,11 @@ class ProgrammablePowerSupplyRepository(PowerSupplyRepository):
             value = int(raw_value) / 10000
 
             # Inspect cap value, to be fixed later (current does not exceed 2.08 A)
-            if value > 2.08:
+            if value > 2.08 * 2:
                 print(
                     f"==========================================================================================")
-                print(f"Current capped at 2.08 A, original: {value}")
+                print(
+                    f"Current capped at 2.08 * 2 = 4.16 A, original: {value}")
                 print(
                     f"==========================================================================================")
                 # value = 2.08
