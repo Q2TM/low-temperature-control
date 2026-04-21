@@ -34,6 +34,15 @@ class PSUHeater(HeaterRepository):
         voltage = self._max_voltage * sqrt(self._power)
         self._psu.set_voltage(round(voltage, 3))
 
+        # PSU correct, wrong formula
+        # voltage = self._max_voltage * self._power
+        # self._psu.set_voltage(round(voltage, 3))
+
+        # Wrong both (Old)
+        # current = self._max_wattage / self._max_voltage * self._power
+        # self._psu.set_voltage(round(12, 3))
+        # self._psu.set_current(round(current, 3))
+
     def get_power(self) -> float:
         return self._power
 
