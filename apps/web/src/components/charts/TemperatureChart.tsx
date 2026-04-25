@@ -1,7 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import {
   Card,
@@ -39,6 +46,8 @@ type TemperatureChartProps = {
   timeframeLabel: string;
   spanMs: number;
   interval: number;
+  setpoint?: number | null;
+  pidActive?: boolean;
 };
 
 export function TemperatureChart({
@@ -46,7 +55,10 @@ export function TemperatureChart({
   timeframeLabel,
   spanMs,
   interval,
+  setpoint,
+  pidActive,
 }: TemperatureChartProps) {
+  const showSetpoint = !!pidActive && typeof setpoint === "number";
   const channelKeys = useMemo(
     () =>
       data.length > 0
@@ -87,9 +99,10 @@ export function TemperatureChart({
       .map((key) => item[key])
       .filter((temp): temp is number => typeof temp === "number"),
   );
-  const minTemp = allTemperatures.length > 0 ? Math.min(...allTemperatures) : 0;
-  const maxTemp =
-    allTemperatures.length > 0 ? Math.max(...allTemperatures) : 100;
+  const refValues = showSetpoint ? [setpoint as number] : [];
+  const allYValues = [...allTemperatures, ...refValues];
+  const minTemp = allYValues.length > 0 ? Math.min(...allYValues) : 0;
+  const maxTemp = allYValues.length > 0 ? Math.max(...allYValues) : 100;
   const padding = (maxTemp - minTemp) * 0.1 || 1;
   const yDomain = [minTemp - padding, maxTemp + padding];
 
@@ -214,6 +227,22 @@ export function TemperatureChart({
                 unit="°C"
               />
             ))}
+            {showSetpoint && (
+              <ReferenceLine
+                yAxisId="temp"
+                y={setpoint as number}
+                stroke="var(--foreground)"
+                strokeDasharray="6 4"
+                strokeWidth={1.5}
+                ifOverflow="extendDomain"
+                label={{
+                  value: `Setpoint ${(setpoint as number).toFixed(2)} °C`,
+                  position: "insideTopRight",
+                  fill: "var(--foreground)",
+                  fontSize: 12,
+                }}
+              />
+            )}
             {heaterChannels.map((channelKey) => (
               <Line
                 key={channelKey}
@@ -239,8 +268,9 @@ export function TemperatureChart({
             <span>Dashed line: heater power (W), right axis.</span>
           </>
         ) : (
-          "Sensor temperature from Lakeshore (°C)."
+          <span>Sensor temperature from Lakeshore (°C).</span>
         )}
+        {showSetpoint && <span>Dashed reference line: PID setpoint (°C).</span>}
       </CardFooter>
     </Card>
   );

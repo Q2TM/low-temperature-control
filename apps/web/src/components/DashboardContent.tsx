@@ -265,6 +265,8 @@ export function DashboardContent({
           timeframeLabel={timeframeLabel}
           spanMs={spanMs}
           interval={timeInterval}
+          setpoint={targetTemp}
+          pidActive={isActive}
         />
       </div>
     </>
