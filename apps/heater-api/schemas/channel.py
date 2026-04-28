@@ -63,6 +63,10 @@ class ChannelConfig(CamelModel):
         default=True, description="Whether channel is enabled")
     heater: HeaterConfig = Field(...,
                                  description="Heater hardware configuration")
+    max_temp_celsius: Optional[float] = Field(
+        default=None,
+        description="Per-channel override of pid.max_temp_celsius safety ceiling. "
+                    "Falls back to the global default when omitted.")
 
 
 class ChannelInfo(CamelModel):

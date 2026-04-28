@@ -601,6 +601,28 @@ components:
           $ref: '#/components/schemas/ErrorStats'
           description: Error counters for thermometer API read failures over 1 min,
             10 min, and since PID start.
+        lastStopReason:
+          anyOf:
+          - $ref: '#/components/schemas/PidStopReason'
+          - type: 'null'
+          description: Why PID was last automatically stopped (overheat or sensor_timeout).
+            Null when never auto-stopped, manually stopped, or running. Cleared on
+            next Start or on manual Stop.
+        lastStopAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Laststopat
+          description: UTC timestamp the auto-stop fired. Null when last_stop_reason
+            is null.
+        lastStopDetail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Laststopdetail
+          description: "Human-readable detail (e.g. measured \xB0C vs limit, or seconds\
+            \ since last read)."
       type: object
       required:
       - isActive
@@ -615,6 +637,13 @@ components:
         Contains whether the PID loop is running, its target, tuning parameters,
 
         internal variables, timing information, and error statistics.'
+    PidStopReason:
+      type: string
+      enum:
+      - overheat
+      - sensor_timeout
+      title: PidStopReason
+      description: Reason the PID loop was automatically stopped by a safety check.
     PidVariables:
       properties:
         integral:

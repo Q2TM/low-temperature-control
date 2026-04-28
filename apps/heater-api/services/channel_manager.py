@@ -31,6 +31,7 @@ class ChannelManager:
                     thermo_channel=config.thermo_channel,
                     heater_config=config.heater,
                     app_config=self.app_config,
+                    channel_max_temp=config.max_temp_celsius,
                 )
                 self._channels[config.channel_id] = service
                 print(

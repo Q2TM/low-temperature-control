@@ -25,6 +25,15 @@ class PidConfig(BaseModel):
         default=-150.0, description="Anti-windup integral lower bound")
     anti_windup_max: float = Field(
         default=150.0, description="Anti-windup integral upper bound")
+    max_temp_celsius: float = Field(
+        default=40.0,
+        description="Default per-channel safety ceiling in °C. "
+                    "If a channel reading exceeds its effective max, PID auto-stops and heater is zeroed. "
+                    "Overridable per channel via channels[].max_temp_celsius.")
+    max_seconds_without_read: float = Field(
+        default=30.0, gt=0,
+        description="If no successful temperature reading lands within this many seconds, "
+                    "PID auto-stops and heater is zeroed.")
 
 
 class ServerConfig(BaseModel):

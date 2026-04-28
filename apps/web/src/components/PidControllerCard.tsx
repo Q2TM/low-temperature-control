@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronRight, Pause, Play, X } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { Badge } from "@repo/ui/atom/badge";
 import { Button } from "@repo/ui/atom/button";
@@ -34,24 +34,57 @@ function formatPidRunningDuration(totalSeconds: number): string {
   return `${s}s`;
 }
 
-function PowerReadout({ powerNorm }: { powerNorm: number }) {
+function PowerReadout({
+  powerNorm,
+  powerWatts,
+}: {
+  powerNorm: number;
+  powerWatts: number;
+}) {
+  const [showWatts, setShowWatts] = useState(false);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setShowWatts((v) => !v);
+    }, 3200);
+    return () => window.clearInterval(id);
+  }, []);
+
   const pct = powerNorm * 100;
 
   return (
     <div
       className="relative mb-0.5 flex h-4 min-w-[4.25rem] items-center justify-center"
-      title={`${pct.toFixed(1)}%`}
+      title={`${pct.toFixed(1)}% · ${powerWatts.toFixed(1)} W`}
     >
-      <span className="sr-only">{pct.toFixed(1)} percent</span>
-      <span className="text-xs font-semibold tabular-nums text-orange-500 dark:text-orange-400">
+      <span className="sr-only">
+        {pct.toFixed(1)} percent, {powerWatts.toFixed(1)} watts
+      </span>
+      <span
+        className={`absolute text-xs font-semibold tabular-nums text-orange-500 transition-opacity duration-700 ease-in-out dark:text-orange-400 ${
+          showWatts ? "opacity-0" : "opacity-100"
+        }`}
+        aria-hidden={showWatts}
+      >
         {pct.toFixed(1)}%
+      </span>
+      <span
+        className={`absolute text-xs font-semibold tabular-nums text-orange-500 transition-opacity duration-700 ease-in-out dark:text-orange-400 ${
+          showWatts ? "opacity-100" : "opacity-0"
+        }`}
+        aria-hidden={!showWatts}
+      >
+        {powerWatts.toFixed(1)} W
       </span>
     </div>
   );
 }
 
+export type PidStopReason = "overheat" | "sensor_timeout";
+
 export type PidRuntimeState = {
   power: number;
+  powerWatts: number;
   startedAt?: string | null;
   runningForSeconds?: number | null;
   pidVariables: {
@@ -65,6 +98,9 @@ export type PidRuntimeState = {
     errorsSinceStart: number;
     lastErrorMessage: string | null;
   };
+  lastStopReason: PidStopReason | null;
+  lastStopAt: string | null;
+  lastStopDetail: string | null;
 };
 
 type PidControllerCardProps = {
@@ -205,7 +241,10 @@ export function PidControllerCard({
 
           <div className="flex flex-col items-center shrink-0">
             {isActive && pidRuntimeState && (
-              <PowerReadout powerNorm={pidRuntimeState.power} />
+              <PowerReadout
+                powerNorm={pidRuntimeState.power}
+                powerWatts={pidRuntimeState.powerWatts}
+              />
             )}
             <div className="flex items-center -space-x-1.5">
               <ChevronRight
@@ -264,6 +303,27 @@ export function PidControllerCard({
             )}
           </div>
         </div>
+
+        {/* Auto-stop alert (shown when PID is stopped due to a safety check) */}
+        {!isActive && pidRuntimeState?.lastStopReason && (
+          <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <div className="font-medium">
+              {pidRuntimeState.lastStopReason === "overheat"
+                ? "Auto-stopped: overheat protection"
+                : "Auto-stopped: sensor timeout"}
+            </div>
+            {pidRuntimeState.lastStopDetail && (
+              <div className="text-xs mt-0.5">
+                {pidRuntimeState.lastStopDetail}
+              </div>
+            )}
+            {pidRuntimeState.lastStopAt && (
+              <div className="text-xs text-muted-foreground mt-0.5">
+                {new Date(pidRuntimeState.lastStopAt).toLocaleString()}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* PID Parameters */}
         {pidParameters && (

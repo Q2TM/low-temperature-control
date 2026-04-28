@@ -13,11 +13,14 @@
 #   mock  — Simulated heater (delegates to simulator API)
 
 channels:
+  # Each channel may set max_temp_celsius to override the global pid.max_temp_celsius safety ceiling.
+
   # ── GPIO heater ──
   # - channel_id: 1
   #   name: "Heater"
   #   thermo_channel: 5
   #   enabled: true
+  #   max_temp_celsius: 40.0  # Optional per-channel safety ceiling override
   #   heater:
   #     type: gpio
   #     gpio_pin: 18          # GPIO BCM pin number
@@ -29,6 +32,7 @@ channels:
   #   name: "Heater"
   #   thermo_channel: 5
   #   enabled: true
+  #   max_temp_celsius: 40.0  # Optional per-channel safety ceiling override
   #   heater:
   #     type: psu
   #     serial_port: "/dev/ttyUSB0" # Auto-detected if omitted
@@ -41,6 +45,7 @@ channels:
   #   name: "Heater"
   #   thermo_channel: 5
   #   enabled: true
+  #   max_temp_celsius: 40.0  # Optional per-channel safety ceiling override
   #   heater:
   #     type: mock
   #     max_power_watts: 45.0 # Simulated max power (default: 45.0)
@@ -56,6 +61,8 @@ pid:
   output_max: 100.0 # Maximum PID output (duty percent)
   anti_windup_min: -150.0 # Anti-windup integral lower bound
   anti_windup_max: 150.0 # Anti-windup integral upper bound
+  max_temp_celsius: 40.0 # Auto-stop PID + zero heater if reading exceeds this (per-channel default; overridable via channels[].max_temp_celsius)
+  max_seconds_without_read: 30.0 # Auto-stop PID + zero heater if no successful temperature read for this many seconds
 
 
 # ── Server Settings ────────────────────────────────────────────────────

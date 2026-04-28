@@ -8,7 +8,7 @@ from opentelemetry import metrics
 
 from schemas.app_config import AppConfig, PidConfig
 from schemas.channel import HeaterConfig
-from schemas.temp_control import Parameters, PidVariables, ErrorStats, ChannelStatusOut, HeaterStatus, PidStatus
+from schemas.temp_control import Parameters, PidVariables, ErrorStats, ChannelStatusOut, HeaterStatus, PidStatus, PidStopReason
 from .PID import PIDController
 from repositories.heater import HeaterRepository
 from .heater_factory import create_heater
@@ -35,6 +35,7 @@ class TempService:
         thermo_channel: int,
         heater_config: HeaterConfig,
         app_config: AppConfig | None = None,
+        channel_max_temp: Optional[float] = None,
     ):
         """Initialize temperature service for a specific channel."""
         self.channel_id = channel_id
@@ -43,6 +44,9 @@ class TempService:
 
         pid_cfg = app_config.pid if app_config else PidConfig()
         self._pid_cfg = pid_cfg
+        self._effective_max_temp = (
+            channel_max_temp if channel_max_temp is not None else pid_cfg.max_temp_celsius
+        )
 
         self._target = pid_cfg.default_target
         self._params = Parameters()
@@ -71,6 +75,11 @@ class TempService:
         self._last_error_message: Optional[str] = None
         self._current_temp: Optional[float] = None
         self._error_lock = threading.Lock()
+
+        self._last_successful_read_monotonic: Optional[float] = None
+        self._last_stop_reason: Optional[PidStopReason] = None
+        self._last_stop_at: Optional[datetime] = None
+        self._last_stop_detail: Optional[str] = None
 
     def get_target(self):
         return self._target
@@ -161,6 +170,9 @@ class TempService:
             parameters=pid_parameters,
             variables=pid_variables,
             error_stats=error_stats,
+            last_stop_reason=self._last_stop_reason,
+            last_stop_at=self._last_stop_at,
+            last_stop_detail=self._last_stop_detail,
         )
 
         return ChannelStatusOut(
@@ -175,6 +187,11 @@ class TempService:
         """Start the temperature control loop in a background thread."""
         if self._running:
             return "Control loop already running."
+
+        self._last_stop_reason = None
+        self._last_stop_at = None
+        self._last_stop_detail = None
+        self._last_successful_read_monotonic = time.monotonic()
 
         self._running = True
         self._started_at = datetime.now(timezone.utc)
@@ -192,6 +209,10 @@ class TempService:
         if not self._running:
             return "Control loop is not running."
 
+        self._last_stop_reason = None
+        self._last_stop_at = None
+        self._last_stop_detail = None
+
         self._running = False
         self._started_at = None
         if self._thread:
@@ -199,6 +220,26 @@ class TempService:
         self.heater.set_power(0.0)
         self.heater.disconnect()
         return "Temperature control loop stopped and heater turned off."
+
+    def _auto_stop(self, reason: PidStopReason, detail: str):
+        """Stop the loop from inside the loop thread due to a safety check.
+
+        Must NOT join self — caller is on the loop thread and returns immediately
+        afterwards so the thread exits cleanly.
+        """
+        self._last_stop_reason = reason
+        self._last_stop_at = datetime.now(timezone.utc)
+        self._last_stop_detail = detail
+        self._running = False
+        self._started_at = None
+        try:
+            self.heater.set_power(0.0)
+        except Exception as e:
+            print(f"[{self.channel_id}] auto-stop: failed to zero heater: {e}")
+        try:
+            self.heater.disconnect()
+        except Exception as e:
+            print(f"[{self.channel_id}] auto-stop: failed to disconnect heater: {e}")
 
     def set_manual_power(self, power: float):
         """Manually set heater power. Stops PID if running."""
@@ -243,14 +284,34 @@ class TempService:
                         {"channel_id": self.channel_id},
                     )
                     self._current_temp = current_temp
+                    self._last_successful_read_monotonic = loop_start
                 except Exception as e:
                     error_msg = f"Thermometer API read error: {type(e).__name__}: {str(e)}"
                     print(f"[{self.channel_id}] {error_msg}")
                     self._record_error(error_msg)
+                    if self._last_successful_read_monotonic is not None:
+                        elapsed = loop_start - self._last_successful_read_monotonic
+                        if elapsed > pid_cfg.max_seconds_without_read:
+                            detail = (
+                                f"no successful read for {elapsed:.1f}s "
+                                f"(limit {pid_cfg.max_seconds_without_read:.1f}s)"
+                            )
+                            print(f"[{self.channel_id}] SENSOR-TIMEOUT auto-stop: {detail}")
+                            self._auto_stop(PidStopReason.sensor_timeout, detail)
+                            return
                     # Skip this PID iteration; maintain current heater power
                     last_time = loop_start
                     time.sleep(pid_cfg.loop_interval_seconds)
                     continue
+
+                if current_temp > self._effective_max_temp:
+                    detail = (
+                        f"{current_temp:.2f}°C exceeded max "
+                        f"{self._effective_max_temp:.2f}°C"
+                    )
+                    print(f"[{self.channel_id}] OVERHEAT auto-stop: {detail}")
+                    self._auto_stop(PidStopReason.overheat, detail)
+                    return
 
                 duty = self._pid.update(measurement=current_temp, dt=dt)
                 power = max(

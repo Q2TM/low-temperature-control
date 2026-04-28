@@ -1,8 +1,15 @@
 from datetime import datetime
+from enum import Enum
 from typing import Optional
 
 from pydantic import Field
 from fastapi_camelcase import CamelModel
+
+
+class PidStopReason(str, Enum):
+    """Reason the PID loop was automatically stopped by a safety check."""
+    overheat = "overheat"
+    sensor_timeout = "sensor_timeout"
 
 
 class TargetTemp(CamelModel):
@@ -129,6 +136,17 @@ class PidStatus(CamelModel):
     error_stats: ErrorStats = Field(
         description="Error counters for thermometer API read failures "
                     "over 1 min, 10 min, and since PID start.")
+    last_stop_reason: Optional[PidStopReason] = Field(
+        default=None,
+        description="Why PID was last automatically stopped (overheat or sensor_timeout). "
+                    "Null when never auto-stopped, manually stopped, or running. "
+                    "Cleared on next Start or on manual Stop.")
+    last_stop_at: Optional[datetime] = Field(
+        default=None,
+        description="UTC timestamp the auto-stop fired. Null when last_stop_reason is null.")
+    last_stop_detail: Optional[str] = Field(
+        default=None,
+        description="Human-readable detail (e.g. measured °C vs limit, or seconds since last read).")
 
 
 class ChannelStatusOut(CamelModel):

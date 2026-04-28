@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { Spinner } from "@repo/ui/icon/spinner";
 
@@ -68,6 +69,9 @@ export function DashboardContent({
   const [pidParameters, setPidParameters] = useState(initialPidParameters);
   const [pidRuntimeState, setPidRuntimeState] =
     useState<PidRuntimeState | null>(initialPidRuntimeState);
+  const lastStopAtRef = useRef<string | null>(
+    initialPidRuntimeState?.lastStopAt ?? null,
+  );
 
   const spanMs = getTimeSpanMs(timeRange);
 
@@ -94,11 +98,31 @@ export function DashboardContent({
       setIsActive(status.pid.isActive);
       setPidRuntimeState({
         power: status.heater.power,
+        powerWatts: status.heater.powerWatts,
         startedAt: status.pid.startedAt,
         runningForSeconds: status.pid.runningForSeconds,
         pidVariables: status.pid.variables,
         errorStats: status.pid.errorStats,
+        lastStopReason: status.pid.lastStopReason ?? null,
+        lastStopAt: status.pid.lastStopAt ?? null,
+        lastStopDetail: status.pid.lastStopDetail ?? null,
       });
+
+      const newStopAt = status.pid.lastStopAt ?? null;
+      if (
+        newStopAt &&
+        newStopAt !== lastStopAtRef.current &&
+        status.pid.lastStopReason
+      ) {
+        const reason =
+          status.pid.lastStopReason === "overheat"
+            ? "Overheat protection triggered"
+            : "Sensor timeout";
+        toast.error(`PID auto-stopped: ${reason}`, {
+          description: status.pid.lastStopDetail ?? undefined,
+        });
+      }
+      lastStopAtRef.current = newStopAt;
     }
     if (params) setPidParameters(params);
   }, [systemId, heaterChannel, sensorChannel]);

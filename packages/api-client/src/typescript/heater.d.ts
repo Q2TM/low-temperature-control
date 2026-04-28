@@ -438,7 +438,25 @@ export interface components {
       variables: components["schemas"]["PidVariables"];
       /** @description Error counters for thermometer API read failures over 1 min, 10 min, and since PID start. */
       errorStats: components["schemas"]["ErrorStats"];
+      /** @description Why PID was last automatically stopped (overheat or sensor_timeout). Null when never auto-stopped, manually stopped, or running. Cleared on next Start or on manual Stop. */
+      lastStopReason?: components["schemas"]["PidStopReason"] | null;
+      /**
+       * Laststopat
+       * @description UTC timestamp the auto-stop fired. Null when last_stop_reason is null.
+       */
+      lastStopAt?: string | null;
+      /**
+       * Laststopdetail
+       * @description Human-readable detail (e.g. measured °C vs limit, or seconds since last read).
+       */
+      lastStopDetail?: string | null;
     };
+    /**
+     * PidStopReason
+     * @description Reason the PID loop was automatically stopped by a safety check.
+     * @enum {string}
+     */
+    PidStopReason: "overheat" | "sensor_timeout";
     /**
      * PidVariables
      * @description Schema for PID internal variables.

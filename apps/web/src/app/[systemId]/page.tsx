@@ -35,10 +35,14 @@ export default async function SystemDashboardPage({ params }: Props) {
   const pidRuntimeState = heaterStatus
     ? {
         power: heaterStatus.heater.power,
+        powerWatts: heaterStatus.heater.powerWatts,
         startedAt: heaterStatus.pid.startedAt,
         runningForSeconds: heaterStatus.pid.runningForSeconds,
         pidVariables: heaterStatus.pid.variables,
         errorStats: heaterStatus.pid.errorStats,
+        lastStopReason: heaterStatus.pid.lastStopReason ?? null,
+        lastStopAt: heaterStatus.pid.lastStopAt ?? null,
+        lastStopDetail: heaterStatus.pid.lastStopDetail ?? null,
       }
     : null;
 
