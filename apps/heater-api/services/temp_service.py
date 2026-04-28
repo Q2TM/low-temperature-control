@@ -13,6 +13,7 @@ from .PID import PIDController
 from repositories.heater import HeaterRepository
 from .heater_factory import create_heater
 from .lgg_client import readingApi
+from .state_store import ChannelPersistedState, StateStore
 
 _meter = metrics.get_meter("heater-api")
 _pid_loop_duration = _meter.create_histogram(
@@ -36,6 +37,8 @@ class TempService:
         heater_config: HeaterConfig,
         app_config: AppConfig | None = None,
         channel_max_temp: Optional[float] = None,
+        state_store: Optional[StateStore] = None,
+        persisted: Optional[ChannelPersistedState] = None,
     ):
         """Initialize temperature service for a specific channel."""
         self.channel_id = channel_id
@@ -47,9 +50,19 @@ class TempService:
         self._effective_max_temp = (
             channel_max_temp if channel_max_temp is not None else pid_cfg.max_temp_celsius
         )
+        self._state_store = state_store
 
         self._target = pid_cfg.default_target
         self._params = Parameters()
+        if persisted is not None:
+            if persisted.target_temp is not None:
+                self._target = persisted.target_temp
+            if persisted.kp is not None:
+                self._params.kp = persisted.kp
+            if persisted.ki is not None:
+                self._params.ki = persisted.ki
+            if persisted.kd is not None:
+                self._params.kd = persisted.kd
 
         self._pid = PIDController(
             kp=self._params.kp,
@@ -87,6 +100,8 @@ class TempService:
     def set_target(self, value: float):
         self._target = value
         self._pid.set_setpoint(value)
+        if self._state_store is not None:
+            self._state_store.save_target(self.channel_id, value)
 
     def get_parameters(self):
         return self._params
@@ -98,6 +113,8 @@ class TempService:
             ki=params.ki,
             kd=params.kd,
         )
+        if self._state_store is not None:
+            self._state_store.save_parameters(self.channel_id, params)
         return self._params
 
     def _record_error(self, error_message: str):

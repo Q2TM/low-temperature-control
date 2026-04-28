@@ -1,8 +1,10 @@
+import os
 from typing import Dict
 from schemas.channel import ChannelConfig, ChannelInfo, AllChannelsStatus, GpioHeaterConfig, PsuHeaterConfig, MockHeaterConfig
 from schemas.app_config import AppConfig
 from services.temp_service import TempService
 from services.config_loader import ConfigLoader
+from services.state_store import StateStore
 
 
 class ChannelManager:
@@ -18,10 +20,12 @@ class ChannelManager:
         self._channels: Dict[int, TempService] = {}
         self._configs: Dict[int, ChannelConfig] = {}
         self.app_config: AppConfig = ConfigLoader.load(config_path)
+        self.state_store = StateStore(os.getenv("STATE_PATH", "state.json"))
         self._initialize_channels()
 
     def _initialize_channels(self):
         """Initialize all channels from loaded configuration."""
+        persisted = self.state_store.load()
         for config in self.app_config.channels:
             self._configs[config.channel_id] = config
             if config.enabled:
@@ -32,6 +36,8 @@ class ChannelManager:
                     heater_config=config.heater,
                     app_config=self.app_config,
                     channel_max_temp=config.max_temp_celsius,
+                    state_store=self.state_store,
+                    persisted=persisted.channels.get(config.channel_id),
                 )
                 self._channels[config.channel_id] = service
                 print(
