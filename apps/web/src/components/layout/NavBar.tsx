@@ -38,7 +38,7 @@ export function NavBar({ systems, currentSystemId }: NavBarProps) {
             href={curveHref}
             className="text-sm font-medium hover:text-primary transition-colors"
           >
-            Curve Editor
+            Lake Shore Management
           </Link>
           <Link
             href="/admin/systems"

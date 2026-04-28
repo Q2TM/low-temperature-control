@@ -34,6 +34,53 @@ export async function getLakeshoreTemperatureCelsius(
   }
 }
 
+/**
+ * Lakeshore device identification (manufacturer, model, serial, firmware).
+ * Returns null when the device is unreachable or disconnected — the caller
+ * uses this to drive the connection-status indicator.
+ */
+export async function getLakeshoreIdentification(systemId: string) {
+  try {
+    const client = await getClient(systemId);
+    const { data, error } = await client.GET("/api/v1/device/identification");
+    if (error || !data) return null;
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch Lakeshore identification:", error);
+    return null;
+  }
+}
+
+/** Lakeshore device module name (operator-set label on the unit itself). */
+export async function getLakeshoreModuleName(
+  systemId: string,
+): Promise<string | null> {
+  try {
+    const client = await getClient(systemId);
+    const { data, error } = await client.GET("/api/v1/device/module-name");
+    if (error || data == null) return null;
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch Lakeshore module name:", error);
+    return null;
+  }
+}
+
+/** Force a reconnect to the Lakeshore device. */
+export async function connectLakeshore(systemId: string) {
+  try {
+    const client = await getClient(systemId);
+    const { data, error } = await client.POST("/api/v1/device/connect");
+    if (error) {
+      return { success: false, error: "Failed to connect to Lakeshore" };
+    }
+    return { success: true, data };
+  } catch (error) {
+    console.error("Failed to connect to Lakeshore:", error);
+    return { success: false, error: "Failed to connect to Lakeshore" };
+  }
+}
+
 export async function getCurveHeader(channel: number, systemId: string) {
   try {
     const client = await getClient(systemId);
