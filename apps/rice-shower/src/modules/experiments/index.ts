@@ -142,8 +142,7 @@ export const experimentsController = new Elysia({
         return await stopExperiment(id);
       } catch (e) {
         if (e instanceof ExperimentError) {
-          if (e.code === "not_running")
-            throw status(404, { error: e.message });
+          if (e.code === "not_running") throw status(404, { error: e.message });
           if (e.code === "system_not_found")
             throw status(404, { error: e.message });
         }

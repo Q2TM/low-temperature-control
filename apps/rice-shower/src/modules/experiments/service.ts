@@ -12,9 +12,7 @@ function createHeaterClient(baseUrl: string) {
   return createClient<Heater.Paths>({ baseUrl });
 }
 
-function serialize(
-  row: typeof experiments.$inferSelect,
-): ExperimentType {
+function serialize(row: typeof experiments.$inferSelect): ExperimentType {
   return {
     id: row.id,
     name: row.name,
@@ -124,10 +122,9 @@ export async function startExperiment(input: {
 
   // Start the PID loop. We do this BEFORE the insert so a failure here means
   // no row is created.
-  const { error: startError } = await heater.POST(
-    "/pid/{channel_id}/start",
-    { params: { path: { channel_id: input.channel } } },
-  );
+  const { error: startError } = await heater.POST("/pid/{channel_id}/start", {
+    params: { path: { channel_id: input.channel } },
+  });
   if (startError) {
     throw new ExperimentError(
       "pid_start_failed",
@@ -167,7 +164,10 @@ export async function startExperiment(input: {
 }
 
 export async function stopExperiment(id: string): Promise<ExperimentType> {
-  const [row] = await db.select().from(experiments).where(eq(experiments.id, id));
+  const [row] = await db
+    .select()
+    .from(experiments)
+    .where(eq(experiments.id, id));
   if (!row) {
     throw new ExperimentError("not_running", `Experiment '${id}' not found`);
   }
@@ -184,10 +184,9 @@ export async function stopExperiment(id: string): Promise<ExperimentType> {
   let stopReason: "manual" | "external_stop" = "manual";
   let stopDetail: string | null = null;
 
-  const { error: stopError } = await heater.POST(
-    "/pid/{channel_id}/stop",
-    { params: { path: { channel_id: row.channel } } },
-  );
+  const { error: stopError } = await heater.POST("/pid/{channel_id}/stop", {
+    params: { path: { channel_id: row.channel } },
+  });
   if (stopError) {
     // Operator wanted to stop; record the row anyway with the failure detail.
     stopReason = "external_stop";
@@ -348,10 +347,6 @@ export async function reconcileFromHeaterStatus(input: {
       updatedAt: new Date(),
     })
     .where(
-      and(
-        eq(experiments.id, running.id),
-        eq(experiments.status, "running"),
-      ),
+      and(eq(experiments.id, running.id), eq(experiments.status, "running")),
     );
 }
-
