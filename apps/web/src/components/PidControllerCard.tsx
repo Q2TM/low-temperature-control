@@ -1,10 +1,20 @@
 "use client";
 
-import { Check, ChevronRight, Pause, Play, X } from "lucide-react";
+import {
+  Check,
+  ChevronRight,
+  FlaskConical,
+  Pause,
+  Play,
+  X,
+} from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@repo/ui/atom/badge";
 import { Button } from "@repo/ui/atom/button";
+import { Input } from "@repo/ui/atom/input";
+import { Label } from "@repo/ui/atom/label";
 import {
   Card,
   CardAction,
@@ -13,7 +23,20 @@ import {
   CardFooter,
   CardHeader,
 } from "@repo/ui/molecule/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/ui/molecule/dialog";
 
+import {
+  type Experiment,
+  startExperiment,
+  stopExperiment,
+} from "@/actions/experiments";
 import {
   setPIDParameters,
   setTargetTemperature,
@@ -111,6 +134,7 @@ type PidControllerCardProps = {
   isActive: boolean;
   pidParameters: { kp: number; ki: number; kd: number } | null;
   pidRuntimeState: PidRuntimeState | null;
+  activeExperiment: Experiment | null;
   onStatusChange?: () => void;
 };
 
@@ -122,6 +146,7 @@ export function PidControllerCard({
   isActive,
   pidParameters,
   pidRuntimeState,
+  activeExperiment,
   onStatusChange,
 }: PidControllerCardProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -134,6 +159,17 @@ export function PidControllerCard({
   const [newKd, setNewKd] = useState(pidParameters?.kd.toString() ?? "");
   const [isPending, startTransition] = useTransition();
   const [isErrorExpanded, setIsErrorExpanded] = useState(false);
+
+  const [startDialogOpen, setStartDialogOpen] = useState(false);
+  const [experimentName, setExperimentName] = useState("");
+
+  // Lock target/PID edits whenever an experiment is active AND the PID is
+  // running. Once PID stops (manually or via auto-stop), the row reconciles
+  // shortly after, so the lock window closes naturally.
+  const isExperimentLocked = activeExperiment !== null && isActive;
+  const lockedTooltip = activeExperiment
+    ? `Locked during experiment "${activeExperiment.name}"`
+    : undefined;
 
   const handleSetTargetTemp = async () => {
     const temp = parseFloat(newTargetTemp);
@@ -215,6 +251,40 @@ export function PidControllerCard({
     });
   };
 
+  const handleStartExperiment = () => {
+    const name = experimentName.trim();
+    if (!name) {
+      toast.error("Experiment name is required");
+      return;
+    }
+    startTransition(async () => {
+      const result = await startExperiment({
+        name,
+        systemId,
+        channel: channelId,
+      });
+      if (result.success) {
+        setStartDialogOpen(false);
+        setExperimentName("");
+        onStatusChange?.();
+      } else {
+        toast.error(result.error || "Failed to start experiment");
+      }
+    });
+  };
+
+  const handleStopExperiment = () => {
+    if (!activeExperiment) return;
+    startTransition(async () => {
+      const result = await stopExperiment(activeExperiment.id);
+      if (result.success) {
+        onStatusChange?.();
+      } else {
+        toast.error(result.error || "Failed to stop experiment");
+      }
+    });
+  };
+
   const hasLongErrorMessage =
     (pidRuntimeState?.errorStats.lastErrorMessage?.length ?? 0) > 120;
 
@@ -228,6 +298,23 @@ export function PidControllerCard({
           </Badge>
         </CardAction>
       </CardHeader>
+
+      {activeExperiment && (
+        <div className="px-6 -mt-2">
+          <div className="flex items-start gap-2 rounded-md bg-primary/10 px-3 py-2 text-sm">
+            <FlaskConical className="size-4 mt-0.5 shrink-0 text-primary" />
+            <div className="min-w-0 flex-1">
+              <div className="font-medium truncate">
+                {activeExperiment.name}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Experiment running &middot; started{" "}
+                {new Date(activeExperiment.startedAt).toLocaleString()}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <CardContent className="space-y-4">
         {/* Temperature → Target with animated arrow */}
@@ -498,7 +585,8 @@ export function PidControllerCard({
               variant="outline"
               className="flex-1"
               onClick={() => setIsEditing(true)}
-              disabled={isPending}
+              disabled={isPending || isExperimentLocked}
+              title={isExperimentLocked ? lockedTooltip : undefined}
             >
               Edit Target
             </Button>
@@ -506,35 +594,115 @@ export function PidControllerCard({
               variant="outline"
               className="flex-1"
               onClick={handleEditPID}
-              disabled={isPending}
+              disabled={isPending || isExperimentLocked}
+              title={isExperimentLocked ? lockedTooltip : undefined}
             >
               Edit PID
             </Button>
           </div>
         )}
         {!isEditingPID && (
-          <Button
-            onClick={handleTogglePID}
-            disabled={isPending}
-            variant={isActive ? "destructive" : "default"}
-            className="w-full"
-          >
-            {isPending ? (
-              "..."
+          <>
+            {activeExperiment ? (
+              <Button
+                onClick={handleStopExperiment}
+                disabled={isPending}
+                variant="destructive"
+                className="w-full"
+              >
+                {isPending ? (
+                  "..."
+                ) : (
+                  <>
+                    <Pause className="mr-2 h-4 w-4" />
+                    Stop Experiment
+                  </>
+                )}
+              </Button>
             ) : isActive ? (
-              <>
-                <Pause className="mr-2 h-4 w-4" />
-                Stop
-              </>
+              <Button
+                onClick={handleTogglePID}
+                disabled={isPending}
+                variant="destructive"
+                className="w-full"
+              >
+                {isPending ? (
+                  "..."
+                ) : (
+                  <>
+                    <Pause className="mr-2 h-4 w-4" />
+                    Stop
+                  </>
+                )}
+              </Button>
             ) : (
-              <>
-                <Play className="mr-2 h-4 w-4" />
-                Start
-              </>
+              <div className="flex w-full gap-2">
+                <Button
+                  onClick={() => setStartDialogOpen(true)}
+                  disabled={isPending}
+                  variant="default"
+                  className="flex-1"
+                >
+                  <FlaskConical className="mr-2 h-4 w-4" />
+                  Start Experiment
+                </Button>
+                <Button
+                  onClick={handleTogglePID}
+                  disabled={isPending}
+                  variant="outline"
+                  className="flex-1"
+                  title="Start PID without an experiment"
+                >
+                  <Play className="mr-2 h-4 w-4" />
+                  Start
+                </Button>
+              </div>
             )}
-          </Button>
+          </>
         )}
       </CardFooter>
+
+      <Dialog open={startDialogOpen} onOpenChange={setStartDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Start Experiment</DialogTitle>
+            <DialogDescription>
+              Starts the PID loop and records this run with the current target (
+              {targetTemp?.toFixed(1) ?? "--"}°C) and PID parameters as a
+              snapshot. Target and PID values are locked while the experiment is
+              running.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="experiment-name">Name</Label>
+            <Input
+              id="experiment-name"
+              value={experimentName}
+              onChange={(e) => setExperimentName(e.target.value)}
+              placeholder="e.g. tuning-run-3"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleStartExperiment();
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setStartDialogOpen(false);
+                setExperimentName("");
+              }}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleStartExperiment} disabled={isPending}>
+              {isPending ? "Starting..." : "Start"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

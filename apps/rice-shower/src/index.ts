@@ -8,6 +8,7 @@ import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-node";
 import { Elysia } from "elysia";
 import { stringify } from "yaml";
 
+import { experimentsController } from "./modules/experiments";
 import { queryController } from "./modules/query";
 import { scrapeController } from "./modules/scrape";
 import { ScraperManager } from "./modules/scrape/service";
@@ -44,6 +45,11 @@ const app = new Elysia()
             description:
               "Endpoints for managing system configuration (registry)",
           },
+          {
+            name: "Experiments",
+            description:
+              "Endpoints for managing PID experiments (named runs with snapshots)",
+          },
         ],
       },
     }),
@@ -61,6 +67,7 @@ const app = new Elysia()
   .use(queryController)
   .use(scrapeController)
   .use(systemsController)
+  .use(experimentsController)
   .listen(8100);
 
 const appUrl = `http://${app.server?.hostname}:${app.server?.port}`;

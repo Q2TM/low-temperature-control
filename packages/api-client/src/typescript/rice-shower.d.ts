@@ -176,6 +176,98 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/experiments/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Experiments
+     * @description List experiments with optional filters by system, channel, status, name, and start-time range. Sorted by startedAt desc.
+     */
+    get: operations["listExperiments"];
+    put?: never;
+    /**
+     * Start Experiment
+     * @description Create an experiment and start the PID loop. Captures setpoint and Kp/Ki/Kd as the experiment's start snapshot. Refuses if PID is already active or another experiment is running on the same channel.
+     */
+    post: operations["startExperiment"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/experiments/active": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Active Experiment
+     * @description Return the currently running experiment for a given (systemId, channel), or null if none.
+     */
+    get: operations["getActiveExperiment"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/experiments/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Experiment
+     * @description Get a single experiment by id.
+     */
+    get: operations["getExperiment"];
+    put?: never;
+    post?: never;
+    /**
+     * Delete Experiment
+     * @description Delete a non-running experiment. Refuses to delete a running one.
+     */
+    delete: operations["deleteExperiment"];
+    options?: never;
+    head?: never;
+    /**
+     * Update Experiment
+     * @description Update an experiment's name or notes (no other fields).
+     */
+    patch: operations["updateExperiment"];
+    trace?: never;
+  };
+  "/experiments/{id}/stop": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Stop Experiment
+     * @description Stop a running experiment. Calls the heater PID stop endpoint and finalizes the experiment row.
+     */
+    post: operations["stopExperiment"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -902,6 +994,528 @@ export interface operations {
       };
       /** @description Response for status 404 */
       404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+    };
+  };
+  listExperiments: {
+    parameters: {
+      query?: {
+        systemId?: string;
+        channel?: number;
+        status?: "running" | "completed" | "aborted";
+        nameContains?: string;
+        startedAfter?: Record<string, never> | string | number;
+        startedBefore?: Record<string, never> | string | number;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** @description Total experiments matching the filter */
+            total: number;
+            experiments: {
+              /**
+               * Format: uuid
+               * @description Experiment id
+               */
+              id: string;
+              /** @description User-supplied experiment name */
+              name: string;
+              /** @description System id */
+              systemId: string;
+              /** @description Heater channel number */
+              channel: number;
+              /** @enum {string} */
+              status: "running" | "completed" | "aborted";
+              /**
+               * Format: date-time
+               * @description When the experiment (and PID) started
+               */
+              startedAt: string;
+              endedAt: (string | null) | null;
+              startSetpoint: (number | null) | null;
+              startKp: (number | null) | null;
+              startKi: (number | null) | null;
+              startKd: (number | null) | null;
+              stopReason:
+                | (
+                    | (
+                        | "manual"
+                        | "overheat"
+                        | "sensor_timeout"
+                        | "external_stop"
+                      )
+                    | null
+                  )
+                | null;
+              stopDetail: (string | null) | null;
+              notes: (string | null) | null;
+              /** Format: date-time */
+              createdAt: string;
+              /** Format: date-time */
+              updatedAt: string;
+            }[];
+          };
+        };
+      };
+    };
+  };
+  startExperiment: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": {
+          /** @description Experiment name */
+          name: string;
+          systemId: string;
+          channel: number;
+          notes?: (string | null) | null;
+        };
+      };
+    };
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /**
+             * Format: uuid
+             * @description Experiment id
+             */
+            id: string;
+            /** @description User-supplied experiment name */
+            name: string;
+            /** @description System id */
+            systemId: string;
+            /** @description Heater channel number */
+            channel: number;
+            /** @enum {string} */
+            status: "running" | "completed" | "aborted";
+            /**
+             * Format: date-time
+             * @description When the experiment (and PID) started
+             */
+            startedAt: string;
+            endedAt: (string | null) | null;
+            startSetpoint: (number | null) | null;
+            startKp: (number | null) | null;
+            startKi: (number | null) | null;
+            startKd: (number | null) | null;
+            stopReason:
+              | (
+                  | ("manual" | "overheat" | "sensor_timeout" | "external_stop")
+                  | null
+                )
+              | null;
+            stopDetail: (string | null) | null;
+            notes: (string | null) | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+          };
+        };
+      };
+      /** @description Response for status 404 */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+      /** @description Response for status 409 */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+      /** @description Response for status 500 */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+      /** @description Response for status 502 */
+      502: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+    };
+  };
+  getActiveExperiment: {
+    parameters: {
+      query: {
+        systemId: string;
+        channel: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            experiment:
+              | ({
+                  /**
+                   * Format: uuid
+                   * @description Experiment id
+                   */
+                  id: string;
+                  /** @description User-supplied experiment name */
+                  name: string;
+                  /** @description System id */
+                  systemId: string;
+                  /** @description Heater channel number */
+                  channel: number;
+                  status: "running" | "completed" | "aborted";
+                  /**
+                   * Format: date-time
+                   * @description When the experiment (and PID) started
+                   */
+                  startedAt: string;
+                  endedAt: (string | null) | null;
+                  startSetpoint: (number | null) | null;
+                  startKp: (number | null) | null;
+                  startKi: (number | null) | null;
+                  startKd: (number | null) | null;
+                  stopReason:
+                    | (
+                        | (
+                            | "manual"
+                            | "overheat"
+                            | "sensor_timeout"
+                            | "external_stop"
+                          )
+                        | null
+                      )
+                    | null;
+                  stopDetail: (string | null) | null;
+                  notes: (string | null) | null;
+                  /** Format: date-time */
+                  createdAt: string;
+                  /** Format: date-time */
+                  updatedAt: string;
+                } | null)
+              | null;
+          };
+        };
+      };
+    };
+  };
+  getExperiment: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /**
+             * Format: uuid
+             * @description Experiment id
+             */
+            id: string;
+            /** @description User-supplied experiment name */
+            name: string;
+            /** @description System id */
+            systemId: string;
+            /** @description Heater channel number */
+            channel: number;
+            /** @enum {string} */
+            status: "running" | "completed" | "aborted";
+            /**
+             * Format: date-time
+             * @description When the experiment (and PID) started
+             */
+            startedAt: string;
+            endedAt: (string | null) | null;
+            startSetpoint: (number | null) | null;
+            startKp: (number | null) | null;
+            startKi: (number | null) | null;
+            startKd: (number | null) | null;
+            stopReason:
+              | (
+                  | ("manual" | "overheat" | "sensor_timeout" | "external_stop")
+                  | null
+                )
+              | null;
+            stopDetail: (string | null) | null;
+            notes: (string | null) | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+          };
+        };
+      };
+      /** @description Response for status 404 */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+    };
+  };
+  deleteExperiment: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            success: boolean;
+          };
+        };
+      };
+      /** @description Response for status 404 */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+      /** @description Response for status 409 */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+    };
+  };
+  updateExperiment: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": {
+          name?: string;
+          notes?: (string | null) | null;
+        };
+      };
+    };
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /**
+             * Format: uuid
+             * @description Experiment id
+             */
+            id: string;
+            /** @description User-supplied experiment name */
+            name: string;
+            /** @description System id */
+            systemId: string;
+            /** @description Heater channel number */
+            channel: number;
+            /** @enum {string} */
+            status: "running" | "completed" | "aborted";
+            /**
+             * Format: date-time
+             * @description When the experiment (and PID) started
+             */
+            startedAt: string;
+            endedAt: (string | null) | null;
+            startSetpoint: (number | null) | null;
+            startKp: (number | null) | null;
+            startKi: (number | null) | null;
+            startKd: (number | null) | null;
+            stopReason:
+              | (
+                  | ("manual" | "overheat" | "sensor_timeout" | "external_stop")
+                  | null
+                )
+              | null;
+            stopDetail: (string | null) | null;
+            notes: (string | null) | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+          };
+        };
+      };
+      /** @description Response for status 404 */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+    };
+  };
+  stopExperiment: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Response for status 200 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /**
+             * Format: uuid
+             * @description Experiment id
+             */
+            id: string;
+            /** @description User-supplied experiment name */
+            name: string;
+            /** @description System id */
+            systemId: string;
+            /** @description Heater channel number */
+            channel: number;
+            /** @enum {string} */
+            status: "running" | "completed" | "aborted";
+            /**
+             * Format: date-time
+             * @description When the experiment (and PID) started
+             */
+            startedAt: string;
+            endedAt: (string | null) | null;
+            startSetpoint: (number | null) | null;
+            startKp: (number | null) | null;
+            startKi: (number | null) | null;
+            startKd: (number | null) | null;
+            stopReason:
+              | (
+                  | ("manual" | "overheat" | "sensor_timeout" | "external_stop")
+                  | null
+                )
+              | null;
+            stopDetail: (string | null) | null;
+            notes: (string | null) | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+          };
+        };
+      };
+      /** @description Response for status 404 */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: string;
+          };
+        };
+      };
+      /** @description Response for status 500 */
+      500: {
         headers: {
           [name: string]: unknown;
         };

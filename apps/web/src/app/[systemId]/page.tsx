@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { getActiveExperiment } from "@/actions/experiments";
 import { getHeaterStatus, getPIDParameters } from "@/actions/heater";
 import { getLakeshoreTemperatureCelsius } from "@/actions/lakeshore";
 import { DashboardContent } from "@/components/DashboardContent";
@@ -22,11 +23,13 @@ export default async function SystemDashboardPage({ params }: Props) {
   const sensorChannel = system.thermos[0]?.channel ?? 1;
   const heaterChannel = system.heaters[0]?.channel ?? 1;
 
-  const [heaterStatus, pidParameters, lakeshoreTemp] = await Promise.all([
-    getHeaterStatus(heaterChannel, systemId),
-    getPIDParameters(heaterChannel, systemId),
-    getLakeshoreTemperatureCelsius(sensorChannel, systemId),
-  ]);
+  const [heaterStatus, pidParameters, lakeshoreTemp, activeExperiment] =
+    await Promise.all([
+      getHeaterStatus(heaterChannel, systemId),
+      getPIDParameters(heaterChannel, systemId),
+      getLakeshoreTemperatureCelsius(sensorChannel, systemId),
+      getActiveExperiment(systemId, heaterChannel),
+    ]);
 
   const targetTemp = heaterStatus?.pid.target ?? null;
   const isActive = heaterStatus?.pid.isActive ?? false;
@@ -67,6 +70,7 @@ export default async function SystemDashboardPage({ params }: Props) {
           initialIsActive={isActive}
           initialPidParameters={pidParameters}
           initialPidRuntimeState={pidRuntimeState}
+          initialActiveExperiment={activeExperiment}
         />
       </div>
     </main>

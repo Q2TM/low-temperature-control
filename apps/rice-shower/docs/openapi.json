@@ -17,6 +17,10 @@
     {
       "name": "Systems",
       "description": "Endpoints for managing system configuration (registry)"
+    },
+    {
+      "name": "Experiments",
+      "description": "Endpoints for managing PID experiments (named runs with snapshots)"
     }
   ],
   "paths": {
@@ -1956,6 +1960,1626 @@
           },
           "404": {
             "description": "Response for status 404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/experiments/": {
+      "get": {
+        "tags": [
+          "Experiments"
+        ],
+        "operationId": "listExperiments",
+        "summary": "List Experiments",
+        "description": "List experiments with optional filters by system, channel, status, name, and start-time range. Sorted by startedAt desc.",
+        "parameters": [
+          {
+            "name": "systemId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "running",
+                "completed",
+                "aborted"
+              ]
+            }
+          },
+          {
+            "name": "nameContains",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startedAfter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "Date"
+                },
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          {
+            "name": "startedBefore",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "Date"
+                },
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response for status 200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "total",
+                    "experiments"
+                  ],
+                  "properties": {
+                    "total": {
+                      "description": "Total experiments matching the filter",
+                      "type": "number"
+                    },
+                    "experiments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "name",
+                          "systemId",
+                          "channel",
+                          "status",
+                          "startedAt",
+                          "endedAt",
+                          "startSetpoint",
+                          "startKp",
+                          "startKi",
+                          "startKd",
+                          "stopReason",
+                          "stopDetail",
+                          "notes",
+                          "createdAt",
+                          "updatedAt"
+                        ],
+                        "properties": {
+                          "id": {
+                            "format": "uuid",
+                            "description": "Experiment id",
+                            "type": "string"
+                          },
+                          "name": {
+                            "description": "User-supplied experiment name",
+                            "type": "string"
+                          },
+                          "systemId": {
+                            "description": "System id",
+                            "type": "string"
+                          },
+                          "channel": {
+                            "description": "Heater channel number",
+                            "type": "number"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "running",
+                              "completed",
+                              "aborted"
+                            ]
+                          },
+                          "startedAt": {
+                            "description": "When the experiment (and PID) started",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "endedAt": {
+                            "nullable": true,
+                            "anyOf": [
+                              {
+                                "description": "When the experiment ended; null while running",
+                                "format": "date-time",
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "startSetpoint": {
+                            "nullable": true,
+                            "anyOf": [
+                              {
+                                "description": "Target temp °C captured at start",
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "startKp": {
+                            "nullable": true,
+                            "anyOf": [
+                              {
+                                "description": "Kp captured at start",
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "startKi": {
+                            "nullable": true,
+                            "anyOf": [
+                              {
+                                "description": "Ki captured at start",
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "startKd": {
+                            "nullable": true,
+                            "anyOf": [
+                              {
+                                "description": "Kd captured at start",
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "stopReason": {
+                            "nullable": true,
+                            "anyOf": [
+                              {
+                                "anyOf": [
+                                  {
+                                    "const": "manual",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "overheat",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "sensor_timeout",
+                                    "type": "string"
+                                  },
+                                  {
+                                    "const": "external_stop",
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "stopDetail": {
+                            "nullable": true,
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "notes": {
+                            "nullable": true,
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "createdAt": {
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "updatedAt": {
+                            "format": "date-time",
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Experiments"
+        ],
+        "operationId": "startExperiment",
+        "summary": "Start Experiment",
+        "description": "Create an experiment and start the PID loop. Captures setpoint and Kp/Ki/Kd as the experiment's start snapshot. Refuses if PID is already active or another experiment is running on the same channel.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "systemId",
+                  "channel"
+                ],
+                "properties": {
+                  "name": {
+                    "minLength": 1,
+                    "description": "Experiment name",
+                    "type": "string"
+                  },
+                  "systemId": {
+                    "type": "string"
+                  },
+                  "channel": {
+                    "type": "number"
+                  },
+                  "notes": {
+                    "nullable": true,
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Response for status 200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "name",
+                    "systemId",
+                    "channel",
+                    "status",
+                    "startedAt",
+                    "endedAt",
+                    "startSetpoint",
+                    "startKp",
+                    "startKi",
+                    "startKd",
+                    "stopReason",
+                    "stopDetail",
+                    "notes",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "format": "uuid",
+                      "description": "Experiment id",
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "User-supplied experiment name",
+                      "type": "string"
+                    },
+                    "systemId": {
+                      "description": "System id",
+                      "type": "string"
+                    },
+                    "channel": {
+                      "description": "Heater channel number",
+                      "type": "number"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "running",
+                        "completed",
+                        "aborted"
+                      ]
+                    },
+                    "startedAt": {
+                      "description": "When the experiment (and PID) started",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "endedAt": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "When the experiment ended; null while running",
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startSetpoint": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Target temp °C captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startKp": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Kp captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startKi": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Ki captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startKd": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Kd captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "stopReason": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "const": "manual",
+                              "type": "string"
+                            },
+                            {
+                              "const": "overheat",
+                              "type": "string"
+                            },
+                            {
+                              "const": "sensor_timeout",
+                              "type": "string"
+                            },
+                            {
+                              "const": "external_stop",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "stopDetail": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "notes": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "createdAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response for status 404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Response for status 409",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Response for status 500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Response for status 502",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/experiments/active": {
+      "get": {
+        "tags": [
+          "Experiments"
+        ],
+        "operationId": "getActiveExperiment",
+        "summary": "Get Active Experiment",
+        "description": "Return the currently running experiment for a given (systemId, channel), or null if none.",
+        "parameters": [
+          {
+            "name": "systemId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response for status 200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "experiment"
+                  ],
+                  "properties": {
+                    "experiment": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "name",
+                            "systemId",
+                            "channel",
+                            "status",
+                            "startedAt",
+                            "endedAt",
+                            "startSetpoint",
+                            "startKp",
+                            "startKi",
+                            "startKd",
+                            "stopReason",
+                            "stopDetail",
+                            "notes",
+                            "createdAt",
+                            "updatedAt"
+                          ],
+                          "properties": {
+                            "id": {
+                              "format": "uuid",
+                              "description": "Experiment id",
+                              "type": "string"
+                            },
+                            "name": {
+                              "description": "User-supplied experiment name",
+                              "type": "string"
+                            },
+                            "systemId": {
+                              "description": "System id",
+                              "type": "string"
+                            },
+                            "channel": {
+                              "description": "Heater channel number",
+                              "type": "number"
+                            },
+                            "status": {
+                              "anyOf": [
+                                {
+                                  "const": "running",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "completed",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "aborted",
+                                  "type": "string"
+                                }
+                              ]
+                            },
+                            "startedAt": {
+                              "description": "When the experiment (and PID) started",
+                              "format": "date-time",
+                              "type": "string"
+                            },
+                            "endedAt": {
+                              "nullable": true,
+                              "anyOf": [
+                                {
+                                  "description": "When the experiment ended; null while running",
+                                  "format": "date-time",
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "startSetpoint": {
+                              "nullable": true,
+                              "anyOf": [
+                                {
+                                  "description": "Target temp °C captured at start",
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "startKp": {
+                              "nullable": true,
+                              "anyOf": [
+                                {
+                                  "description": "Kp captured at start",
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "startKi": {
+                              "nullable": true,
+                              "anyOf": [
+                                {
+                                  "description": "Ki captured at start",
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "startKd": {
+                              "nullable": true,
+                              "anyOf": [
+                                {
+                                  "description": "Kd captured at start",
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "stopReason": {
+                              "nullable": true,
+                              "anyOf": [
+                                {
+                                  "anyOf": [
+                                    {
+                                      "const": "manual",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "overheat",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "sensor_timeout",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "external_stop",
+                                      "type": "string"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "stopDetail": {
+                              "nullable": true,
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "notes": {
+                              "nullable": true,
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "createdAt": {
+                              "format": "date-time",
+                              "type": "string"
+                            },
+                            "updatedAt": {
+                              "format": "date-time",
+                              "type": "string"
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/experiments/{id}": {
+      "get": {
+        "tags": [
+          "Experiments"
+        ],
+        "operationId": "getExperiment",
+        "summary": "Get Experiment",
+        "description": "Get a single experiment by id.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response for status 200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "name",
+                    "systemId",
+                    "channel",
+                    "status",
+                    "startedAt",
+                    "endedAt",
+                    "startSetpoint",
+                    "startKp",
+                    "startKi",
+                    "startKd",
+                    "stopReason",
+                    "stopDetail",
+                    "notes",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "format": "uuid",
+                      "description": "Experiment id",
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "User-supplied experiment name",
+                      "type": "string"
+                    },
+                    "systemId": {
+                      "description": "System id",
+                      "type": "string"
+                    },
+                    "channel": {
+                      "description": "Heater channel number",
+                      "type": "number"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "running",
+                        "completed",
+                        "aborted"
+                      ]
+                    },
+                    "startedAt": {
+                      "description": "When the experiment (and PID) started",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "endedAt": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "When the experiment ended; null while running",
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startSetpoint": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Target temp °C captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startKp": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Kp captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startKi": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Ki captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startKd": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Kd captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "stopReason": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "const": "manual",
+                              "type": "string"
+                            },
+                            {
+                              "const": "overheat",
+                              "type": "string"
+                            },
+                            {
+                              "const": "sensor_timeout",
+                              "type": "string"
+                            },
+                            {
+                              "const": "external_stop",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "stopDetail": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "notes": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "createdAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response for status 404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Experiments"
+        ],
+        "operationId": "updateExperiment",
+        "summary": "Update Experiment",
+        "description": "Update an experiment's name or notes (no other fields).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "notes": {
+                    "nullable": true,
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Response for status 200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "name",
+                    "systemId",
+                    "channel",
+                    "status",
+                    "startedAt",
+                    "endedAt",
+                    "startSetpoint",
+                    "startKp",
+                    "startKi",
+                    "startKd",
+                    "stopReason",
+                    "stopDetail",
+                    "notes",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "format": "uuid",
+                      "description": "Experiment id",
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "User-supplied experiment name",
+                      "type": "string"
+                    },
+                    "systemId": {
+                      "description": "System id",
+                      "type": "string"
+                    },
+                    "channel": {
+                      "description": "Heater channel number",
+                      "type": "number"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "running",
+                        "completed",
+                        "aborted"
+                      ]
+                    },
+                    "startedAt": {
+                      "description": "When the experiment (and PID) started",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "endedAt": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "When the experiment ended; null while running",
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startSetpoint": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Target temp °C captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startKp": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Kp captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startKi": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Ki captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startKd": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Kd captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "stopReason": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "const": "manual",
+                              "type": "string"
+                            },
+                            {
+                              "const": "overheat",
+                              "type": "string"
+                            },
+                            {
+                              "const": "sensor_timeout",
+                              "type": "string"
+                            },
+                            {
+                              "const": "external_stop",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "stopDetail": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "notes": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "createdAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response for status 404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Experiments"
+        ],
+        "operationId": "deleteExperiment",
+        "summary": "Delete Experiment",
+        "description": "Delete a non-running experiment. Refuses to delete a running one.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response for status 200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response for status 404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Response for status 409",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/experiments/{id}/stop": {
+      "post": {
+        "tags": [
+          "Experiments"
+        ],
+        "operationId": "stopExperiment",
+        "summary": "Stop Experiment",
+        "description": "Stop a running experiment. Calls the heater PID stop endpoint and finalizes the experiment row.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response for status 200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "name",
+                    "systemId",
+                    "channel",
+                    "status",
+                    "startedAt",
+                    "endedAt",
+                    "startSetpoint",
+                    "startKp",
+                    "startKi",
+                    "startKd",
+                    "stopReason",
+                    "stopDetail",
+                    "notes",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "format": "uuid",
+                      "description": "Experiment id",
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "User-supplied experiment name",
+                      "type": "string"
+                    },
+                    "systemId": {
+                      "description": "System id",
+                      "type": "string"
+                    },
+                    "channel": {
+                      "description": "Heater channel number",
+                      "type": "number"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "running",
+                        "completed",
+                        "aborted"
+                      ]
+                    },
+                    "startedAt": {
+                      "description": "When the experiment (and PID) started",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "endedAt": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "When the experiment ended; null while running",
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startSetpoint": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Target temp °C captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startKp": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Kp captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startKi": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Ki captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "startKd": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "Kd captured at start",
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "stopReason": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "const": "manual",
+                              "type": "string"
+                            },
+                            {
+                              "const": "overheat",
+                              "type": "string"
+                            },
+                            {
+                              "const": "sensor_timeout",
+                              "type": "string"
+                            },
+                            {
+                              "const": "external_stop",
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "stopDetail": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "notes": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "createdAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "format": "date-time",
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response for status 404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Response for status 500",
             "content": {
               "application/json": {
                 "schema": {

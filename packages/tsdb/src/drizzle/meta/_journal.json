@@ -22,6 +22,20 @@
       "when": 1776093977984,
       "tag": "0002_add-column-heater-metrics",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777478026392,
+      "tag": "0003_create-experiments",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1777478026393,
+      "tag": "0004_experiments-running-unique",
+      "breakpoints": true
     }
   ]
 }

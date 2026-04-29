@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { Spinner } from "@repo/ui/icon/spinner";
 
+import { type Experiment, getActiveExperiment } from "@/actions/experiments";
 import { getHeaterStatus, getPIDParameters } from "@/actions/heater";
 import { getLakeshoreTemperatureCelsius } from "@/actions/lakeshore";
 import { TemperatureChart } from "@/components/charts/TemperatureChart";
@@ -41,6 +42,7 @@ type DashboardContentProps = {
     kd: number;
   } | null;
   initialPidRuntimeState: PidRuntimeState | null;
+  initialActiveExperiment: Experiment | null;
 };
 
 export function DashboardContent({
@@ -54,6 +56,7 @@ export function DashboardContent({
   initialIsActive,
   initialPidParameters,
   initialPidRuntimeState,
+  initialActiveExperiment,
 }: DashboardContentProps) {
   const [timeEnd, setTimeEnd] = useState<number>(() => Date.now());
   const [selectedChannel, setSelectedChannel] = useState<number>(heaterChannel);
@@ -69,6 +72,9 @@ export function DashboardContent({
   const [pidParameters, setPidParameters] = useState(initialPidParameters);
   const [pidRuntimeState, setPidRuntimeState] =
     useState<PidRuntimeState | null>(initialPidRuntimeState);
+  const [activeExperiment, setActiveExperiment] = useState<Experiment | null>(
+    initialActiveExperiment,
+  );
   const lastStopAtRef = useRef<string | null>(
     initialPidRuntimeState?.lastStopAt ?? null,
   );
@@ -86,11 +92,13 @@ export function DashboardContent({
   };
 
   const refreshPidStatus = useCallback(async () => {
-    const [status, params, lakeshoreTemp] = await Promise.all([
+    const [status, params, lakeshoreTemp, experiment] = await Promise.all([
       getHeaterStatus(heaterChannel, systemId),
       getPIDParameters(heaterChannel, systemId),
       getLakeshoreTemperatureCelsius(sensorChannel, systemId),
+      getActiveExperiment(systemId, heaterChannel),
     ]);
+    setActiveExperiment(experiment);
 
     if (status) {
       setCurrentTemp(lakeshoreTemp ?? status.currentTemp ?? null);
@@ -226,9 +234,14 @@ export function DashboardContent({
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
+    // When an experiment is running, prefix the file with its name so saved
+    // CSVs are easy to associate with the run.
+    const fileBase = activeExperiment
+      ? `${activeExperiment.name.replace(/[\\/:*?"<>|]+/g, "_")}`
+      : "temperature_data";
     link.setAttribute(
       "download",
-      `temperature_data_${new Date().toISOString()}.csv`,
+      `${fileBase}_${new Date().toISOString()}.csv`,
     );
     document.body.appendChild(link);
     link.click();
@@ -256,6 +269,7 @@ export function DashboardContent({
             isActive={isActive}
             pidParameters={pidParameters}
             pidRuntimeState={pidRuntimeState}
+            activeExperiment={activeExperiment}
             onStatusChange={handleStatusRefresh}
           />
 

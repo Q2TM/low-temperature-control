@@ -5,6 +5,7 @@ import type { Heater, LGG } from "@repo/api-client";
 import { heaterMetrics, thermoMetrics } from "@repo/tsdb";
 
 import { db } from "@/core/db";
+import { reconcileFromHeaterStatus } from "@/modules/experiments/service";
 import {
   listSystems,
   type SystemWithRelations,
@@ -84,6 +85,30 @@ async function scrapeHeater(
     powerWatts: data.heater.powerWatts,
     powerPercent: data.heater.power * 100,
   });
+
+  // Self-heal: if PID has stopped while an experiment is still marked running
+  // for this (system, channel), finalize it with the reason from the heater.
+  try {
+    await reconcileFromHeaterStatus({
+      systemId,
+      channel,
+      pidIsActive: data.pid.isActive,
+      lastStopReason: data.pid.lastStopReason,
+      lastStopAt: data.pid.lastStopAt,
+      lastStopDetail: data.pid.lastStopDetail,
+      currentPid: {
+        target: data.pid.target,
+        kp: data.pid.parameters.kp,
+        ki: data.pid.parameters.ki,
+        kd: data.pid.parameters.kd,
+      },
+    });
+  } catch (e) {
+    console.error(
+      `[scrape] experiment reconcile failed for ${systemId}/${channel}:`,
+      e,
+    );
+  }
 }
 
 export type ScrapeStats = {

@@ -423,20 +423,34 @@ export function SystemsAdmin({ initialSystems }: { initialSystems: System[] }) {
               ))}
             </div>
 
-            {/* Heaters */}
+            {/* Heaters — one per system. The dashboard always uses the
+                first heater channel, so adding more is intentionally blocked
+                here. Legacy systems with >1 heater are still editable. */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Heaters</Label>
+                <Label>Heater</Label>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={addHeater}
+                  disabled={form.heaters.length >= 1}
+                  title={
+                    form.heaters.length >= 1
+                      ? "Only one heater per system is supported"
+                      : undefined
+                  }
                 >
                   <Plus className="size-3.5 mr-1" />
                   Add
                 </Button>
               </div>
+              {form.heaters.length > 1 && (
+                <p className="text-xs text-muted-foreground">
+                  This system has {form.heaters.length} heaters. The dashboard
+                  will use the first one (channel {form.heaters[0]?.channel}).
+                </p>
+              )}
               {form.heaters.map((heater, i) => (
                 <div key={i} className="flex gap-2 items-end">
                   <div className="w-24 space-y-1">
