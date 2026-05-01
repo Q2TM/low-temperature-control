@@ -17,6 +17,9 @@ type NavBarProps = {
 
 export function NavBar({ systems, currentSystemId }: NavBarProps) {
   const curveHref = currentSystemId ? `/${currentSystemId}/curve` : "/";
+  const experimentsHref = currentSystemId
+    ? `/${currentSystemId}/experiments`
+    : null;
 
   return (
     <nav className="m-3 rounded-full border-2 border-border/50 bg-card/20 backdrop-blur-xs py-2 px-6 shadow-xl sticky top-3 max-w-5xl mx-auto z-40">
@@ -33,6 +36,14 @@ export function NavBar({ systems, currentSystemId }: NavBarProps) {
                 currentSystemId={currentSystemId}
               />
             </Suspense>
+          )}
+          {experimentsHref && (
+            <Link
+              href={experimentsHref}
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
+              Experiments
+            </Link>
           )}
           <Link
             href={curveHref}

@@ -5,15 +5,34 @@ import { getHeaterStatus, getPIDParameters } from "@/actions/heater";
 import { getLakeshoreTemperatureCelsius } from "@/actions/lakeshore";
 import { DashboardContent } from "@/components/DashboardContent";
 import { resolveSystem } from "@/libs/systemRegistry";
+import type { TimeRange } from "@/libs/timeConfig";
 
 export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ systemId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function SystemDashboardPage({ params }: Props) {
+function parseInitialTimeRange(
+  search: Record<string, string | string[] | undefined>,
+): TimeRange | null {
+  const start = search.expStart;
+  const end = search.expEnd;
+  if (typeof start !== "string" || typeof end !== "string") return null;
+  const s = Date.parse(start);
+  const e = Date.parse(end);
+  if (Number.isNaN(s) || Number.isNaN(e) || s >= e) return null;
+  return { mode: "absolute", start: s, end: e };
+}
+
+export default async function SystemDashboardPage({
+  params,
+  searchParams,
+}: Props) {
   const { systemId } = await params;
+  const search = await searchParams;
+  const initialTimeRange = parseInitialTimeRange(search);
   const system = await resolveSystem(systemId);
 
   if (!system) {
@@ -71,6 +90,7 @@ export default async function SystemDashboardPage({ params }: Props) {
           initialPidParameters={pidParameters}
           initialPidRuntimeState={pidRuntimeState}
           initialActiveExperiment={activeExperiment}
+          initialTimeRange={initialTimeRange}
         />
       </div>
     </main>

@@ -43,6 +43,7 @@ type DashboardContentProps = {
   } | null;
   initialPidRuntimeState: PidRuntimeState | null;
   initialActiveExperiment: Experiment | null;
+  initialTimeRange?: TimeRange | null;
 };
 
 export function DashboardContent({
@@ -57,14 +58,18 @@ export function DashboardContent({
   initialPidParameters,
   initialPidRuntimeState,
   initialActiveExperiment,
+  initialTimeRange,
 }: DashboardContentProps) {
   const [timeEnd, setTimeEnd] = useState<number>(() => Date.now());
   const [selectedChannel, setSelectedChannel] = useState<number>(heaterChannel);
-  const [timeRange, setTimeRange] = useState<TimeRange>({
-    mode: "relative",
-    minutes: 10,
-  });
-  const [timeInterval, setTimeInterval] = useState<number>(1); // seconds
+  const [timeRange, setTimeRange] = useState<TimeRange>(
+    initialTimeRange ?? { mode: "relative", minutes: 10 },
+  );
+  const [timeInterval, setTimeInterval] = useState<number>(() => {
+    if (!initialTimeRange) return 1;
+    const span = getTimeSpanMs(initialTimeRange);
+    return getAvailableResolutions(span).defaultResolution.value;
+  }); // seconds
   const [refreshInterval, setRefreshInterval] = useState<number>(10000); // ms
   const [currentTemp, setCurrentTemp] = useState(initialCurrentTemp);
   const [targetTemp, setTargetTemp] = useState(initialTargetTemp);
