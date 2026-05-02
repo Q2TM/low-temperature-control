@@ -1,40 +1,49 @@
-# TODO Update this for monorepo (Root Context)
+# syntax=docker/dockerfile:1.7
+#
+# Build context MUST be the monorepo root, e.g.:
+#   docker build -f apps/ls-api/Dockerfile -t ls-api .
+#
+# Lakeshore Model 240 enumerates as a USB CDC serial device (typically
+# /dev/ttyACM0). Expose it to the container with `--device=/dev/ttyACM0`
+# (or via the `devices:` entry in compose). The host kernel/usb-acm driver
+# is assumed to be installed on the host.
 
-# An example using multi-stage image builds to create a final image without uv.
-
-# First, build the application in the `/app` directory.
-# See `Dockerfile` for details.
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS builder
-ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=0
 
-# Disable Python downloads, because we want to use the system interpreter
-# across both images. If using a managed Python version, it needs to be
-# copied from the build image into the final image; see `standalone.Dockerfile`
-# for an example.
-ENV UV_PYTHON_DOWNLOADS=0
+WORKDIR /workspace
 
-WORKDIR /app
+# Workspace manifests first for cacheable dependency resolution. All members
+# must be present so uv can read the workspace graph from the root pyproject.
+COPY pyproject.toml uv.lock ./
+COPY apps/ls-api/pyproject.toml ./apps/ls-api/
+COPY apps/heater-api/pyproject.toml ./apps/heater-api/
+COPY packages/api-client/src/python/lgg/pyproject.toml ./packages/api-client/src/python/lgg/
+COPY packages/api-client/src/python/simulator/pyproject.toml ./packages/api-client/src/python/simulator/
+
 RUN --mount=type=cache,target=/root/.cache/uv \
-  --mount=type=bind,source=uv.lock,target=uv.lock \
-  --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-  uv sync --locked --no-install-project --no-dev
-COPY . /app
+    uv sync --locked --no-dev --no-install-workspace --package lingangu-api
+
+# Source for ls-api and the workspace packages it consumes.
+COPY apps/ls-api ./apps/ls-api
+COPY packages/api-client/src/python/simulator ./packages/api-client/src/python/simulator
+
 RUN --mount=type=cache,target=/root/.cache/uv \
-  uv sync --locked --no-dev
+    uv sync --locked --no-dev --package lingangu-api
 
 
-# Then, use a final image without uv
 FROM python:3.13-slim-bookworm
-# It is important to use the image that matches the builder, as the path to the
-# Python executable must be the same, e.g., using `python:3.11-slim-bookworm`
-# will fail.
 
-# Copy the application from the builder
-COPY --from=builder --chown=app:app /app /app
+COPY --from=builder /workspace /workspace
 
-# Place executables in the environment at the front of the path
-ENV PATH="/app/.venv/bin:$PATH"
+ENV PATH="/workspace/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1
 
-# Run the FastAPI application by default
-# CMD ["fastapi", "dev", "--host", "0.0.0.0", "/app/main.py"]
-CMD ["python", "/app/main.py"]
+# WORKDIR matches dev cwd so app.py's `./docs/index.html` resolves.
+WORKDIR /workspace/apps/ls-api
+
+EXPOSE 8000
+
+CMD ["python", "main.py"]

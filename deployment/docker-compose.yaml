@@ -1,0 +1,105 @@
+# Deployment compose — app services only.
+#
+# Infrastructure (TimescaleDB, Grafana, Tempo, Prometheus, OTel Collector)
+# lives in the root `docker-compose.yaml`; bring it up first so the
+# `rice-shower` network and the `tsdb` / `otel-collector` services exist:
+#
+#   docker compose -f docker-compose.yaml up -d
+#   docker compose -f deployment/docker-compose.yaml up -d
+#
+# The external network `rice-shower` is created by the root compose. Each
+# service here attaches to it explicitly so it can reach `tsdb`,
+# `otel-collector`, etc. by service name.
+#
+# Env vars are inlined here (no env_file) so the inline `# comments` in
+# the per-app .env.lab files don't get parsed as part of values.
+#
+# Serial devices for the lab hardware are exposed via `devices`. The host
+# is assumed to have the appropriate kernel drivers (cdc_acm for the
+# Lakeshore Model 240, cp210x for the PSU's USB-UART bridge). The exact
+# device paths can be overridden through the env vars at the top.
+
+networks:
+  rice-shower:
+    external: true
+
+services:
+  ls-api:
+    build:
+      context: ..
+      dockerfile: apps/ls-api/Dockerfile
+    image: lt-capstone/ls-api:latest
+    container_name: rice-ls-api
+    environment:
+      ENVIRONMENT: PRODUCTION
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    ports:
+      - "8000:8000"
+    devices:
+      - "${LS_SERIAL_DEVICE:-/dev/ttyACM0}:/dev/ttyACM0"
+    networks:
+      - rice-shower
+    restart: unless-stopped
+
+  heater-api:
+    build:
+      context: ..
+      dockerfile: apps/heater-api/Dockerfile
+    image: lt-capstone/heater-api:latest
+    container_name: rice-heater-api
+    environment:
+      ENVIRONMENT: PRODUCTION
+      HEATER_MODE: PSU
+      LGG_URL: http://ls-api:8000
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    ports:
+      - "8001:8001"
+    devices:
+      - "${PSU_SERIAL_DEVICE:-/dev/ttyUSB0}:/dev/ttyUSB0"
+    volumes:
+      - ../apps/heater-api/config.yaml:/workspace/apps/heater-api/config.yaml:ro
+      - heater-state:/data
+    depends_on:
+      - ls-api
+    networks:
+      - rice-shower
+    restart: unless-stopped
+
+  rice-shower:
+    build:
+      context: ..
+      dockerfile: apps/rice-shower/Dockerfile
+    image: lt-capstone/rice-shower:latest
+    container_name: rice-shower
+    environment:
+      DATABASE_URL: postgresql://postgres:password@tsdb:5432/lt_capstone_v2
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    ports:
+      - "8100:8100"
+    depends_on:
+      - ls-api
+      - heater-api
+    networks:
+      - rice-shower
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    image: lt-capstone/web:latest
+    container_name: rice-web
+    environment:
+      RICE_SHOWER_URL: http://rice-shower:8100
+    ports:
+      - "3100:3100"
+    depends_on:
+      - rice-shower
+    networks:
+      - rice-shower
+    restart: unless-stopped
+
+volumes:
+  heater-state:
+    driver: local
+    name: rice-heater-state
