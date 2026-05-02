@@ -30,6 +30,7 @@ type NavBarProps = {
 export function NavBar({ systems, currentSystemId }: NavBarProps) {
   const [open, setOpen] = useState(false);
 
+  const dashboardHref = currentSystemId ? `/${currentSystemId}` : "/";
   const curveHref = currentSystemId ? `/${currentSystemId}/curve` : "/";
   const experimentsHref = currentSystemId
     ? `/${currentSystemId}/experiments`
@@ -72,7 +73,7 @@ export function NavBar({ systems, currentSystemId }: NavBarProps) {
     <nav className="mx-4 my-3 md:mx-auto rounded-3xl md:rounded-full border-2 border-border/50 bg-card/20 backdrop-blur-xs py-2 px-4 sm:px-6 shadow-xl sticky top-3 max-w-5xl z-40">
       <div className="flex flex-row items-center justify-between gap-2 sm:gap-3">
         <Link
-          href="/"
+          href={dashboardHref}
           onClick={closeMenu}
           className="text-lg sm:text-xl font-semibold"
         >
