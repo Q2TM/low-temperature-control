@@ -27,6 +27,24 @@ importers:
         specifier: 6.0.2
         version: 6.0.2
 
+  apps/e2e:
+    devDependencies:
+      '@repo/tsdb':
+        specifier: workspace:*
+        version: link:../../packages/tsdb
+      '@types/bun':
+        specifier: ^1.3.12
+        version: 1.3.12
+      drizzle-orm:
+        specifier: ^0.45.2
+        version: 0.45.2(@opentelemetry/api@1.9.1)(bun-types@1.3.12)(postgres@3.4.9)
+      eslint:
+        specifier: ^10.2.0
+        version: 10.2.0(jiti@2.6.1)
+      postgres:
+        specifier: ^3.4.9
+        version: 3.4.9
+
   apps/heater-api:
     devDependencies:
       dotenv-cli:

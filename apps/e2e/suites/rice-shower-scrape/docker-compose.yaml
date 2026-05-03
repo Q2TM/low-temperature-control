@@ -1,0 +1,85 @@
+# Suite: rice-shower-scrape
+#
+# Smallest stack that lets us verify rice-shower scrapes ls-api +
+# heater-api and persists data into TimescaleDB. The simulator is
+# included so ls-api/heater-api have something to read without needing
+# real serial devices.
+#
+# Build context is the monorepo root (4 levels up from this file).
+#
+# Host port mappings are offset by +50000 (tsdb) / +10000 (apps) to
+# avoid collisions with the dev / lab compose stacks. ls-api,
+# heater-api, simulator are intentionally NOT exposed on the host —
+# the test only needs to reach tsdb (for migrations) and rice-shower
+# (for the query API). Inter-service traffic stays on the suite-private
+# network created by docker compose under the project name.
+
+services:
+  tsdb:
+    image: timescale/timescaledb:latest-pg17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: lt_capstone_v2
+    ports:
+      - "55432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d lt_capstone_v2"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  simulator:
+    build:
+      context: ../../../..
+      dockerfile: apps/simulator/Dockerfile
+    image: lt-capstone/simulator:latest
+    environment:
+      LGG_URL: http://ls-api:8000
+      CONFIG_FILE: /app/config.yaml
+    volumes:
+      - ../../../simulator/config.yaml:/app/config.yaml:ro
+
+  ls-api:
+    build:
+      context: ../../../..
+      dockerfile: apps/ls-api/Dockerfile
+    image: lt-capstone/ls-api:latest
+    environment:
+      ENVIRONMENT: DEVELOPMENT
+      SIMULATOR_API_URL: http://simulator:8101
+    depends_on:
+      - simulator
+
+  heater-api:
+    build:
+      context: ../../../..
+      dockerfile: apps/heater-api/Dockerfile
+    image: lt-capstone/heater-api:latest
+    environment:
+      ENVIRONMENT: DEVELOPMENT
+      HEATER_MODE: MOCK
+      LGG_URL: http://ls-api:8000
+      SIMULATOR_API_URL: http://simulator:8101
+    volumes:
+      - ../../../heater-api/config.yaml:/workspace/apps/heater-api/config.yaml:ro
+    depends_on:
+      - ls-api
+      - simulator
+
+  rice-shower:
+    build:
+      context: ../../../..
+      dockerfile: apps/rice-shower/Dockerfile
+    image: lt-capstone/rice-shower:latest
+    environment:
+      DATABASE_URL: postgresql://postgres:password@tsdb:5432/lt_capstone_v2
+    ports:
+      - "18100:8100"
+    depends_on:
+      tsdb:
+        condition: service_healthy
+      ls-api:
+        condition: service_started
+      heater-api:
+        condition: service_started
