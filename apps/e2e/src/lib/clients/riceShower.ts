@@ -87,7 +87,8 @@ export class RiceShowerClient {
     },
   ): Promise<ThermoMetricsResponse> {
     const url = new URL(`${this.baseUrl}/query/thermo/${systemId}`);
-    for (const ch of params.channels) url.searchParams.append("channels", `${ch}`);
+    for (const ch of params.channels)
+      url.searchParams.append("channels", `${ch}`);
     url.searchParams.set("time_start", params.timeStart.toISOString());
     url.searchParams.set("time_end", params.timeEnd.toISOString());
     url.searchParams.set("interval", `${params.interval ?? 1}`);
@@ -111,7 +112,8 @@ export class RiceShowerClient {
     },
   ): Promise<HeaterMetricsResponse> {
     const url = new URL(`${this.baseUrl}/query/heater/${systemId}`);
-    for (const ch of params.channels) url.searchParams.append("channels", `${ch}`);
+    for (const ch of params.channels)
+      url.searchParams.append("channels", `${ch}`);
     url.searchParams.set("time_start", params.timeStart.toISOString());
     url.searchParams.set("time_end", params.timeEnd.toISOString());
     url.searchParams.set("interval", `${params.interval ?? 1}`);

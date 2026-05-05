@@ -12,7 +12,14 @@ export type ComposeOptions = {
 };
 
 function run(args: string[], opts: ComposeOptions): Promise<void> {
-  const baseArgs = ["compose", "-f", opts.file, "-p", opts.projectName, ...args];
+  const baseArgs = [
+    "compose",
+    "-f",
+    opts.file,
+    "-p",
+    opts.projectName,
+    ...args,
+  ];
   return new Promise((resolve, reject) => {
     const child = spawn("docker", baseArgs, {
       stdio: opts.inherit === false ? "ignore" : "inherit",
@@ -20,7 +27,8 @@ function run(args: string[], opts: ComposeOptions): Promise<void> {
     child.on("error", reject);
     child.on("exit", (code) => {
       if (code === 0) resolve();
-      else reject(new Error(`docker ${baseArgs.join(" ")} exited with ${code}`));
+      else
+        reject(new Error(`docker ${baseArgs.join(" ")} exited with ${code}`));
     });
   });
 }

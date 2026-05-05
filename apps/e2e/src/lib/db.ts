@@ -1,5 +1,5 @@
-import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
@@ -30,7 +30,11 @@ export async function migrateTsdb(databaseUrl: string): Promise<void> {
         await probe.end({ timeout: 1 });
       }
     },
-    { label: "tsdb to accept connections", timeoutMs: 60_000, intervalMs: 1000 },
+    {
+      label: "tsdb to accept connections",
+      timeoutMs: 60_000,
+      intervalMs: 1000,
+    },
   );
 
   const client = postgres(databaseUrl, { max: 1 });
