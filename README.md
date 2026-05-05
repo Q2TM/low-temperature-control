@@ -6,15 +6,15 @@ Capstone Project for Computer Engineering, Chulalongkorn University
 
 ### Apps
 
-- `heater-api` (Heater API): API Server that controls the Heater via GPIO with PID Logic (Python FastAPI app with RPi.GPIO)
-- `ls-api` (Lingangu API): Lakeshore Management API (Python FastAPI app connecting USB Serial to Lakeshore Devices)
-- `rice-shower` (Rice Shower): Data Collector for Lingangu API and Temperature API. It also serves as a TSDB query server for the dashboard app. (Bun + Elysia)
-- `simulator` (Environment Simulator): Simulator for Foam Box, works as stub/mocks for lgg-api and heater-api (Bun + Elysia)
+- `heater-api` (Heater API): API Server that controls heaters with PID (Python FastAPI; MOCK, GPIO, or PSU modes via config)
+- `ls-api` (Lakeshore API): Lakeshore Management API (Python FastAPI app connecting USB Serial to Lakeshore Devices)
+- `rice-shower` (Rice Shower): Data Collector for ls-api and heater-api. It also serves as a TSDB query server for the dashboard app. (Bun + Elysia)
+- `simulator` (Environment Simulator): Simulator for Foam Box, works as stub/mocks for ls-api and heater-api (Bun + Elysia)
 - `web` (Web Dashboard): Dashboard Application (Next.js)
 
 ### Packages (Internal)
 
-- `api-client`: API Client for each API services using `openapi-generator`
+- `api-client`: API Client for each API service using `openapi-generator` and `openapi-typescript`
 - `config`: ESLint and TypeScript configurations
 - `tsdb`: Database Schema for TimescaleDB
 <!-- - `main-db`: May have -->
@@ -48,7 +48,7 @@ Note that pnpm is still used as the package manager for Bun projects. You can ru
 
 ### Python + UV
 
-Install Python with version specified in `.python-version` file (currently `3.13`) and use `uv` (Universal Version Manager) to manage Python versions. Install `uv` from [astral-sh/uv](https://github.com/astral-sh/uv) and run `uv sync` to install the dependencies.
+Install Python with version specified in `.python-version` file (currently `3.13`) and use [`uv`](https://github.com/astral-sh/uv) (Python package/project manager). Install `uv` and run `uv sync` at the repository root to install dependencies.
 
 ### Docker
 
@@ -58,6 +58,7 @@ These are the container you will be running for local developments:
 
 - timescaledb: TimescaleDB (A time-series database built on PostgreSQL)
 - (Optional) grafana: Grafana (For testing SQL queries locally)
+- tempo, prometheus, otel-collector: tracing/metrics stack (OTLP ports 4317/4318)
 
 You can run these containers using `docker-compose.yaml` file provided in the root of this repository:
 
@@ -69,7 +70,7 @@ docker compose up -d
 
 Go to `packages/tsdb`, `.env` should already be setup for local development.
 
-Then run `pnpm db:migrate` to setup the database schema.
+Then run `pnpm --filter @repo/tsdb db:migrate` to setup the database schema.
 
 ## Architecture Diagram
 
@@ -88,22 +89,21 @@ To run Lab Mode, make sure you filled in neccessary IPs in `.env.lab` files in e
 
 Then run `pnpm run lab` to start the services in Lab Mode as Configuration A (run all services on one device).
 
-To make uv work correctly on Raspberry Pi, you have to add `RPi.GPIO` to the `.venv`
-by using command: (I forgot)
+To use GPIO mode on Raspberry Pi, add `RPi.GPIO` to the heater-api project, e.g. from the repo root: `uv add --package heater-api RPi.GPIO`
 
 ### URLs
 
-- Lingangu API Swagger will be available at `http://localhost:8000/docs` or alternate scalar UI at `http://localhost:8000/scalar`
+- Lakeshore API (ls-api) Swagger will be available at `http://localhost:8000/docs` or alternate scalar UI at `http://localhost:8000/scalar`
 - Heater API Swagger will be available at `http://localhost:8001/docs` or alternate scalar UI at `http://localhost:8001/scalar`
 - Rice Shower API Docs will be available at `http://localhost:8100/openapi`
 - Simulator API Docs will be available at `http://localhost:8101/openapi`
-- Almond Eye Dashboard will be available at `http://localhost:3100`
+- Web Dashboard will be available at `http://localhost:3100`
 
 ## Contribution
 
 ### OpenAPI and Codegen
 
-When making changes to the API Server (Lingangu API, Temperature API, or Rice Shower), the swagger files located at `docs/**` of that project will be automatically generated upon server start.
+When making changes to the API servers (ls-api, heater-api, rice-shower, or simulator), the OpenAPI files under `docs/**` for that project are updated when that server starts (per app implementation).
 
 However, you still have to run `pnpm codegen` in the root of the repository to regenerate the API Client packages used in other projects.
 
