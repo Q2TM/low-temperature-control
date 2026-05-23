@@ -32,11 +32,12 @@ services:
     container_name: rice-ls-api
     environment:
       ENVIRONMENT: PRODUCTION
+      LAKESHORE_COM_PORT: /dev/ttyUSB1
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
     ports:
       - "8000:8000"
     devices:
-      - "${LS_SERIAL_DEVICE:-/dev/ttyACM0}:/dev/ttyACM0"
+      - "${LS_SERIAL_DEVICE:-/dev/ttyUSB1}:/dev/ttyUSB1"
     networks:
       - rice-shower
     restart: unless-stopped

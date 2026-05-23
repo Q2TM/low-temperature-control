@@ -66,6 +66,9 @@ You can run these containers using `docker-compose.yaml` file provided in the ro
 docker compose up -d
 ```
 
+For lab hardware deployment with Docker, see
+[`deployment/README.md`](./deployment/README.md).
+
 ### Database Setup
 
 Go to `packages/tsdb`, `.env` should already be setup for local development.

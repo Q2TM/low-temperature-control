@@ -71,7 +71,8 @@ class LakeshoreService:
                     LakeshoreService.device = MockModel240()  # type: ignore
                 else:
                     print("Initializing Lakeshore Connection")
-                    LakeshoreService.device = Model240()
+                    com_port = os.getenv("LAKESHORE_COM_PORT", "/dev/ttyUSB1")
+                    LakeshoreService.device = Model240(com_port=com_port)
                 _connected_gauge.add(1)
         except Exception as e:
             raise HTTPException(503, f"Connection failed: {e}")
@@ -296,7 +297,8 @@ class LakeshoreService:
             start = time.monotonic()
             sensor = device.get_sensor_reading(channel)
             kelvin = device.get_kelvin_reading(channel)
-            _read_duration.record((time.monotonic() - start) * 1000, {"channel": channel})
+            _read_duration.record((time.monotonic() - start)
+                                  * 1000, {"channel": channel})
 
             if kelvin == 0 or sensor == 0:
                 raise HTTPException(503, "Reading error: received zero value")
